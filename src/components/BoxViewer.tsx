@@ -19,6 +19,7 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
   const boxRef = useRef<THREE.Mesh | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const gridRef = useRef<THREE.GridHelper | null>(null);
+  const activeCamera = useRef<'perspective' | 'ortho'>('perspective');
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -112,18 +113,29 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
     // Animation
     const animate = () => {
       requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
+      if (controlsRef.current) {
+        controlsRef.current.update();
+      }
+      if (rendererRef.current && sceneRef.current) {
+        rendererRef.current.render(
+          sceneRef.current,
+          activeCamera.current === 'perspective' ? camera : orthoCamera
+        );
+      }
     };
     animate();
 
     // Cleanup
     return () => {
-      if (mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountRef.current && rendererRef.current) {
+        mountRef.current.removeChild(rendererRef.current.domElement);
       }
-      geometry.dispose();
-      material.dispose();
+      if (boxRef.current?.geometry) {
+        boxRef.current.geometry.dispose();
+      }
+      if (boxRef.current?.material) {
+        (boxRef.current.material as THREE.Material).dispose();
+      }
     };
   }, []);
 
@@ -171,15 +183,7 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
   }, []);
 
   const toggleCamera = () => {
-    if (!rendererRef.current || !sceneRef.current) return;
-    const currentCamera = rendererRef.current.xr.getCamera();
-    const isPerspective = currentCamera instanceof THREE.PerspectiveCamera;
-    
-    if (isPerspective && orthoCameraRef.current) {
-      rendererRef.current.xr.setCamera(orthoCameraRef.current);
-    } else if (!isPerspective && cameraRef.current) {
-      rendererRef.current.xr.setCamera(cameraRef.current);
-    }
+    activeCamera.current = activeCamera.current === 'perspective' ? 'ortho' : 'perspective';
   };
 
   const setTopView = () => {
