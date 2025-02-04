@@ -1,4 +1,6 @@
-import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 interface BoxControlsProps {
   dimensions: {
@@ -16,11 +18,14 @@ interface BoxControlsProps {
 }
 
 const BoxControls = ({ dimensions, setDimensions }: BoxControlsProps) => {
-  const handleChange = (value: number, dimension: 'length' | 'width' | 'height') => {
-    setDimensions(prev => ({
-      ...prev,
-      [dimension]: value
-    }));
+  const handleChange = (value: string, dimension: 'length' | 'width' | 'height') => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue > 0) {
+      setDimensions(prev => ({
+        ...prev,
+        [dimension]: Math.min(Math.max(numValue, 0.1), 3)
+      }));
+    }
   };
 
   return (
@@ -29,13 +34,12 @@ const BoxControls = ({ dimensions, setDimensions }: BoxControlsProps) => {
       
       <div className="space-y-4">
         <div className="space-y-2">
-          <div className="flex justify-between">
-            <label className="text-sm font-medium">Length</label>
-            <span className="text-sm text-gray-400">{dimensions.length.toFixed(1)}</span>
-          </div>
-          <Slider
-            value={[dimensions.length]}
-            onValueChange={([value]) => handleChange(value, 'length')}
+          <Label htmlFor="length">Length</Label>
+          <Input
+            id="length"
+            type="number"
+            value={dimensions.length}
+            onChange={(e) => handleChange(e.target.value, 'length')}
             min={0.1}
             max={3}
             step={0.1}
@@ -43,13 +47,12 @@ const BoxControls = ({ dimensions, setDimensions }: BoxControlsProps) => {
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between">
-            <label className="text-sm font-medium">Width</label>
-            <span className="text-sm text-gray-400">{dimensions.width.toFixed(1)}</span>
-          </div>
-          <Slider
-            value={[dimensions.width]}
-            onValueChange={([value]) => handleChange(value, 'width')}
+          <Label htmlFor="width">Width</Label>
+          <Input
+            id="width"
+            type="number"
+            value={dimensions.width}
+            onChange={(e) => handleChange(e.target.value, 'width')}
             min={0.1}
             max={3}
             step={0.1}
@@ -57,23 +60,27 @@ const BoxControls = ({ dimensions, setDimensions }: BoxControlsProps) => {
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between">
-            <label className="text-sm font-medium">Height</label>
-            <span className="text-sm text-gray-400">{dimensions.height.toFixed(1)}</span>
-          </div>
-          <Slider
-            value={[dimensions.height]}
-            onValueChange={([value]) => handleChange(value, 'height')}
+          <Label htmlFor="height">Height</Label>
+          <Input
+            id="height"
+            type="number"
+            value={dimensions.height}
+            onChange={(e) => handleChange(e.target.value, 'height')}
             min={0.1}
             max={3}
             step={0.1}
           />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Switch id="shadows" />
+          <Label htmlFor="shadows">Enable Shadows</Label>
         </div>
       </div>
 
       <div className="mt-6 p-4 bg-gray-700/50 rounded-lg">
         <p className="text-sm text-gray-300">
-          Drag to rotate the box view. Scroll to zoom in/out.
+          Use the controls to adjust dimensions and view settings.
         </p>
       </div>
     </div>
