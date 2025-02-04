@@ -1,4 +1,5 @@
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 
 interface BoxControlsProps {
   dimensions: {
@@ -13,9 +14,11 @@ interface BoxControlsProps {
       height: number;
     }>
   >;
+  showShadow: boolean;
+  setShowShadow: (show: boolean) => void;
 }
 
-const BoxControls = ({ dimensions, setDimensions }: BoxControlsProps) => {
+const BoxControls = ({ dimensions, setDimensions, showShadow, setShowShadow }: BoxControlsProps) => {
   const handleChange = (value: number, dimension: 'length' | 'width' | 'height') => {
     setDimensions(prev => ({
       ...prev,
@@ -70,6 +73,14 @@ const BoxControls = ({ dimensions, setDimensions }: BoxControlsProps) => {
           />
         </div>
       </div>
+
+      <Button 
+        variant={showShadow ? "default" : "outline"}
+        className="w-full"
+        onClick={() => setShowShadow(!showShadow)}
+      >
+        {showShadow ? "Hide Shadow" : "Show Shadow"}
+      </Button>
 
       <div className="mt-6 p-4 bg-gray-700/50 rounded-lg">
         <p className="text-sm text-gray-300">

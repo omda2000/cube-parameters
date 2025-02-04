@@ -8,6 +8,7 @@ const Index = () => {
     width: 1,
     height: 1
   });
+  const [showShadow, setShowShadow] = useState(true);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -15,10 +16,15 @@ const Index = () => {
         <h1 className="text-4xl font-bold text-center mb-8">3D Box Visualizer</h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-gray-800 rounded-lg shadow-xl overflow-hidden" style={{ minHeight: '500px' }}>
-            <BoxViewer dimensions={dimensions} />
+            <BoxViewer dimensions={dimensions} showShadow={showShadow} />
           </div>
           <div className="bg-gray-800 rounded-lg shadow-xl p-6">
-            <BoxControls dimensions={dimensions} setDimensions={setDimensions} />
+            <BoxControls 
+              dimensions={dimensions} 
+              setDimensions={setDimensions} 
+              showShadow={showShadow}
+              setShowShadow={setShowShadow}
+            />
           </div>
         </div>
       </div>

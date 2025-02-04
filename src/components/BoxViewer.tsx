@@ -8,15 +8,17 @@ interface BoxViewerProps {
     width: number;
     height: number;
   };
+  showShadow: boolean;
 }
 
-const BoxViewer = ({ dimensions }: BoxViewerProps) => {
+const BoxViewer = ({ dimensions, showShadow }: BoxViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const boxRef = useRef<THREE.Mesh | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
+  const planeRef = useRef<THREE.Mesh | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -40,6 +42,8 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     rendererRef.current = renderer;
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
     // Controls setup
@@ -53,7 +57,25 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(5, 5, 5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
     scene.add(directionalLight);
+
+    // Ground plane
+    const planeGeometry = new THREE.PlaneGeometry(10, 10);
+    const planeMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x808080,
+      side: THREE.DoubleSide
+    });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    planeRef.current = plane;
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -2;
+    plane.receiveShadow = true;
+    scene.add(plane);
 
     // Box setup
     const geometry = new THREE.BoxGeometry(
@@ -67,6 +89,7 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
     });
     const box = new THREE.Mesh(geometry, material);
     boxRef.current = box;
+    box.castShadow = true;
     scene.add(box);
 
     // Animation
@@ -99,6 +122,19 @@ const BoxViewer = ({ dimensions }: BoxViewerProps) => {
     boxRef.current.geometry.dispose();
     boxRef.current.geometry = geometry;
   }, [dimensions]);
+
+  // Update shadow visibility
+  useEffect(() => {
+    if (!boxRef.current || !rendererRef.current) return;
+    
+    rendererRef.current.shadowMap.enabled = showShadow;
+    if (boxRef.current) {
+      boxRef.current.castShadow = showShadow;
+    }
+    if (planeRef.current) {
+      planeRef.current.receiveShadow = showShadow;
+    }
+  }, [showShadow]);
 
   // Handle resize
   useEffect(() => {
