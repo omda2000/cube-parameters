@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 interface BoxViewerProps {
   dimensions: {
@@ -9,16 +9,21 @@ interface BoxViewerProps {
     height: number;
   };
   showShadow: boolean;
+  showEdges: boolean;
+  boxColor: string;
+  objectName: string;
 }
 
-const BoxViewer = ({ dimensions, showShadow }: BoxViewerProps) => {
+const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: BoxViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const boxRef = useRef<THREE.Mesh | null>(null);
+  const edgesRef = useRef<THREE.LineSegments | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const planeRef = useRef<THREE.Mesh | null>(null);
+  const textRef = useRef<THREE.Mesh | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -84,13 +89,21 @@ const BoxViewer = ({ dimensions, showShadow }: BoxViewerProps) => {
       dimensions.width
     );
     const material = new THREE.MeshPhongMaterial({
-      color: 0x319795,
+      color: boxColor,
       flatShading: true,
     });
     const box = new THREE.Mesh(geometry, material);
     boxRef.current = box;
     box.castShadow = true;
     scene.add(box);
+
+    // Edges setup
+    const edges = new THREE.EdgesGeometry(geometry);
+    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const lineSegments = new THREE.LineSegments(edges, edgesMaterial);
+    edgesRef.current = lineSegments;
+    lineSegments.visible = showEdges;
+    scene.add(lineSegments);
 
     // Animation
     const animate = () => {
@@ -107,12 +120,14 @@ const BoxViewer = ({ dimensions, showShadow }: BoxViewerProps) => {
       }
       geometry.dispose();
       material.dispose();
+      edges.dispose();
+      edgesMaterial.dispose();
     };
   }, []);
 
-  // Update box dimensions
+  // Update box dimensions and edges
   useEffect(() => {
-    if (!boxRef.current) return;
+    if (!boxRef.current || !edgesRef.current) return;
     
     const geometry = new THREE.BoxGeometry(
       dimensions.length,
@@ -121,6 +136,10 @@ const BoxViewer = ({ dimensions, showShadow }: BoxViewerProps) => {
     );
     boxRef.current.geometry.dispose();
     boxRef.current.geometry = geometry;
+
+    const edges = new THREE.EdgesGeometry(geometry);
+    edgesRef.current.geometry.dispose();
+    edgesRef.current.geometry = edges;
   }, [dimensions]);
 
   // Update shadow visibility
@@ -135,6 +154,18 @@ const BoxViewer = ({ dimensions, showShadow }: BoxViewerProps) => {
       planeRef.current.receiveShadow = showShadow;
     }
   }, [showShadow]);
+
+  // Update edges visibility
+  useEffect(() => {
+    if (!edgesRef.current) return;
+    edgesRef.current.visible = showEdges;
+  }, [showEdges]);
+
+  // Update box color
+  useEffect(() => {
+    if (!boxRef.current) return;
+    (boxRef.current.material as THREE.MeshPhongMaterial).color.set(boxColor);
+  }, [boxColor]);
 
   // Handle resize
   useEffect(() => {

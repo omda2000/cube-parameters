@@ -1,5 +1,6 @@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface BoxControlsProps {
   dimensions: {
@@ -16,9 +17,26 @@ interface BoxControlsProps {
   >;
   showShadow: boolean;
   setShowShadow: (show: boolean) => void;
+  showEdges: boolean;
+  setShowEdges: (show: boolean) => void;
+  boxColor: string;
+  setBoxColor: (color: string) => void;
+  objectName: string;
+  setObjectName: (name: string) => void;
 }
 
-const BoxControls = ({ dimensions, setDimensions, showShadow, setShowShadow }: BoxControlsProps) => {
+const BoxControls = ({ 
+  dimensions, 
+  setDimensions, 
+  showShadow, 
+  setShowShadow,
+  showEdges,
+  setShowEdges,
+  boxColor,
+  setBoxColor,
+  objectName,
+  setObjectName
+}: BoxControlsProps) => {
   const handleChange = (value: number, dimension: 'length' | 'width' | 'height') => {
     setDimensions(prev => ({
       ...prev,
@@ -28,9 +46,38 @@ const BoxControls = ({ dimensions, setDimensions, showShadow, setShowShadow }: B
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold mb-6">Box Dimensions</h2>
+      <h2 className="text-2xl font-semibold mb-6">Box Properties</h2>
       
       <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Object Name</label>
+          <Input
+            value={objectName}
+            onChange={(e) => setObjectName(e.target.value)}
+            placeholder="Enter object name"
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Box Color</label>
+          <div className="flex gap-2">
+            <Input
+              type="color"
+              value={boxColor}
+              onChange={(e) => setBoxColor(e.target.value)}
+              className="w-16 h-10 p-1"
+            />
+            <Input
+              type="text"
+              value={boxColor}
+              onChange={(e) => setBoxColor(e.target.value)}
+              placeholder="#000000"
+              className="flex-1"
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-medium">Length</label>
@@ -74,13 +121,23 @@ const BoxControls = ({ dimensions, setDimensions, showShadow, setShowShadow }: B
         </div>
       </div>
 
-      <Button 
-        variant={showShadow ? "default" : "outline"}
-        className="w-full"
-        onClick={() => setShowShadow(!showShadow)}
-      >
-        {showShadow ? "Hide Shadow" : "Show Shadow"}
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button 
+          variant={showShadow ? "default" : "outline"}
+          className="w-full"
+          onClick={() => setShowShadow(!showShadow)}
+        >
+          {showShadow ? "Hide Shadow" : "Show Shadow"}
+        </Button>
+
+        <Button 
+          variant={showEdges ? "default" : "outline"}
+          className="w-full"
+          onClick={() => setShowEdges(!showEdges)}
+        >
+          {showEdges ? "Hide Edges" : "Show Edges"}
+        </Button>
+      </div>
 
       <div className="mt-6 p-4 bg-gray-700/50 rounded-lg">
         <p className="text-sm text-gray-300">
