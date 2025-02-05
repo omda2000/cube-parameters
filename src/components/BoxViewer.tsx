@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 interface BoxViewerProps {
   dimensions: {
@@ -23,7 +25,9 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
   const edgesRef = useRef<THREE.LineSegments | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const planeRef = useRef<THREE.Mesh | null>(null);
-  const textRef = useRef<THREE.Mesh | null>(null);
+  const transformControlsRef = useRef<TransformControls | null>(null);
+  const labelRendererRef = useRef<CSS2DRenderer | null>(null);
+  const [isSelected, setIsSelected] = useState(false);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -51,10 +55,25 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
+    // Label renderer setup
+    const labelRenderer = new CSS2DRenderer();
+    labelRendererRef.current = labelRenderer;
+    labelRenderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    mountRef.current.appendChild(labelRenderer.domElement);
+
     // Controls setup
     const controls = new OrbitControls(camera, renderer.domElement);
     controlsRef.current = controls;
     controls.enableDamping = true;
+
+    // Transform Controls setup
+    const transformControls = new TransformControls(camera, renderer.domElement);
+    transformControlsRef.current = transformControls;
+    transformControls.visible = false;
+    scene.add(transformControls);
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -97,6 +116,19 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
     box.castShadow = true;
     scene.add(box);
 
+    // Name label
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'label';
+    nameDiv.textContent = objectName;
+    nameDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    nameDiv.style.color = 'white';
+    nameDiv.style.padding = '2px 5px';
+    nameDiv.style.borderRadius = '3px';
+    nameDiv.style.visibility = 'hidden';
+    const nameLabel = new CSS2DObject(nameDiv);
+    nameLabel.position.set(0, 1, 0);
+    box.add(nameLabel);
+
     // Edges setup
     const edges = new THREE.EdgesGeometry(geometry);
     const edgesMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
@@ -105,18 +137,65 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
     lineSegments.visible = showEdges;
     scene.add(lineSegments);
 
+    // Mouse interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const onMouseMove = (event: MouseEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(box);
+
+      if (intersects.length > 0) {
+        nameDiv.style.visibility = 'visible';
+      } else {
+        nameDiv.style.visibility = 'hidden';
+      }
+    };
+
+    const onClick = (event: MouseEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(box);
+
+      if (intersects.length > 0) {
+        setIsSelected(!isSelected);
+        transformControls.attach(box);
+        transformControls.visible = !isSelected;
+        controls.enabled = isSelected;
+      } else {
+        setIsSelected(false);
+        transformControls.detach();
+        transformControls.visible = false;
+        controls.enabled = true;
+      }
+    };
+
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('click', onClick);
+
     // Animation
     const animate = () => {
       requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
     };
     animate();
 
     // Cleanup
     return () => {
+      renderer.domElement.removeEventListener('mousemove', onMouseMove);
+      renderer.domElement.removeEventListener('click', onClick);
       if (mountRef.current) {
         mountRef.current.removeChild(renderer.domElement);
+        mountRef.current.removeChild(labelRenderer.domElement);
       }
       geometry.dispose();
       material.dispose();
@@ -170,12 +249,16 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
   // Handle resize
   useEffect(() => {
     const handleResize = () => {
-      if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
+      if (!mountRef.current || !cameraRef.current || !rendererRef.current || !labelRendererRef.current) return;
 
       cameraRef.current.aspect =
         mountRef.current.clientWidth / mountRef.current.clientHeight;
       cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setSize(
+        mountRef.current.clientWidth,
+        mountRef.current.clientHeight
+      );
+      labelRendererRef.current.setSize(
         mountRef.current.clientWidth,
         mountRef.current.clientHeight
       );
