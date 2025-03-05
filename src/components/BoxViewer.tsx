@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -72,7 +73,9 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
     // Transform Controls setup
     const transformControls = new TransformControls(camera, renderer.domElement);
     transformControlsRef.current = transformControls;
-    transformControls.visible = false;
+    transformControls.addEventListener('dragging-changed', (event) => {
+      controls.enabled = !event.value;
+    });
     scene.add(transformControls);
 
     // Lighting
@@ -166,14 +169,14 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
 
       if (intersects.length > 0) {
         setIsSelected(!isSelected);
-        transformControls.attach(box);
-        transformControls.visible = !isSelected;
-        controls.enabled = isSelected;
+        if (!isSelected) {
+          transformControls.attach(box);
+        } else {
+          transformControls.detach();
+        }
       } else {
         setIsSelected(false);
         transformControls.detach();
-        transformControls.visible = false;
-        controls.enabled = true;
       }
     };
 
