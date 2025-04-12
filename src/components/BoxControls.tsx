@@ -1,6 +1,8 @@
+
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Cube, Eye, EyeOff, Palette, Move, Info } from "lucide-react";
 
 interface BoxControlsProps {
   dimensions: {
@@ -46,42 +48,58 @@ const BoxControls = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold mb-6">Box Properties</h2>
+      <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+        <Cube className="h-6 w-6 text-indigo-400" />
+        <span>Box Properties</span>
+      </h2>
       
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Object Name</label>
+          <label className="text-sm font-medium flex items-center gap-2">
+            <Info className="h-4 w-4 text-indigo-400" />
+            Object Name
+          </label>
           <Input
             value={objectName}
             onChange={(e) => setObjectName(e.target.value)}
             placeholder="Enter object name"
-            className="w-full"
+            className="w-full bg-slate-700/50 border-slate-600 focus-visible:ring-indigo-500"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Box Color</label>
+          <label className="text-sm font-medium flex items-center gap-2">
+            <Palette className="h-4 w-4 text-indigo-400" />
+            Box Color
+          </label>
           <div className="flex gap-2">
             <Input
               type="color"
               value={boxColor}
               onChange={(e) => setBoxColor(e.target.value)}
-              className="w-16 h-10 p-1"
+              className="w-16 h-10 p-1 bg-slate-700/50 border-slate-600"
             />
             <Input
               type="text"
               value={boxColor}
               onChange={(e) => setBoxColor(e.target.value)}
               placeholder="#000000"
-              className="flex-1"
+              className="flex-1 bg-slate-700/50 border-slate-600 focus-visible:ring-indigo-500"
             />
           </div>
+        </div>
+
+        <div className="pt-2 pb-1 border-t border-slate-700/70">
+          <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+            <Move className="h-5 w-5 text-indigo-400" />
+            Dimensions
+          </h3>
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-medium">Length</label>
-            <span className="text-sm text-gray-400">{dimensions.length.toFixed(1)}</span>
+            <span className="text-sm text-indigo-300 font-mono">{dimensions.length.toFixed(1)}</span>
           </div>
           <Slider
             value={[dimensions.length]}
@@ -89,13 +107,14 @@ const BoxControls = ({
             min={0.1}
             max={3}
             step={0.1}
+            className="py-1"
           />
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-medium">Width</label>
-            <span className="text-sm text-gray-400">{dimensions.width.toFixed(1)}</span>
+            <span className="text-sm text-indigo-300 font-mono">{dimensions.width.toFixed(1)}</span>
           </div>
           <Slider
             value={[dimensions.width]}
@@ -103,13 +122,14 @@ const BoxControls = ({
             min={0.1}
             max={3}
             step={0.1}
+            className="py-1"
           />
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-medium">Height</label>
-            <span className="text-sm text-gray-400">{dimensions.height.toFixed(1)}</span>
+            <span className="text-sm text-indigo-300 font-mono">{dimensions.height.toFixed(1)}</span>
           </div>
           <Slider
             value={[dimensions.height]}
@@ -117,31 +137,53 @@ const BoxControls = ({
             min={0.1}
             max={3}
             step={0.1}
+            className="py-1"
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 pt-2 border-t border-slate-700/70">
         <Button 
           variant={showShadow ? "default" : "outline"}
-          className="w-full"
+          className={`w-full ${showShadow ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setShowShadow(!showShadow)}
         >
-          {showShadow ? "Hide Shadow" : "Show Shadow"}
+          {showShadow ? (
+            <>
+              <Eye className="mr-2 h-4 w-4" />
+              Hide Shadow
+            </>
+          ) : (
+            <>
+              <EyeOff className="mr-2 h-4 w-4" />
+              Show Shadow
+            </>
+          )}
         </Button>
 
         <Button 
           variant={showEdges ? "default" : "outline"}
-          className="w-full"
+          className={`w-full ${showEdges ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setShowEdges(!showEdges)}
         >
-          {showEdges ? "Hide Edges" : "Show Edges"}
+          {showEdges ? (
+            <>
+              <Eye className="mr-2 h-4 w-4" />
+              Hide Edges
+            </>
+          ) : (
+            <>
+              <EyeOff className="mr-2 h-4 w-4" />
+              Show Edges
+            </>
+          )}
         </Button>
       </div>
 
-      <div className="mt-6 p-4 bg-gray-700/50 rounded-lg">
-        <p className="text-sm text-gray-300">
-          Drag to rotate the box view. Scroll to zoom in/out.
+      <div className="mt-6 p-4 bg-indigo-900/30 rounded-lg border border-indigo-800/50">
+        <p className="text-sm text-indigo-200 flex items-center">
+          <Info className="h-4 w-4 mr-2 text-indigo-400" />
+          Drag to rotate the box. Click on the box to move it. Scroll to zoom.
         </p>
       </div>
     </div>
