@@ -2,7 +2,7 @@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Cube, Eye, EyeOff, Palette, Move, Info } from "lucide-react";
+import { Box, Eye, EyeOff, Palette, Move, Info } from "lucide-react";
 
 interface BoxControlsProps {
   dimensions: {
@@ -49,7 +49,7 @@ const BoxControls = ({
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-        <Cube className="h-6 w-6 text-indigo-400" />
+        <Box className="h-6 w-6 text-indigo-400" />
         <span>Box Properties</span>
       </h2>
       
