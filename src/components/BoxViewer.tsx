@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -15,9 +14,10 @@ interface BoxViewerProps {
   showEdges: boolean;
   boxColor: string;
   objectName: string;
+  transformMode: 'translate' | 'rotate' | 'scale';
 }
 
-const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: BoxViewerProps) => {
+const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName, transformMode }: BoxViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -171,6 +171,7 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
         setIsSelected(!isSelected);
         if (!isSelected) {
           transformControls.attach(box);
+          transformControls.setMode(transformMode);
         } else {
           transformControls.detach();
         }
@@ -206,6 +207,13 @@ const BoxViewer = ({ dimensions, showShadow, showEdges, boxColor, objectName }: 
       edgesMaterial.dispose();
     };
   }, []);
+
+  // Update transform mode when selected
+  useEffect(() => {
+    if (transformControlsRef.current && isSelected) {
+      transformControlsRef.current.setMode(transformMode);
+    }
+  }, [transformMode, isSelected]);
 
   // Update box dimensions and edges
   useEffect(() => {

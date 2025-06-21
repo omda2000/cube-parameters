@@ -13,6 +13,7 @@ const Index = () => {
   const [showEdges, setShowEdges] = useState(false);
   const [boxColor, setBoxColor] = useState('#4F46E5');
   const [objectName, setObjectName] = useState('My Box');
+  const [transformMode, setTransformMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
@@ -26,6 +27,7 @@ const Index = () => {
               showEdges={showEdges}
               boxColor={boxColor}
               objectName={objectName}
+              transformMode={transformMode}
             />
           </div>
           <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl p-6 border border-slate-700/50">
@@ -40,6 +42,8 @@ const Index = () => {
               setBoxColor={setBoxColor}
               objectName={objectName}
               setObjectName={setObjectName}
+              transformMode={transformMode}
+              setTransformMode={setTransformMode}
             />
           </div>
         </div>

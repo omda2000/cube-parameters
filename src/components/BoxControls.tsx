@@ -1,8 +1,7 @@
-
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Box, Eye, EyeOff, Palette, Move, Info } from "lucide-react";
+import { Box, Eye, EyeOff, Palette, Move, Info, RotateCw } from "lucide-react";
 
 interface BoxControlsProps {
   dimensions: {
@@ -25,6 +24,8 @@ interface BoxControlsProps {
   setBoxColor: (color: string) => void;
   objectName: string;
   setObjectName: (name: string) => void;
+  transformMode: 'translate' | 'rotate' | 'scale';
+  setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => void;
 }
 
 const BoxControls = ({ 
@@ -37,7 +38,9 @@ const BoxControls = ({
   boxColor,
   setBoxColor,
   objectName,
-  setObjectName
+  setObjectName,
+  transformMode,
+  setTransformMode
 }: BoxControlsProps) => {
   const handleChange = (value: number, dimension: 'length' | 'width' | 'height') => {
     setDimensions(prev => ({
@@ -86,6 +89,39 @@ const BoxControls = ({
               placeholder="#000000"
               className="flex-1 bg-slate-700/50 border-slate-600 focus-visible:ring-indigo-500"
             />
+          </div>
+        </div>
+
+        <div className="pt-2 pb-1 border-t border-slate-700/70">
+          <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+            <Move className="h-5 w-5 text-indigo-400" />
+            Transform Mode
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant={transformMode === 'translate' ? 'default' : 'outline'}
+              className={`${transformMode === 'translate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+              onClick={() => setTransformMode('translate')}
+            >
+              <Move className="h-4 w-4 mr-1" />
+              Move
+            </Button>
+            <Button
+              variant={transformMode === 'rotate' ? 'default' : 'outline'}
+              className={`${transformMode === 'rotate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+              onClick={() => setTransformMode('rotate')}
+            >
+              <RotateCw className="h-4 w-4 mr-1" />
+              Rotate
+            </Button>
+            <Button
+              variant={transformMode === 'scale' ? 'default' : 'outline'}
+              className={`${transformMode === 'scale' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+              onClick={() => setTransformMode('scale')}
+            >
+              <Box className="h-4 w-4 mr-1" />
+              Scale
+            </Button>
           </div>
         </div>
 
@@ -183,7 +219,7 @@ const BoxControls = ({
       <div className="mt-6 p-4 bg-indigo-900/30 rounded-lg border border-indigo-800/50">
         <p className="text-sm text-indigo-200 flex items-center">
           <Info className="h-4 w-4 mr-2 text-indigo-400" />
-          Drag to rotate the box. Click on the box to move it. Scroll to zoom.
+          Click on the box to select it, then use transform mode buttons to move, rotate, or scale. Drag to rotate view.
         </p>
       </div>
     </div>
