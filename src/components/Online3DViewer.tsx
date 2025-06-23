@@ -14,39 +14,53 @@ const Online3DViewer = () => {
   useEffect(() => {
     if (!viewerRef.current) return;
 
-    // Load the Online3DViewer scripts and styles dynamically
     const loadViewer = async () => {
       try {
-        // Create a simple embedded 3D viewer
-        const viewerDiv = document.createElement('div');
-        viewerDiv.style.width = '100%';
-        viewerDiv.style.height = '100%';
-        viewerDiv.style.minHeight = '600px';
-        viewerDiv.style.border = '1px solid #e5e7eb';
-        viewerDiv.style.borderRadius = '8px';
-        viewerDiv.style.background = '#f9fafb';
-        viewerDiv.style.display = 'flex';
-        viewerDiv.style.alignItems = 'center';
-        viewerDiv.style.justifyContent = 'center';
-        viewerDiv.style.fontSize = '18px';
-        viewerDiv.style.color = '#6b7280';
-        viewerDiv.innerHTML = `
-          <div style="text-align: center; padding: 2rem;">
-            <div style="font-size: 48px; margin-bottom: 1rem;">📦</div>
-            <h3 style="margin-bottom: 0.5rem; color: #374151;">Online 3D Viewer</h3>
-            <p style="margin-bottom: 1rem;">Professional 3D model viewer supporting multiple formats</p>
-            <div style="font-size: 14px; color: #9ca3af;">
-              <p>• Supports OBJ, STL, PLY, OFF, 3DS, GLTF, GLB formats</p>
-              <p>• Drag & drop file support</p>
-              <p>• Material and texture rendering</p>
-              <p>• Professional visualization tools</p>
-            </div>
-          </div>
-        `;
-        
-        if (viewerRef.current) {
-          viewerRef.current.appendChild(viewerDiv);
-          viewerInstanceRef.current = viewerDiv;
+        // Load CSS if not already loaded
+        if (!document.querySelector('link[href="/o3dv.min.css"]')) {
+          const cssLink = document.createElement('link');
+          cssLink.rel = 'stylesheet';
+          cssLink.href = '/o3dv.min.css';
+          document.head.appendChild(cssLink);
+        }
+
+        // Load JS if not already loaded
+        if (!window.OV) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/o3dv.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        // Wait a bit for the library to initialize
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        if (window.OV && viewerRef.current) {
+          // Initialize the embedded viewer
+          const viewer = new window.OV.EmbeddedViewer(viewerRef.current, {
+            backgroundColor: new window.OV.RGBAColor(250, 250, 250, 1),
+            defaultColor: new window.OV.RGBColor(200, 200, 200),
+            edgeSettings: new window.OV.EdgeSettings(false, new window.OV.RGBColor(0, 0, 0), 1),
+            environmentSettings: new window.OV.EnvironmentSettings([
+              'envmaps/fishermans_bastion/posx.jpg',
+              'envmaps/fishermans_bastion/negx.jpg',
+              'envmaps/fishermans_bastion/posy.jpg',
+              'envmaps/fishermans_bastion/negy.jpg',
+              'envmaps/fishermans_bastion/posz.jpg',
+              'envmaps/fishermans_bastion/negz.jpg'
+            ], false)
+          });
+
+          viewerInstanceRef.current = viewer;
+
+          // Load a default model to showcase the viewer
+          viewer.LoadModelFromUrlList([
+            'https://raw.githubusercontent.com/kovacsv/Online3DViewer/master/test/testfiles/obj/cube_with_materials.obj',
+            'https://raw.githubusercontent.com/kovacsv/Online3DViewer/master/test/testfiles/obj/cube_with_materials.mtl'
+          ]);
         }
       } catch (error) {
         console.error('Failed to load Online 3D Viewer:', error);
@@ -58,7 +72,7 @@ const Online3DViewer = () => {
               <div style="text-align: center; color: #6b7280;">
                 <div style="font-size: 48px; margin-bottom: 1rem;">⚠️</div>
                 <h3>Online 3D Viewer</h3>
-                <p>Viewer integration in progress...</p>
+                <p>Loading viewer... Please wait or check console for errors.</p>
               </div>
             </div>
           `;
@@ -69,9 +83,9 @@ const Online3DViewer = () => {
     loadViewer();
 
     return () => {
-      if (viewerInstanceRef.current && viewerRef.current) {
+      if (viewerInstanceRef.current) {
         try {
-          viewerRef.current.removeChild(viewerInstanceRef.current);
+          viewerInstanceRef.current.Clear();
         } catch (error) {
           // Handle cleanup error silently
         }
