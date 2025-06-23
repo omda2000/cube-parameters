@@ -76,7 +76,7 @@ const FullOnline3DViewer = () => {
                       <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOCAxOCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjYzMjM4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgZD0iTTEuNSA1LjV2LTRoNG0xMSA0di00aC00bS0xMSAxMXY0aDRtMTEtNHY0aC00bS0xMS0xNUw2IDZtMTAuNS00LjVMMTIgNk0xLjUgMTYuNSA2IDEybTEwLjUgNC41TDEyIDEyIi8+PC9zdmc+" alt="Fit" />
                     </div>
                     <div class="ov_toolbar_button" id="toolbar_flip" title="Flip Y-Z">
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOCAxOCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjYzMjM4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgZD0iTTUuNSAyLjR2MTQuMW0tMy0xMiAzLTNtMyAzLTMtM003IDE0LjFWMS41bS0zIDEyIDMgM20zLTMtMyAzIi8+PC9zdmc+" alt="Flip" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOCAxOCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjYzMjM4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgZD0iTTUuNSAyLjR2MTQuMW0tMy0xMiAzLTNtMyAzLTMtM203IDE0LjFWMS41bS0zIDEyIDMgM20zLTMtMyAzIi8+PC9zdmc+" alt="Flip" />
                     </div>
                     <div class="ov_toolbar_separator"></div>
                     <div class="ov_toolbar_button" id="toolbar_meshes" title="Show/Hide Meshes">
