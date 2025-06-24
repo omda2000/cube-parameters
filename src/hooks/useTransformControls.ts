@@ -20,14 +20,19 @@ export const useTransformControls = (
     // Transform Controls setup
     const transformControls = new TransformControls(camera, renderer.domElement);
     transformControlsRef.current = transformControls;
+    
     transformControls.addEventListener('dragging-changed', (event) => {
       orbitControls.enabled = !event.value;
     });
+    
+    console.log('Adding transform controls to scene:', transformControls);
     scene.add(transformControls);
 
     return () => {
-      if (transformControls) {
+      if (transformControls && scene) {
+        console.log('Removing transform controls from scene');
         scene.remove(transformControls);
+        transformControls.dispose();
       }
     };
   }, [scene, camera, renderer, orbitControls]);

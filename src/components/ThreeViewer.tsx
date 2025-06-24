@@ -78,6 +78,14 @@ const ThreeViewer = ({
     }
   }, [showShadow]);
 
+  // Ensure camera is properly positioned to see the box
+  useEffect(() => {
+    if (cameraRef.current) {
+      cameraRef.current.position.set(3, 3, 3);
+      cameraRef.current.lookAt(0, 0, 0);
+    }
+  }, []);
+
   return <div ref={mountRef} className="w-full h-full" />;
 };
 

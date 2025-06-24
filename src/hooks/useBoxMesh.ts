@@ -35,7 +35,10 @@ export const useBoxMesh = (
     const box = new THREE.Mesh(geometry, material);
     boxRef.current = box;
     box.castShadow = true;
+    box.position.set(0, 0, 0); // Ensure box is positioned at origin
     scene.add(box);
+
+    console.log('Box added to scene:', box);
 
     // Name label
     const nameDiv = document.createElement('div');
@@ -100,6 +103,15 @@ export const useBoxMesh = (
     if (!boxRef.current) return;
     (boxRef.current.material as THREE.MeshPhongMaterial).color.set(boxColor);
   }, [boxColor]);
+
+  // Update object name
+  useEffect(() => {
+    if (!boxRef.current) return;
+    const nameLabel = boxRef.current.children.find(child => child instanceof CSS2DObject) as CSS2DObject;
+    if (nameLabel && nameLabel.element) {
+      nameLabel.element.textContent = objectName;
+    }
+  }, [objectName]);
 
   return { boxRef, edgesRef };
 };
