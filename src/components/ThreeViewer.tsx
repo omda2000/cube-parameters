@@ -1,5 +1,5 @@
 
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
 import { useTransformControls } from '../hooks/useTransformControls';
