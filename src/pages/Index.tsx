@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import AppHeader from '../components/AppHeader/AppHeader';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
 import ControlsPanel from '../components/ControlsPanel/ControlsPanel';
+import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import type { LoadedModel } from '../types/model';
 
 const Index = () => {
