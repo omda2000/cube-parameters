@@ -106,10 +106,13 @@ const ThreeViewer = ({
     isSelected
   );
 
+  // Determine the active object for interaction
+  const activeObject = currentModel ? currentModel.object : boxRef.current;
+
   useMouseInteraction(
     rendererRef.current,
     cameraRef.current,
-    currentModel ? currentModel.object : boxRef.current,
+    activeObject,
     transformControlsRef.current,
     isSelected,
     setIsSelected,
