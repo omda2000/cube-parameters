@@ -1,33 +1,11 @@
 
 import ThreeViewer from './ThreeViewer';
-
-interface SunlightSettings {
-  intensity: number;
-  azimuth: number;
-  elevation: number;
-  color: string;
-  castShadow: boolean;
-}
-
-interface AmbientLightSettings {
-  intensity: number;
-  color: string;
-}
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showEdges: boolean;
-}
-
-interface LoadedModel {
-  id: string;
-  name: string;
-  object: THREE.Group;
-  boundingBox: THREE.Box3;
-  size: number;
-}
+import type { 
+  SunlightSettings, 
+  AmbientLightSettings, 
+  EnvironmentSettings, 
+  LoadedModel 
+} from '../types/model';
 
 interface BoxViewerProps {
   dimensions: {

@@ -66,10 +66,19 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
   };
 
   const handleTransformChange = (axis: 'x' | 'y' | 'z', property: 'position' | 'rotation' | 'scale', value: number) => {
-    const newValue = { ...selectedObject.object[property] };
-    newValue[axis] = value;
-    selectedObject.object[property].copy(newValue);
-    onPropertyChange(`${property}.${axis}`, value);
+    if (selectedObject && selectedObject.object) {
+      const obj = selectedObject.object;
+      
+      if (property === 'position' && obj.position) {
+        obj.position[axis] = value;
+      } else if (property === 'rotation' && obj.rotation) {
+        obj.rotation[axis] = value;
+      } else if (property === 'scale' && obj.scale) {
+        obj.scale[axis] = value;
+      }
+      
+      onPropertyChange(`${property}.${axis}`, value);
+    }
   };
 
   const meshInfo = getMeshInfo(selectedObject.object);

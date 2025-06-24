@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Box, Sun, Palette, Eye, Settings } from 'lucide-react';
@@ -8,34 +9,12 @@ import LightingControls from '../LightingControls';
 import MaterialControls from '../MaterialControls';
 import ViewControls from '../ViewControls';
 import { useSelection } from '../../hooks/useSelection';
-
-interface LoadedModel {
-  id: string;
-  name: string;
-  object: THREE.Group;
-  boundingBox: THREE.Box3;
-  size: number;
-}
-
-interface SunlightSettings {
-  intensity: number;
-  azimuth: number;
-  elevation: number;
-  color: string;
-  castShadow: boolean;
-}
-
-interface AmbientLightSettings {
-  intensity: number;
-  color: string;
-}
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showEdges: boolean;
-}
+import type { 
+  LoadedModel, 
+  SunlightSettings, 
+  AmbientLightSettings, 
+  EnvironmentSettings 
+} from '../../types/model';
 
 interface TabsControlPanelProps {
   // Model management
