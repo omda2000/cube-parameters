@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
 import * as THREE from 'three';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export const useMouseInteraction = (
   renderer: THREE.WebGLRenderer | null,
@@ -26,7 +27,7 @@ export const useMouseInteraction = (
       const intersects = raycaster.intersectObject(box);
 
       // Find the label div in the box's children
-      const nameLabel = box.children.find(child => child.type === 'CSS2DObject');
+      const nameLabel = box.children.find(child => child instanceof CSS2DObject) as CSS2DObject;
       if (nameLabel && nameLabel.element) {
         const nameDiv = nameLabel.element as HTMLElement;
         if (intersects.length > 0) {
