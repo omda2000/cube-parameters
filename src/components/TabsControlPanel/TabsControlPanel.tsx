@@ -1,12 +1,11 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Box, Sun, Palette, Move, Eye } from 'lucide-react';
+import { Box, Sun, Palette, Eye } from 'lucide-react';
 import FileUploadDialog from '../FileUpload/FileUploadDialog';
 import ModelManager from '../ModelManager/ModelManager';
 import LightingControls from '../LightingControls';
 import MaterialControls from '../MaterialControls';
-import TransformControls from '../TransformControls';
 import ViewControls from '../ViewControls';
 
 interface LoadedModel {
@@ -34,6 +33,7 @@ interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
+  showEdges: boolean;
 }
 
 interface TabsControlPanelProps {
@@ -63,10 +63,6 @@ interface TabsControlPanelProps {
   objectName: string;
   setObjectName: (name: string) => void;
   
-  // Transform
-  transformMode: 'translate' | 'rotate' | 'scale';
-  setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => void;
-  
   // Environment
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
@@ -93,8 +89,6 @@ const TabsControlPanel = ({
   setBoxColor,
   objectName,
   setObjectName,
-  transformMode,
-  setTransformMode,
   environment,
   setEnvironment
 }: TabsControlPanelProps) => {
@@ -103,7 +97,7 @@ const TabsControlPanel = ({
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-slate-700/50 h-12">
+        <TabsList className="grid w-full grid-cols-4 bg-slate-700/50 h-12">
           <TabsTrigger 
             value="models" 
             className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
@@ -124,13 +118,6 @@ const TabsControlPanel = ({
           >
             <Palette className="h-3 w-3" />
             <span>Material</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="transform" 
-            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
-          >
-            <Move className="h-3 w-3" />
-            <span>Transform</span>
           </TabsTrigger>
           <TabsTrigger 
             value="environment" 
@@ -183,13 +170,6 @@ const TabsControlPanel = ({
             setBoxColor={setBoxColor}
             objectName={objectName}
             setObjectName={setObjectName}
-          />
-        </TabsContent>
-
-        <TabsContent value="transform" className="space-y-4 mt-4">
-          <TransformControls 
-            transformMode={transformMode}
-            setTransformMode={setTransformMode}
           />
         </TabsContent>
 

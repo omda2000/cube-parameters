@@ -6,7 +6,6 @@ import type {
   AmbientLightSettings, 
   EnvironmentSettings, 
   BoxDimensions, 
-  TransformMode, 
   ShadowQuality 
 } from '../../types/model';
 
@@ -14,7 +13,6 @@ interface ModelViewerContainerProps {
   dimensions: BoxDimensions;
   boxColor: string;
   objectName: string;
-  transformMode: TransformMode;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: ShadowQuality;
@@ -29,7 +27,6 @@ const ModelViewerContainer = ({
   dimensions,
   boxColor,
   objectName,
-  transformMode,
   sunlight,
   ambientLight,
   shadowQuality,
@@ -45,7 +42,6 @@ const ModelViewerContainer = ({
         dimensions={dimensions} 
         boxColor={boxColor}
         objectName={objectName}
-        transformMode={transformMode}
         sunlight={sunlight}
         ambientLight={ambientLight}
         shadowQuality={shadowQuality}

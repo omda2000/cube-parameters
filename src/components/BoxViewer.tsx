@@ -18,6 +18,7 @@ interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
+  showEdges: boolean;
 }
 
 interface LoadedModel {
@@ -36,7 +37,6 @@ interface BoxViewerProps {
   };
   boxColor: string;
   objectName: string;
-  transformMode: 'translate' | 'rotate' | 'scale';
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: 'low' | 'medium' | 'high';
@@ -52,7 +52,6 @@ const BoxViewer = ({
   dimensions, 
   boxColor, 
   objectName, 
-  transformMode,
   sunlight,
   ambientLight,
   shadowQuality,
@@ -68,7 +67,6 @@ const BoxViewer = ({
       dimensions={dimensions}
       boxColor={boxColor}
       objectName={objectName}
-      transformMode={transformMode}
       sunlight={sunlight}
       ambientLight={ambientLight}
       shadowQuality={shadowQuality}

@@ -6,7 +6,6 @@ import type {
   AmbientLightSettings, 
   EnvironmentSettings, 
   BoxDimensions, 
-  TransformMode, 
   ShadowQuality 
 } from '../../types/model';
 
@@ -32,8 +31,6 @@ interface ControlsPanelProps {
   setBoxColor: (color: string) => void;
   objectName: string;
   setObjectName: (name: string) => void;
-  transformMode: TransformMode;
-  setTransformMode: (mode: TransformMode) => void;
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
 }

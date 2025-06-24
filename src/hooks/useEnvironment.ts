@@ -6,24 +6,21 @@ interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
+  showEdges: boolean;
 }
 
 export const useEnvironment = (
   scene: THREE.Scene | null,
-  environment: EnvironmentSettings
+  environment: EnvironmentSettings,
+  gridHelper: THREE.GridHelper | null
 ) => {
-  const gridRef = useRef<THREE.GridHelper | null>(null);
   const planeRef = useRef<THREE.Mesh | null>(null);
+  const edgeHelpersRef = useRef<THREE.LineSegments[]>([]);
   const isInitialized = useRef(false);
 
   // Initialize environment objects once
   useEffect(() => {
     if (!scene || isInitialized.current) return;
-
-    // Grid
-    const grid = new THREE.GridHelper(20, 20, 0x444444, 0x444444);
-    gridRef.current = grid;
-    scene.add(grid);
 
     // Ground plane
     const planeGeometry = new THREE.PlaneGeometry(20, 20);
@@ -44,25 +41,30 @@ export const useEnvironment = (
     isInitialized.current = true;
 
     return () => {
-      if (grid && scene) {
-        scene.remove(grid);
-        grid.dispose();
-      }
       if (plane && scene) {
         scene.remove(plane);
         planeGeometry.dispose();
         planeMaterial.dispose();
       }
+      // Clean up edge helpers
+      edgeHelpersRef.current.forEach(helper => {
+        if (scene.children.includes(helper)) {
+          scene.remove(helper);
+        }
+        helper.geometry.dispose();
+        (helper.material as THREE.LineBasicMaterial).dispose();
+      });
+      edgeHelpersRef.current = [];
       isInitialized.current = false;
     };
   }, [scene]);
 
   // Update grid visibility
   useEffect(() => {
-    if (gridRef.current) {
-      gridRef.current.visible = environment.showGrid;
+    if (gridHelper) {
+      gridHelper.visible = environment.showGrid;
     }
-  }, [environment.showGrid]);
+  }, [environment.showGrid, gridHelper]);
 
   // Update ground color
   useEffect(() => {
@@ -78,5 +80,42 @@ export const useEnvironment = (
     }
   }, [scene, environment.skyColor]);
 
-  return { gridRef, planeRef };
+  // Update edges visibility
+  useEffect(() => {
+    if (!scene) return;
+
+    // Remove existing edge helpers
+    edgeHelpersRef.current.forEach(helper => {
+      if (scene.children.includes(helper)) {
+        scene.remove(helper);
+      }
+      helper.geometry.dispose();
+      (helper.material as THREE.LineBasicMaterial).dispose();
+    });
+    edgeHelpersRef.current = [];
+
+    if (environment.showEdges) {
+      // Add edge helpers for all meshes in the scene
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh && object.geometry) {
+          const edges = new THREE.EdgesGeometry(object.geometry);
+          const edgeHelper = new THREE.LineSegments(
+            edges,
+            new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
+          );
+          
+          // Copy transform from the original mesh
+          edgeHelper.position.copy(object.position);
+          edgeHelper.rotation.copy(object.rotation);
+          edgeHelper.scale.copy(object.scale);
+          edgeHelper.matrix.copy(object.matrix);
+          
+          scene.add(edgeHelper);
+          edgeHelpersRef.current.push(edgeHelper);
+        }
+      });
+    }
+  }, [environment.showEdges, scene]);
+
+  return { planeRef, edgeHelpersRef };
 };

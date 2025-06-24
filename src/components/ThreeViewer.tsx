@@ -2,18 +2,17 @@
 import React, { useRef, useState } from 'react';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
-import { useTransformControls } from '../hooks/useTransformControls';
 import { useMouseInteraction } from '../hooks/useMouseInteraction';
 import { useLighting } from '../hooks/useLighting';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useFBXLoader } from '../hooks/useFBXLoader';
+import ObjectDataOverlay from './ObjectDataOverlay';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
   EnvironmentSettings, 
   LoadedModel,
   BoxDimensions,
-  TransformMode,
   ShadowQuality
 } from '../types/model';
 
@@ -21,7 +20,6 @@ interface ThreeViewerProps {
   dimensions: BoxDimensions;
   boxColor: string;
   objectName: string;
-  transformMode: TransformMode;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: ShadowQuality;
@@ -35,7 +33,6 @@ const ThreeViewer = ({
   dimensions, 
   boxColor, 
   objectName, 
-  transformMode,
   sunlight,
   ambientLight,
   shadowQuality,
@@ -45,14 +42,14 @@ const ThreeViewer = ({
   showPrimitives = true
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [isSelected, setIsSelected] = useState(false);
 
   const {
     sceneRef,
     cameraRef,
     rendererRef,
     labelRendererRef,
-    controlsRef
+    controlsRef,
+    gridHelperRef
   } = useThreeScene(mountRef);
 
   const { boxRef } = useBoxMesh(
@@ -93,26 +90,12 @@ const ThreeViewer = ({
     };
   }, [loadFBXModel, switchToModel, removeModel]);
 
-  const { transformControlsRef } = useTransformControls(
-    sceneRef.current,
-    cameraRef.current,
-    rendererRef.current,
-    controlsRef.current,
-    transformMode,
-    isSelected
-  );
-
-  // Determine the active object for interaction
-  const activeObject = currentModel ? currentModel.object : boxRef.current;
-
-  useMouseInteraction(
+  // Mouse interaction and hover effects
+  const { objectData, mousePosition, isHovering } = useMouseInteraction(
     rendererRef.current,
     cameraRef.current,
-    activeObject,
-    transformControlsRef.current,
-    isSelected,
-    setIsSelected,
-    transformMode
+    currentModel ? currentModel.object : boxRef.current,
+    sceneRef.current
   );
 
   useLighting(
@@ -124,7 +107,8 @@ const ThreeViewer = ({
 
   useEnvironment(
     sceneRef.current,
-    environment
+    environment,
+    gridHelperRef.current
   );
 
   // Update box visibility based on current model and showPrimitives
@@ -134,7 +118,16 @@ const ThreeViewer = ({
     }
   }, [showPrimitives, currentModel]);
 
-  return <div ref={mountRef} className="w-full h-full" />;
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mountRef} className="w-full h-full" />
+      <ObjectDataOverlay 
+        objectData={objectData}
+        mousePosition={mousePosition}
+        visible={isHovering}
+      />
+    </div>
+  );
 };
 
 export default ThreeViewer;

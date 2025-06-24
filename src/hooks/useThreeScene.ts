@@ -11,6 +11,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const labelRendererRef = useRef<CSS2DRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const ucsHelperRef = useRef<THREE.AxesHelper | null>(null);
+  const gridHelperRef = useRef<THREE.GridHelper | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -21,10 +22,10 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
-      60, // Slightly narrower FOV for better perspective
+      60,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.01, // Closer near plane for detail work
-      2000 // Farther far plane for large models
+      0.01,
+      2000
     );
     cameraRef.current = camera;
     camera.position.set(5, 5, 5);
@@ -34,7 +35,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       alpha: true,
-      logarithmicDepthBuffer: true // Better depth precision
+      logarithmicDepthBuffer: true
     });
     rendererRef.current = renderer;
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
@@ -61,10 +62,10 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     // Revit-style navigation settings
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = false; // Keep panning in world space
+    controls.screenSpacePanning = false;
     controls.minDistance = 0.1;
     controls.maxDistance = 1000;
-    controls.maxPolarAngle = Math.PI; // Allow full rotation
+    controls.maxPolarAngle = Math.PI;
     
     // Mouse button configuration (Revit-style)
     controls.mouseButtons = {
@@ -84,15 +85,16 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     controls.zoomSpeed = 0.8;
     controls.panSpeed = 0.8;
     
-    // Add UCS (User Coordinate System) display
-    const ucsHelper = new THREE.AxesHelper(1);
+    // Add UCS (User Coordinate System) display at origin (0,0,0)
+    const ucsHelper = new THREE.AxesHelper(2);
     ucsHelperRef.current = ucsHelper;
     ucsHelper.position.set(0, 0, 0);
     scene.add(ucsHelper);
 
-    // Add grid helper for reference
+    // Add single horizontal grid helper for reference
     const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
-    gridHelper.rotateX(Math.PI / 2); // Rotate to XY plane (Z-up)
+    gridHelperRef.current = gridHelper;
+    gridHelper.position.set(0, 0, 0);
     scene.add(gridHelper);
 
     // Handle resize
@@ -137,6 +139,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     cameraRef,
     rendererRef,
     labelRendererRef,
-    controlsRef
+    controlsRef,
+    gridHelperRef
   };
 };

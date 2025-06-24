@@ -124,7 +124,6 @@ const Index = () => {
             dimensions={modelState.dimensions}
             boxColor={modelState.boxColor}
             objectName={modelState.objectName}
-            transformMode={modelState.transformMode}
             sunlight={lightingState.sunlight}
             ambientLight={lightingState.ambientLight}
             shadowQuality={lightingState.shadowQuality}
