@@ -60,6 +60,13 @@ const ThreeViewer = ({
     showPrimitives
   );
 
+  // Mark box as primitive for scene tree
+  React.useEffect(() => {
+    if (boxRef.current) {
+      boxRef.current.userData.isPrimitive = true;
+    }
+  }, [boxRef.current]);
+
   const {
     loadedModels,
     currentModel,

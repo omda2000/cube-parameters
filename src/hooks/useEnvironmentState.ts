@@ -5,7 +5,7 @@ interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
-  showEdges: boolean;
+  showGround: boolean;
 }
 
 export const useEnvironmentState = () => {
@@ -13,7 +13,7 @@ export const useEnvironmentState = () => {
     showGrid: true,
     groundColor: '#4a5568',
     skyColor: '#1a202c',
-    showEdges: false
+    showGround: true
   });
 
   return {

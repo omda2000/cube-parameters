@@ -1,13 +1,13 @@
 
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Eye, Grid3X3, Mountain, Box } from "lucide-react";
+import { Eye, Grid3X3, Mountain, TreePine } from "lucide-react";
 
 interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
-  showEdges: boolean;
+  showGround: boolean;
 }
 
 interface ViewControlsProps {
@@ -37,12 +37,12 @@ const ViewControls = ({ environment, setEnvironment }: ViewControlsProps) => {
 
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium flex items-center gap-2">
-            <Box className="h-4 w-4 text-orange-400" />
-            Show Edges
+            <TreePine className="h-4 w-4 text-green-400" />
+            Show Ground
           </label>
           <Switch
-            checked={environment.showEdges}
-            onCheckedChange={(checked) => setEnvironment({ ...environment, showEdges: checked })}
+            checked={environment.showGround}
+            onCheckedChange={(checked) => setEnvironment({ ...environment, showGround: checked })}
           />
         </div>
 

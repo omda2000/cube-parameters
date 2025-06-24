@@ -24,7 +24,7 @@ export interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
-  showEdges: boolean;
+  showGround: boolean;
 }
 
 export interface BoxDimensions {
@@ -35,3 +35,14 @@ export interface BoxDimensions {
 
 export type TransformMode = 'translate' | 'rotate' | 'scale';
 export type ShadowQuality = 'low' | 'medium' | 'high';
+
+export interface SceneObject {
+  id: string;
+  name: string;
+  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground';
+  object: THREE.Object3D;
+  children: SceneObject[];
+  visible: boolean;
+  selected: boolean;
+  parent?: SceneObject;
+}

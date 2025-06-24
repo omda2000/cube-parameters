@@ -6,7 +6,7 @@ interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
-  showEdges: boolean;
+  showGround: boolean;
 }
 
 export const useEnvironment = (
@@ -15,14 +15,13 @@ export const useEnvironment = (
   gridHelper: THREE.GridHelper | null
 ) => {
   const planeRef = useRef<THREE.Mesh | null>(null);
-  const edgeHelpersRef = useRef<THREE.LineSegments[]>([]);
   const isInitialized = useRef(false);
 
   // Initialize environment objects once
   useEffect(() => {
     if (!scene || isInitialized.current) return;
 
-    // Ground plane
+    // Ground plane at Z=0 for Z-up coordinate system
     const planeGeometry = new THREE.PlaneGeometry(20, 20);
     const planeMaterial = new THREE.MeshStandardMaterial({ 
       color: environment.groundColor,
@@ -30,9 +29,11 @@ export const useEnvironment = (
     });
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     planeRef.current = plane;
-    plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -2;
+    
+    // Position ground plane at Z=0 (horizontal in Z-up system)
+    plane.position.set(0, 0, 0);
     plane.receiveShadow = true;
+    plane.visible = environment.showGround;
     scene.add(plane);
 
     // Sky color
@@ -46,15 +47,6 @@ export const useEnvironment = (
         planeGeometry.dispose();
         planeMaterial.dispose();
       }
-      // Clean up edge helpers
-      edgeHelpersRef.current.forEach(helper => {
-        if (scene.children.includes(helper)) {
-          scene.remove(helper);
-        }
-        helper.geometry.dispose();
-        (helper.material as THREE.LineBasicMaterial).dispose();
-      });
-      edgeHelpersRef.current = [];
       isInitialized.current = false;
     };
   }, [scene]);
@@ -65,6 +57,13 @@ export const useEnvironment = (
       gridHelper.visible = environment.showGrid;
     }
   }, [environment.showGrid, gridHelper]);
+
+  // Update ground visibility
+  useEffect(() => {
+    if (planeRef.current) {
+      planeRef.current.visible = environment.showGround;
+    }
+  }, [environment.showGround]);
 
   // Update ground color
   useEffect(() => {
@@ -80,42 +79,5 @@ export const useEnvironment = (
     }
   }, [scene, environment.skyColor]);
 
-  // Update edges visibility
-  useEffect(() => {
-    if (!scene) return;
-
-    // Remove existing edge helpers
-    edgeHelpersRef.current.forEach(helper => {
-      if (scene.children.includes(helper)) {
-        scene.remove(helper);
-      }
-      helper.geometry.dispose();
-      (helper.material as THREE.LineBasicMaterial).dispose();
-    });
-    edgeHelpersRef.current = [];
-
-    if (environment.showEdges) {
-      // Add edge helpers for all meshes in the scene
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh && object.geometry) {
-          const edges = new THREE.EdgesGeometry(object.geometry);
-          const edgeHelper = new THREE.LineSegments(
-            edges,
-            new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
-          );
-          
-          // Copy transform from the original mesh
-          edgeHelper.position.copy(object.position);
-          edgeHelper.rotation.copy(object.rotation);
-          edgeHelper.scale.copy(object.scale);
-          edgeHelper.matrix.copy(object.matrix);
-          
-          scene.add(edgeHelper);
-          edgeHelpersRef.current.push(edgeHelper);
-        }
-      });
-    }
-  }, [environment.showEdges, scene]);
-
-  return { planeRef, edgeHelpersRef };
+  return { planeRef };
 };

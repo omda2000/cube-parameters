@@ -1,12 +1,13 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Box, Sun, Palette, Eye } from 'lucide-react';
+import { Box, Sun, Palette, Eye, Settings } from 'lucide-react';
 import FileUploadDialog from '../FileUpload/FileUploadDialog';
-import ModelManager from '../ModelManager/ModelManager';
+import UnifiedSceneTree from '../UnifiedSceneTree/UnifiedSceneTree';
+import PropertyPanel from '../PropertyPanel/PropertyPanel';
 import LightingControls from '../LightingControls';
 import MaterialControls from '../MaterialControls';
 import ViewControls from '../ViewControls';
+import { useSelection } from '../../hooks/useSelection';
 
 interface LoadedModel {
   id: string;
@@ -92,18 +93,33 @@ const TabsControlPanel = ({
   environment,
   setEnvironment
 }: TabsControlPanelProps) => {
-  const [activeTab, setActiveTab] = useState('models');
+  const [activeTab, setActiveTab] = useState('scene');
+  const { selectedObject, selectObject } = useSelection();
+
+  const handlePropertyChange = (property: string, value: any) => {
+    if (selectedObject) {
+      // Handle property updates
+      console.log(`Property changed: ${property} = ${value}`);
+    }
+  };
 
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-700/50 h-12">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-700/50 h-12">
           <TabsTrigger 
-            value="models" 
+            value="scene" 
             className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
           >
             <Box className="h-3 w-3" />
-            <span>Models</span>
+            <span>Scene</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="properties" 
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
+          >
+            <Settings className="h-3 w-3" />
+            <span>Props</span>
           </TabsTrigger>
           <TabsTrigger 
             value="lighting" 
@@ -128,7 +144,7 @@ const TabsControlPanel = ({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="models" className="space-y-4 mt-4">
+        <TabsContent value="scene" className="space-y-4 mt-4">
           <div className="flex flex-col gap-2">
             <FileUploadDialog 
               onFileSelect={onFileUpload} 
@@ -142,12 +158,20 @@ const TabsControlPanel = ({
             </div>
           )}
 
-          <ModelManager
+          <UnifiedSceneTree
             loadedModels={loadedModels}
             currentModel={currentModel}
-            onModelSelect={onModelSelect}
-            onModelRemove={onModelRemove}
-            onPrimitiveSelect={onPrimitiveSelect}
+            showPrimitives={!currentModel}
+            selectedObject={selectedObject}
+            onObjectSelect={selectObject}
+            scene={null}
+          />
+        </TabsContent>
+
+        <TabsContent value="properties" className="space-y-4 mt-4">
+          <PropertyPanel
+            selectedObject={selectedObject}
+            onPropertyChange={handlePropertyChange}
           />
         </TabsContent>
 
