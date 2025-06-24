@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Mesh } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Triangle } from 'lucide-react';
 import * as THREE from 'three';
 
 interface SceneNode {
@@ -77,7 +76,7 @@ const SceneTreeView = ({ model }: SceneTreeViewProps) => {
   const getNodeIcon = (type: string) => {
     switch (type) {
       case 'Mesh':
-        return <Mesh className="h-4 w-4 text-green-400" />;
+        return <Triangle className="h-4 w-4 text-green-400" />;
       case 'Group':
         return <Box className="h-4 w-4 text-blue-400" />;
       default:
