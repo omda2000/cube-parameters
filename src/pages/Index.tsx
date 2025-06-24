@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import AppHeader from '../components/AppHeader/AppHeader';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
 import ControlsPanel from '../components/ControlsPanel/ControlsPanel';
-import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import type { LoadedModel } from '../types/model';
 
 const Index = () => {
@@ -21,27 +20,31 @@ const Index = () => {
   const environmentState = useEnvironmentState();
 
   const handleFileUpload = async (file: File) => {
-    modelState.setIsUploading(true);
-    modelState.setUploadError(null);
-    
     try {
       toast({
         title: "Loading model...",
         description: `Processing ${file.name}`,
       });
 
-      modelState.setIsUploading(false);
+      // Call the FBX loader directly through the global handler
+      const fbxUploadHandler = (window as any).__fbxUploadHandler;
+      if (fbxUploadHandler) {
+        await fbxUploadHandler(file);
+        toast({
+          title: "Model loaded successfully",
+          description: `${file.name} is now ready`,
+        });
+      } else {
+        throw new Error('FBX loader not ready');
+      }
       
     } catch (error) {
       console.error('Upload failed:', error);
-      const errorMessage = 'Failed to load model. Please check the file format.';
-      modelState.setUploadError(errorMessage);
       toast({
         title: "Upload failed",
-        description: errorMessage,
+        description: "Failed to load model. Please check the file format.",
         variant: "destructive",
       });
-      modelState.setIsUploading(false);
     }
   };
 
@@ -53,7 +56,11 @@ const Index = () => {
   const handleModelSelect = (modelId: string) => {
     const model = modelState.loadedModels.find(m => m.id === modelId);
     if (model) {
-      modelState.setCurrentModel(model);
+      // Call the FBX loader's switch function through global handler
+      const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
+      if (fbxSwitchHandler) {
+        fbxSwitchHandler(modelId);
+      }
       toast({
         title: "Model selected",
         description: `Now viewing ${model.name}`,
@@ -64,10 +71,11 @@ const Index = () => {
   const handleModelRemove = (modelId: string) => {
     const model = modelState.loadedModels.find(m => m.id === modelId);
     if (model) {
-      if (modelState.currentModel?.id === modelId) {
-        modelState.setCurrentModel(null);
+      // Call the FBX loader's remove function through global handler
+      const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
+      if (fbxRemoveHandler) {
+        fbxRemoveHandler(modelId);
       }
-      modelState.setLoadedModels(prev => prev.filter(m => m.id !== modelId));
       toast({
         title: "Model removed",
         description: `${model.name} has been removed`,

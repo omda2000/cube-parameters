@@ -7,46 +7,24 @@ import { useMouseInteraction } from '../hooks/useMouseInteraction';
 import { useLighting } from '../hooks/useLighting';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useFBXLoader } from '../hooks/useFBXLoader';
-
-interface SunlightSettings {
-  intensity: number;
-  azimuth: number;
-  elevation: number;
-  color: string;
-  castShadow: boolean;
-}
-
-interface AmbientLightSettings {
-  intensity: number;
-  color: string;
-}
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-}
-
-interface LoadedModel {
-  id: string;
-  name: string;
-  object: THREE.Group;
-  boundingBox: THREE.Box3;
-  size: number;
-}
+import type { 
+  SunlightSettings, 
+  AmbientLightSettings, 
+  EnvironmentSettings, 
+  LoadedModel,
+  BoxDimensions,
+  TransformMode,
+  ShadowQuality
+} from '../types/model';
 
 interface ThreeViewerProps {
-  dimensions: {
-    length: number;
-    width: number;
-    height: number;
-  };
+  dimensions: BoxDimensions;
   boxColor: string;
   objectName: string;
-  transformMode: 'translate' | 'rotate' | 'scale';
+  transformMode: TransformMode;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
-  shadowQuality: 'low' | 'medium' | 'high';
+  shadowQuality: ShadowQuality;
   environment: EnvironmentSettings;
   onFileUpload?: (file: File) => void;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
@@ -102,12 +80,18 @@ const ThreeViewer = ({
     }
   }, [loadedModels, currentModel, onModelsChange]);
 
-  // Handle file uploads
+  // Expose FBX handlers globally for parent components to access
   React.useEffect(() => {
-    if (onFileUpload) {
-      // This will be called from the parent component
-    }
-  }, [onFileUpload]);
+    (window as any).__fbxUploadHandler = loadFBXModel;
+    (window as any).__fbxSwitchHandler = switchToModel;
+    (window as any).__fbxRemoveHandler = removeModel;
+
+    return () => {
+      delete (window as any).__fbxUploadHandler;
+      delete (window as any).__fbxSwitchHandler;
+      delete (window as any).__fbxRemoveHandler;
+    };
+  }, [loadFBXModel, switchToModel, removeModel]);
 
   const { transformControlsRef } = useTransformControls(
     sceneRef.current,

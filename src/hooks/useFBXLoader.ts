@@ -2,14 +2,7 @@
 import { useRef, useCallback, useState } from 'react';
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
-
-interface LoadedModel {
-  id: string;
-  name: string;
-  object: THREE.Group;
-  boundingBox: THREE.Box3;
-  size: number;
-}
+import type { LoadedModel } from '../types/model';
 
 export const useFBXLoader = (scene: THREE.Scene | null) => {
   const loaderRef = useRef<FBXLoader | null>(null);
@@ -19,7 +12,13 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadFBXModel = useCallback(async (file: File) => {
-    if (!scene) return;
+    console.log('Starting FBX load process:', file.name);
+    
+    if (!scene) {
+      console.error('Scene not available for FBX loading');
+      setError('3D scene not ready. Please try again.');
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -27,10 +26,15 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
     try {
       if (!loaderRef.current) {
         loaderRef.current = new FBXLoader();
+        console.log('FBX loader initialized');
       }
 
+      console.log('Reading file as array buffer...');
       const arrayBuffer = await file.arrayBuffer();
+      
+      console.log('Parsing FBX data...');
       const object = loaderRef.current.parse(arrayBuffer, '');
+      console.log('FBX parsed successfully:', object);
       
       // Calculate bounding box and center the model
       const boundingBox = new THREE.Box3().setFromObject(object);
@@ -61,9 +65,11 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
       // Remove previous model if exists
       if (currentModel) {
+        console.log('Removing previous model from scene');
         scene.remove(currentModel.object);
       }
 
+      console.log('Adding new model to scene');
       scene.add(object);
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
