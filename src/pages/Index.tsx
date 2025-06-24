@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useResponsiveMode } from '../hooks/useResponsiveMode';
+import { useFBXLoader } from '../hooks/useFBXLoader';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
@@ -11,10 +12,12 @@ import ViewControls from '../components/ViewControls';
 import TransformControls from '../components/TransformControls';
 import FileUploadDialog from '../components/FileUpload/FileUploadDialog';
 import ModelManager from '../components/ModelManager/ModelManager';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { isMobile, panelWidth } = useResponsiveMode();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const { toast } = useToast();
 
   const [dimensions, setDimensions] = useState({
     length: 1,
@@ -46,7 +49,9 @@ const Index = () => {
     skyColor: '#87CEEB'
   });
 
-  // File upload states
+  // FBX loader states
+  const [loadedModels, setLoadedModels] = useState<any[]>([]);
+  const [currentModel, setCurrentModel] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -55,16 +60,100 @@ const Index = () => {
     setUploadError(null);
     
     try {
-      // For now, we'll just simulate upload - the actual FBX loading will be handled in the viewer
-      console.log('Uploading file:', file.name);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate upload
+      toast({
+        title: "Loading model...",
+        description: `Processing ${file.name}`,
+      });
+
+      // Create a temporary FBX loader to process the file
+      const FBXLoader = (await import('three/examples/jsm/loaders/FBXLoader.js')).FBXLoader;
+      const loader = new FBXLoader();
       
-      // TODO: Pass file to the viewer component for actual loading
+      const arrayBuffer = await file.arrayBuffer();
+      const object = loader.parse(arrayBuffer, '');
+      
+      // Calculate bounding box and center the model
+      const THREE = await import('three');
+      const boundingBox = new THREE.Box3().setFromObject(object);
+      const center = boundingBox.getCenter(new THREE.Vector3());
+      object.position.sub(center);
+
+      // Scale model to fit in view
+      const size = boundingBox.getSize(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z);
+      const scale = maxDimension > 3 ? 3 / maxDimension : 1;
+      object.scale.setScalar(scale);
+
+      // Enable shadows
+      object.traverse((child: any) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      const modelData = {
+        id: Date.now().toString(),
+        name: file.name.replace('.fbx', ''),
+        object,
+        boundingBox,
+        size: file.size
+      };
+
+      setLoadedModels(prev => [...prev, modelData]);
+      setCurrentModel(modelData);
+      
+      toast({
+        title: "Model loaded successfully!",
+        description: `${file.name} is now ready to view`,
+      });
+      
     } catch (error) {
       console.error('Upload failed:', error);
-      setUploadError('Failed to upload model');
+      const errorMessage = 'Failed to load model. Please check the file format.';
+      setUploadError(errorMessage);
+      toast({
+        title: "Upload failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleModelSelect = (modelId: string) => {
+    const model = loadedModels.find(m => m.id === modelId);
+    if (model) {
+      setCurrentModel(model);
+      toast({
+        title: "Model selected",
+        description: `Now viewing ${model.name}`,
+      });
+    }
+  };
+
+  const handleModelRemove = (modelId: string) => {
+    const model = loadedModels.find(m => m.id === modelId);
+    if (model) {
+      if (currentModel?.id === modelId) {
+        setCurrentModel(null);
+      }
+      setLoadedModels(prev => prev.filter(m => m.id !== modelId));
+      toast({
+        title: "Model removed",
+        description: `${model.name} has been removed`,
+      });
+    }
+  };
+
+  const handlePrimitiveSelect = (type: string) => {
+    if (type === 'box') {
+      setCurrentModel(null);
+      toast({
+        title: "Primitive selected",
+        description: "Now showing box primitive",
+      });
     }
   };
 
@@ -84,11 +173,11 @@ const Index = () => {
       )}
 
       <ModelManager
-        loadedModels={[]}
-        currentModel={null}
-        onModelSelect={() => {}}
-        onModelRemove={() => {}}
-        onPrimitiveSelect={() => {}}
+        loadedModels={loadedModels}
+        currentModel={currentModel}
+        onModelSelect={handleModelSelect}
+        onModelRemove={handleModelRemove}
+        onPrimitiveSelect={handlePrimitiveSelect}
       />
       
       <LightingControls 
@@ -157,6 +246,10 @@ const Index = () => {
               ambientLight={ambientLight}
               shadowQuality={shadowQuality}
               environment={environment}
+              onFileUpload={handleFileUpload}
+              loadedModels={loadedModels}
+              currentModel={currentModel}
+              showPrimitives={!currentModel}
             />
           </div>
         </div>

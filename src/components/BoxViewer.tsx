@@ -20,6 +20,14 @@ interface EnvironmentSettings {
   skyColor: string;
 }
 
+interface LoadedModel {
+  id: string;
+  name: string;
+  object: THREE.Group;
+  boundingBox: THREE.Box3;
+  size: number;
+}
+
 interface BoxViewerProps {
   dimensions: {
     length: number;
@@ -33,6 +41,10 @@ interface BoxViewerProps {
   ambientLight: AmbientLightSettings;
   shadowQuality: 'low' | 'medium' | 'high';
   environment: EnvironmentSettings;
+  onFileUpload?: (file: File) => void;
+  loadedModels?: LoadedModel[];
+  currentModel?: LoadedModel | null;
+  showPrimitives?: boolean;
 }
 
 const BoxViewer = ({ 
@@ -43,7 +55,11 @@ const BoxViewer = ({
   sunlight,
   ambientLight,
   shadowQuality,
-  environment
+  environment,
+  onFileUpload,
+  loadedModels,
+  currentModel,
+  showPrimitives
 }: BoxViewerProps) => {
   return (
     <ThreeViewer
@@ -55,6 +71,10 @@ const BoxViewer = ({
       ambientLight={ambientLight}
       shadowQuality={shadowQuality}
       environment={environment}
+      onFileUpload={onFileUpload}
+      loadedModels={loadedModels}
+      currentModel={currentModel}
+      showPrimitives={showPrimitives}
     />
   );
 };

@@ -6,6 +6,7 @@ import { useTransformControls } from '../hooks/useTransformControls';
 import { useMouseInteraction } from '../hooks/useMouseInteraction';
 import { useLighting } from '../hooks/useLighting';
 import { useEnvironment } from '../hooks/useEnvironment';
+import { useFBXLoader } from '../hooks/useFBXLoader';
 
 interface SunlightSettings {
   intensity: number;
@@ -26,6 +27,14 @@ interface EnvironmentSettings {
   skyColor: string;
 }
 
+interface LoadedModel {
+  id: string;
+  name: string;
+  object: THREE.Group;
+  boundingBox: THREE.Box3;
+  size: number;
+}
+
 interface ThreeViewerProps {
   dimensions: {
     length: number;
@@ -39,6 +48,10 @@ interface ThreeViewerProps {
   ambientLight: AmbientLightSettings;
   shadowQuality: 'low' | 'medium' | 'high';
   environment: EnvironmentSettings;
+  onFileUpload?: (file: File) => void;
+  loadedModels?: LoadedModel[];
+  currentModel?: LoadedModel | null;
+  showPrimitives?: boolean;
 }
 
 const ThreeViewer = ({ 
@@ -49,7 +62,11 @@ const ThreeViewer = ({
   sunlight,
   ambientLight,
   shadowQuality,
-  environment
+  environment,
+  onFileUpload,
+  loadedModels = [],
+  currentModel,
+  showPrimitives = true
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [isSelected, setIsSelected] = useState(false);
@@ -66,8 +83,19 @@ const ThreeViewer = ({
     sceneRef.current,
     dimensions,
     boxColor,
-    objectName
+    objectName,
+    showPrimitives && !currentModel
   );
+
+  const {
+    loadedModels: fbxModels,
+    currentModel: fbxCurrentModel,
+    isLoading: fbxLoading,
+    error: fbxError,
+    loadFBXModel,
+    switchToModel,
+    removeModel
+  } = useFBXLoader(sceneRef.current);
 
   const { transformControlsRef } = useTransformControls(
     sceneRef.current,
@@ -81,7 +109,7 @@ const ThreeViewer = ({
   useMouseInteraction(
     rendererRef.current,
     cameraRef.current,
-    boxRef.current,
+    currentModel ? currentModel.object : boxRef.current,
     transformControlsRef.current,
     isSelected,
     setIsSelected,
