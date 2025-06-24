@@ -10,7 +10,6 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const labelRendererRef = useRef<CSS2DRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
-  const planeRef = useRef<THREE.Mesh | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -18,7 +17,6 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     // Scene setup
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(0x1a1a1a);
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
@@ -28,7 +26,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
       1000
     );
     cameraRef.current = camera;
-    camera.position.z = 5;
+    camera.position.set(3, 3, 3);
+    camera.lookAt(0, 0, 0);
 
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -51,32 +50,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     const controls = new OrbitControls(camera, renderer.domElement);
     controlsRef.current = controls;
     controls.enableDamping = true;
-
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 5, 5);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 50;
-    scene.add(directionalLight);
-
-    // Ground plane
-    const planeGeometry = new THREE.PlaneGeometry(10, 10);
-    const planeMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x808080,
-      side: THREE.DoubleSide
-    });
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    planeRef.current = plane;
-    plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -2;
-    plane.receiveShadow = true;
-    scene.add(plane);
+    controls.dampingFactor = 0.05;
 
     // Handle resize
     const handleResize = () => {
@@ -106,8 +80,6 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
         mountRef.current.removeChild(renderer.domElement);
         mountRef.current.removeChild(labelRenderer.domElement);
       }
-      planeGeometry.dispose();
-      planeMaterial.dispose();
     };
   }, []);
 
@@ -116,7 +88,6 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     cameraRef,
     rendererRef,
     labelRendererRef,
-    controlsRef,
-    planeRef
+    controlsRef
   };
 };

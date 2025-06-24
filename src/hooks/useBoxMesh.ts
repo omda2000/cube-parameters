@@ -13,11 +13,9 @@ export const useBoxMesh = (
   scene: THREE.Scene | null,
   dimensions: Dimensions,
   boxColor: string,
-  objectName: string,
-  showEdges: boolean
+  objectName: string
 ) => {
   const boxRef = useRef<THREE.Mesh | null>(null);
-  const edgesRef = useRef<THREE.LineSegments | null>(null);
 
   useEffect(() => {
     if (!scene) return;
@@ -28,17 +26,15 @@ export const useBoxMesh = (
       dimensions.height,
       dimensions.width
     );
-    const material = new THREE.MeshPhongMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color: boxColor,
-      flatShading: true,
     });
     const box = new THREE.Mesh(geometry, material);
     boxRef.current = box;
     box.castShadow = true;
-    box.position.set(0, 0, 0); // Ensure box is positioned at origin
+    box.receiveShadow = true;
+    box.position.set(0, 0, 0);
     scene.add(box);
-
-    console.log('Box added to scene:', box);
 
     // Name label
     const nameDiv = document.createElement('div');
@@ -49,17 +45,10 @@ export const useBoxMesh = (
     nameDiv.style.padding = '2px 5px';
     nameDiv.style.borderRadius = '3px';
     nameDiv.style.visibility = 'hidden';
+    nameDiv.style.fontSize = '12px';
     const nameLabel = new CSS2DObject(nameDiv);
-    nameLabel.position.set(0, 1, 0);
+    nameLabel.position.set(0, dimensions.height / 2 + 0.2, 0);
     box.add(nameLabel);
-
-    // Edges setup
-    const edges = new THREE.EdgesGeometry(geometry);
-    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const lineSegments = new THREE.LineSegments(edges, edgesMaterial);
-    edgesRef.current = lineSegments;
-    lineSegments.visible = showEdges;
-    scene.add(lineSegments);
 
     return () => {
       if (box) {
@@ -67,17 +56,12 @@ export const useBoxMesh = (
         geometry.dispose();
         material.dispose();
       }
-      if (lineSegments) {
-        scene.remove(lineSegments);
-        edges.dispose();
-        edgesMaterial.dispose();
-      }
     };
   }, [scene]);
 
-  // Update box dimensions and edges
+  // Update box dimensions
   useEffect(() => {
-    if (!boxRef.current || !edgesRef.current) return;
+    if (!boxRef.current) return;
     
     const geometry = new THREE.BoxGeometry(
       dimensions.length,
@@ -87,21 +71,17 @@ export const useBoxMesh = (
     boxRef.current.geometry.dispose();
     boxRef.current.geometry = geometry;
 
-    const edges = new THREE.EdgesGeometry(geometry);
-    edgesRef.current.geometry.dispose();
-    edgesRef.current.geometry = edges;
+    // Update label position
+    const nameLabel = boxRef.current.children.find(child => child instanceof CSS2DObject) as CSS2DObject;
+    if (nameLabel) {
+      nameLabel.position.set(0, dimensions.height / 2 + 0.2, 0);
+    }
   }, [dimensions]);
-
-  // Update edges visibility
-  useEffect(() => {
-    if (!edgesRef.current) return;
-    edgesRef.current.visible = showEdges;
-  }, [showEdges]);
 
   // Update box color
   useEffect(() => {
     if (!boxRef.current) return;
-    (boxRef.current.material as THREE.MeshPhongMaterial).color.set(boxColor);
+    (boxRef.current.material as THREE.MeshStandardMaterial).color.set(boxColor);
   }, [boxColor]);
 
   // Update object name
@@ -113,5 +93,5 @@ export const useBoxMesh = (
     }
   }, [objectName]);
 
-  return { boxRef, edgesRef };
+  return { boxRef };
 };

@@ -1,7 +1,10 @@
 
 import { useState } from 'react';
 import BoxViewer from '../components/BoxViewer';
-import BoxControls from '../components/BoxControls';
+import LightingControls from '../components/LightingControls';
+import MaterialControls from '../components/MaterialControls';
+import ViewControls from '../components/ViewControls';
+import TransformControls from '../components/TransformControls';
 
 const Index = () => {
   const [dimensions, setDimensions] = useState({
@@ -9,75 +12,82 @@ const Index = () => {
     width: 1,
     height: 1
   });
-  const [showShadow, setShowShadow] = useState(true);
-  const [showEdges, setShowEdges] = useState(false);
   const [boxColor, setBoxColor] = useState('#4F46E5');
   const [objectName, setObjectName] = useState('My Box');
   const [transformMode, setTransformMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
+  
+  // Lighting states
+  const [sunlight, setSunlight] = useState({
+    intensity: 1,
+    azimuth: 45,
+    elevation: 45,
+    color: '#ffffff',
+    castShadow: true
+  });
+  const [ambientLight, setAmbientLight] = useState({
+    intensity: 0.3,
+    color: '#ffffff'
+  });
+  const [shadowQuality, setShadowQuality] = useState<'low' | 'medium' | 'high'>('medium');
+  
+  // Environment states
+  const [environment, setEnvironment] = useState({
+    showGrid: true,
+    groundColor: '#808080',
+    skyColor: '#87CEEB'
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl md:text-5xl font-bold text-center mb-6 md:mb-8 text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
-          3D Box Visualizer
-        </h1>
-        
-        {/* Mobile Layout - Stack vertically */}
-        <div className="flex flex-col lg:hidden gap-6">
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-slate-700/50 h-96">
+      <div className="flex h-screen">
+        {/* Main 3D Viewer - Takes remaining space */}
+        <div className="flex-1 p-4">
+          <h1 className="text-2xl md:text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
+            Architectural Model Viewer
+          </h1>
+          <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-slate-700/50 h-[calc(100vh-120px)]">
             <BoxViewer 
               dimensions={dimensions} 
-              showShadow={showShadow}
-              showEdges={showEdges}
               boxColor={boxColor}
               objectName={objectName}
               transformMode={transformMode}
-            />
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl p-4 border border-slate-700/50">
-            <BoxControls 
-              dimensions={dimensions} 
-              setDimensions={setDimensions} 
-              showShadow={showShadow}
-              setShowShadow={setShowShadow}
-              showEdges={showEdges}
-              setShowEdges={setShowEdges}
-              boxColor={boxColor}
-              setBoxColor={setBoxColor}
-              objectName={objectName}
-              setObjectName={setObjectName}
-              transformMode={transformMode}
-              setTransformMode={setTransformMode}
+              sunlight={sunlight}
+              ambientLight={ambientLight}
+              shadowQuality={shadowQuality}
+              environment={environment}
             />
           </div>
         </div>
 
-        {/* Desktop Layout - Side by side with controls on right */}
-        <div className="hidden lg:flex gap-6 h-[calc(100vh-200px)]">
-          <div className="flex-1 bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-slate-700/50">
-            <BoxViewer 
-              dimensions={dimensions} 
-              showShadow={showShadow}
-              showEdges={showEdges}
-              boxColor={boxColor}
-              objectName={objectName}
-              transformMode={transformMode}
+        {/* Fixed Right Panel - Always visible */}
+        <div className="w-80 xl:w-96 bg-slate-800/60 backdrop-blur-sm border-l border-slate-700/50 overflow-y-auto">
+          <div className="p-4 space-y-6">
+            <LightingControls 
+              sunlight={sunlight}
+              setSunlight={setSunlight}
+              ambientLight={ambientLight}
+              setAmbientLight={setAmbientLight}
+              shadowQuality={shadowQuality}
+              setShadowQuality={setShadowQuality}
             />
-          </div>
-          <div className="w-80 bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl p-6 border border-slate-700/50 overflow-y-auto">
-            <BoxControls 
-              dimensions={dimensions} 
-              setDimensions={setDimensions} 
-              showShadow={showShadow}
-              setShowShadow={setShowShadow}
-              showEdges={showEdges}
-              setShowEdges={setShowEdges}
+            
+            <MaterialControls 
+              dimensions={dimensions}
+              setDimensions={setDimensions}
               boxColor={boxColor}
               setBoxColor={setBoxColor}
               objectName={objectName}
               setObjectName={setObjectName}
+            />
+            
+            <TransformControls 
               transformMode={transformMode}
               setTransformMode={setTransformMode}
+            />
+            
+            <ViewControls 
+              environment={environment}
+              setEnvironment={setEnvironment}
             />
           </div>
         </div>

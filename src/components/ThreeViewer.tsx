@@ -1,9 +1,30 @@
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
 import { useTransformControls } from '../hooks/useTransformControls';
 import { useMouseInteraction } from '../hooks/useMouseInteraction';
+import { useLighting } from '../hooks/useLighting';
+import { useEnvironment } from '../hooks/useEnvironment';
+
+interface SunlightSettings {
+  intensity: number;
+  azimuth: number;
+  elevation: number;
+  color: string;
+  castShadow: boolean;
+}
+
+interface AmbientLightSettings {
+  intensity: number;
+  color: string;
+}
+
+interface EnvironmentSettings {
+  showGrid: boolean;
+  groundColor: string;
+  skyColor: string;
+}
 
 interface ThreeViewerProps {
   dimensions: {
@@ -11,20 +32,24 @@ interface ThreeViewerProps {
     width: number;
     height: number;
   };
-  showShadow: boolean;
-  showEdges: boolean;
   boxColor: string;
   objectName: string;
   transformMode: 'translate' | 'rotate' | 'scale';
+  sunlight: SunlightSettings;
+  ambientLight: AmbientLightSettings;
+  shadowQuality: 'low' | 'medium' | 'high';
+  environment: EnvironmentSettings;
 }
 
 const ThreeViewer = ({ 
   dimensions, 
-  showShadow, 
-  showEdges, 
   boxColor, 
   objectName, 
-  transformMode 
+  transformMode,
+  sunlight,
+  ambientLight,
+  shadowQuality,
+  environment
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [isSelected, setIsSelected] = useState(false);
@@ -34,16 +59,14 @@ const ThreeViewer = ({
     cameraRef,
     rendererRef,
     labelRendererRef,
-    controlsRef,
-    planeRef
+    controlsRef
   } = useThreeScene(mountRef);
 
-  const { boxRef, edgesRef } = useBoxMesh(
+  const { boxRef } = useBoxMesh(
     sceneRef.current,
     dimensions,
     boxColor,
-    objectName,
-    showEdges
+    objectName
   );
 
   const { transformControlsRef } = useTransformControls(
@@ -65,26 +88,17 @@ const ThreeViewer = ({
     transformMode
   );
 
-  // Update shadow visibility
-  useEffect(() => {
-    if (!boxRef.current || !rendererRef.current) return;
-    
-    rendererRef.current.shadowMap.enabled = showShadow;
-    if (boxRef.current) {
-      boxRef.current.castShadow = showShadow;
-    }
-    if (planeRef.current) {
-      planeRef.current.receiveShadow = showShadow;
-    }
-  }, [showShadow]);
+  useLighting(
+    sceneRef.current,
+    sunlight,
+    ambientLight,
+    shadowQuality
+  );
 
-  // Ensure camera is properly positioned to see the box
-  useEffect(() => {
-    if (cameraRef.current) {
-      cameraRef.current.position.set(3, 3, 3);
-      cameraRef.current.lookAt(0, 0, 0);
-    }
-  }, []);
+  useEnvironment(
+    sceneRef.current,
+    environment
+  );
 
   return <div ref={mountRef} className="w-full h-full" />;
 };
