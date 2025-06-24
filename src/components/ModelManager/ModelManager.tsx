@@ -1,11 +1,13 @@
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Box, Trash2, Eye } from 'lucide-react';
+import { Box, Trash2, Eye, TreePine } from 'lucide-react';
+import SceneTreeView from '../SceneTreeView/SceneTreeView';
 
 interface LoadedModel {
   id: string;
   name: string;
+  object: THREE.Group;
   size: number;
 }
 
@@ -34,9 +36,12 @@ const ModelManager = ({
       </h2>
 
       <Tabs defaultValue="loaded" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-slate-700/50">
+        <TabsList className="grid w-full grid-cols-3 bg-slate-700/50">
           <TabsTrigger value="loaded" className="text-slate-300 data-[state=active]:bg-indigo-600">
-            Loaded ({loadedModels.length})
+            Models ({loadedModels.length})
+          </TabsTrigger>
+          <TabsTrigger value="hierarchy" className="text-slate-300 data-[state=active]:bg-indigo-600">
+            Tree
           </TabsTrigger>
           {showPrimitives && (
             <TabsTrigger value="primitives" className="text-slate-300 data-[state=active]:bg-indigo-600">
@@ -97,6 +102,10 @@ const ModelManager = ({
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="hierarchy" className="space-y-2">
+          <SceneTreeView model={currentModel} />
         </TabsContent>
 
         {showPrimitives && (

@@ -36,22 +36,36 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       const object = loaderRef.current.parse(arrayBuffer, '');
       console.log('FBX parsed successfully:', object);
       
-      // Calculate bounding box and center the model
+      // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
+      object.rotateX(-Math.PI / 2);
+
+      // Calculate bounding box after rotation
       const boundingBox = new THREE.Box3().setFromObject(object);
       const center = boundingBox.getCenter(new THREE.Vector3());
+      const size = boundingBox.getSize(new THREE.Vector3());
+
+      // Center the model at origin
       object.position.sub(center);
 
-      // Scale model to fit in view (max size of 3 units)
-      const size = boundingBox.getSize(new THREE.Vector3());
+      // Scale model to fit in view (max size of 4 units to give more room)
       const maxDimension = Math.max(size.x, size.y, size.z);
-      const scale = maxDimension > 3 ? 3 / maxDimension : 1;
+      const scale = maxDimension > 4 ? 4 / maxDimension : 1;
       object.scale.setScalar(scale);
 
-      // Enable shadows
+      // Enable shadows and improve materials
       object.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          
+          // Improve material if it's basic
+          if (child.material instanceof THREE.MeshBasicMaterial) {
+            const newMaterial = new THREE.MeshPhongMaterial({
+              color: child.material.color,
+              map: child.material.map
+            });
+            child.material = newMaterial;
+          }
         }
       });
 
@@ -59,7 +73,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
         id: Date.now().toString(),
         name: file.name.replace('.fbx', ''),
         object,
-        boundingBox,
+        boundingBox: new THREE.Box3().setFromObject(object), // Recalculate after transforms
         size: file.size
       };
 
