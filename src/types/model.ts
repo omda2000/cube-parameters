@@ -24,6 +24,7 @@ export interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
+  showEdges: boolean;
 }
 
 export interface BoxDimensions {
