@@ -44,7 +44,7 @@ const ThreeViewer = ({
   showPrimitives = true
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const { selectObject } = useSelection();
+  const { selectObject, selectedObject, clearSelection } = useSelection();
 
   const {
     sceneRef,
@@ -101,7 +101,7 @@ const ThreeViewer = ({
   }, [loadFBXModel, switchToModel, removeModel]);
 
   // Handle object selection from 3D viewport
-  const handleObjectSelect = (object: THREE.Object3D | null) => {
+  const handleObjectSelect = React.useCallback((object: THREE.Object3D | null) => {
     if (object) {
       // Create a SceneObject from the THREE.Object3D
       const sceneObject: SceneObject = {
@@ -115,9 +115,9 @@ const ThreeViewer = ({
       };
       selectObject(sceneObject);
     } else {
-      selectObject(null);
+      clearSelection();
     }
-  };
+  }, [selectObject, clearSelection]);
 
   // Mouse interaction and hover effects
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
@@ -148,6 +148,22 @@ const ThreeViewer = ({
     }
   }, [showPrimitives, currentModel]);
 
+  // Handle keyboard shortcuts for selection (like AutoCAD)
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // ESC to clear selection
+      if (event.key === 'Escape') {
+        clearSelection();
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [clearSelection]);
+
   return (
     <div className="relative w-full h-full">
       <div ref={mountRef} className="w-full h-full" />
@@ -156,6 +172,13 @@ const ThreeViewer = ({
         mousePosition={mousePosition}
         visible={isHovering}
       />
+      
+      {/* Selection info overlay */}
+      {selectedObject && (
+        <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded text-sm">
+          Selected: {selectedObject.name}
+        </div>
+      )}
     </div>
   );
 };

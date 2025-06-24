@@ -21,7 +21,7 @@ export const useEnvironment = (
   useEffect(() => {
     if (!scene || isInitialized.current) return;
 
-    // Ground plane at Z=0 for Z-up coordinate system
+    // Ground plane - horizontal at Z=0
     const planeGeometry = new THREE.PlaneGeometry(20, 20);
     const planeMaterial = new THREE.MeshStandardMaterial({ 
       color: environment.groundColor,
@@ -30,11 +30,15 @@ export const useEnvironment = (
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     planeRef.current = plane;
     
-    // Position and rotate ground plane to be horizontal at Z=0
+    // Position and rotate ground plane to be horizontal
     plane.position.set(0, 0, 0);
     plane.rotation.x = -Math.PI / 2; // Rotate to make it horizontal
     plane.receiveShadow = true;
     plane.visible = environment.showGround;
+    
+    // Mark as helper so it doesn't interfere with selection
+    plane.userData.isHelper = true;
+    
     scene.add(plane);
 
     // Sky color
@@ -50,12 +54,13 @@ export const useEnvironment = (
       }
       isInitialized.current = false;
     };
-  }, [scene]);
+  }, [scene, environment.groundColor, environment.showGround, environment.skyColor]);
 
-  // Update grid visibility
+  // Update grid visibility and mark as helper
   useEffect(() => {
     if (gridHelper) {
       gridHelper.visible = environment.showGrid;
+      gridHelper.userData.isHelper = true;
     }
   }, [environment.showGrid, gridHelper]);
 

@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import * as THREE from 'three';
 
 interface ObjectData {
@@ -23,7 +23,8 @@ export const useMouseInteraction = (
   const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [originalMaterials, setOriginalMaterials] = useState<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
+  const originalMaterialsRef = useRef<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
+  const hoverMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
 
   useEffect(() => {
     if (!renderer || !camera || !scene) return;
@@ -31,11 +32,15 @@ export const useMouseInteraction = (
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
+    // Create hover material once
     const hoverMaterial = new THREE.MeshStandardMaterial({
-      color: 0xff0000,
+      color: 0xff6b35,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.7,
+      emissive: 0x332211,
+      emissiveIntensity: 0.3
     });
+    hoverMaterialRef.current = hoverMaterial;
 
     const extractObjectData = (object: THREE.Object3D): ObjectData => {
       let vertices = 0;
@@ -66,13 +71,17 @@ export const useMouseInteraction = (
     };
 
     const setHoverEffect = (object: THREE.Object3D, hover: boolean) => {
+      const originalMaterials = originalMaterialsRef.current;
+      
       if (object instanceof THREE.Mesh) {
         if (hover) {
+          // Store original material if not already stored
           if (!originalMaterials.has(object)) {
             originalMaterials.set(object, object.material);
           }
           object.material = hoverMaterial;
         } else {
+          // Restore original material
           const originalMaterial = originalMaterials.get(object);
           if (originalMaterial) {
             object.material = originalMaterial;
@@ -109,15 +118,15 @@ export const useMouseInteraction = (
 
       raycaster.setFromCamera(mouse, camera);
       
-      // Get all objects in the scene for intersection
+      // Get all intersectable objects
       const intersectableObjects: THREE.Object3D[] = [];
       scene.traverse((object) => {
-        if (object instanceof THREE.Mesh && object.visible) {
+        if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
           intersectableObjects.push(object);
         }
       });
 
-      const intersects = raycaster.intersectObjects(intersectableObjects, false);
+      const intersects = raycaster.intersectObjects(intersectableObjects, true);
       
       if (intersects.length > 0) {
         const newHoveredObject = intersects[0].object;
@@ -143,21 +152,23 @@ export const useMouseInteraction = (
     };
 
     const handleClick = (event: MouseEvent) => {
+      if (event.button !== 0) return; // Only handle left clicks
+      
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
       
-      // Get all objects in the scene for intersection
+      // Get all intersectable objects
       const intersectableObjects: THREE.Object3D[] = [];
       scene.traverse((object) => {
-        if (object instanceof THREE.Mesh && object.visible) {
+        if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
           intersectableObjects.push(object);
         }
       });
 
-      const intersects = raycaster.intersectObjects(intersectableObjects, false);
+      const intersects = raycaster.intersectObjects(intersectableObjects, true);
       
       if (intersects.length > 0 && onObjectSelect) {
         onObjectSelect(intersects[0].object);
@@ -174,23 +185,33 @@ export const useMouseInteraction = (
       }
     };
 
+    // Add context menu prevention to avoid browser context menu
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+    };
+
     renderer.domElement.addEventListener('mousemove', handleMouseMove);
     renderer.domElement.addEventListener('click', handleClick);
     renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
+    renderer.domElement.addEventListener('contextmenu', handleContextMenu);
 
     return () => {
       renderer.domElement.removeEventListener('mousemove', handleMouseMove);
       renderer.domElement.removeEventListener('click', handleClick);
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
+      renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
       
       // Clean up hover effects
       if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
       }
       
-      hoverMaterial.dispose();
+      // Clean up materials
+      if (hoverMaterialRef.current) {
+        hoverMaterialRef.current.dispose();
+      }
     };
-  }, [renderer, camera, scene, hoveredObject, originalMaterials, onObjectSelect]);
+  }, [renderer, camera, scene, hoveredObject, onObjectSelect]);
 
   return { objectData, mousePosition, isHovering: !!hoveredObject };
 };
