@@ -17,7 +17,8 @@ export const useMouseInteraction = (
   renderer: THREE.WebGLRenderer | null,
   camera: THREE.PerspectiveCamera | null,
   targetObject: THREE.Mesh | THREE.Group | null,
-  scene: THREE.Scene | null
+  scene: THREE.Scene | null,
+  onObjectSelect?: (object: THREE.Object3D | null) => void
 ) => {
   const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
@@ -141,6 +142,30 @@ export const useMouseInteraction = (
       }
     };
 
+    const handleClick = (event: MouseEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      
+      // Get all objects in the scene for intersection
+      const intersectableObjects: THREE.Object3D[] = [];
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh && object.visible) {
+          intersectableObjects.push(object);
+        }
+      });
+
+      const intersects = raycaster.intersectObjects(intersectableObjects, false);
+      
+      if (intersects.length > 0 && onObjectSelect) {
+        onObjectSelect(intersects[0].object);
+      } else if (onObjectSelect) {
+        onObjectSelect(null);
+      }
+    };
+
     const handleMouseLeave = () => {
       if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
@@ -150,10 +175,12 @@ export const useMouseInteraction = (
     };
 
     renderer.domElement.addEventListener('mousemove', handleMouseMove);
+    renderer.domElement.addEventListener('click', handleClick);
     renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
       renderer.domElement.removeEventListener('mousemove', handleMouseMove);
+      renderer.domElement.removeEventListener('click', handleClick);
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       
       // Clean up hover effects
@@ -163,7 +190,7 @@ export const useMouseInteraction = (
       
       hoverMaterial.dispose();
     };
-  }, [renderer, camera, scene, hoveredObject, originalMaterials]);
+  }, [renderer, camera, scene, hoveredObject, originalMaterials, onObjectSelect]);
 
   return { objectData, mousePosition, isHovering: !!hoveredObject };
 };

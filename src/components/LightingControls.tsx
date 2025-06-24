@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sun, Lightbulb, Settings } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SunlightSettings {
   intensity: number;
@@ -36,6 +37,8 @@ const LightingControls = ({
   shadowQuality,
   setShadowQuality
 }: LightingControlsProps) => {
+  const { toast } = useToast();
+
   const setTimeOfDay = (preset: string) => {
     const presets = {
       dawn: { azimuth: 90, elevation: 10, intensity: 0.6, color: '#FFE4B5' },
@@ -46,7 +49,18 @@ const LightingControls = ({
     
     const settings = presets[preset as keyof typeof presets];
     if (settings) {
-      setSunlight({ ...sunlight, ...settings });
+      setSunlight({ 
+        ...sunlight, 
+        azimuth: settings.azimuth,
+        elevation: settings.elevation,
+        intensity: settings.intensity,
+        color: settings.color
+      });
+      
+      toast({
+        title: "Lighting preset applied",
+        description: `Changed to ${preset} lighting`,
+      });
     }
   };
 

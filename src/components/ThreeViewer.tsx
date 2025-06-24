@@ -6,6 +6,7 @@ import { useMouseInteraction } from '../hooks/useMouseInteraction';
 import { useLighting } from '../hooks/useLighting';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useFBXLoader } from '../hooks/useFBXLoader';
+import { useSelection } from '../hooks/useSelection';
 import ObjectDataOverlay from './ObjectDataOverlay';
 import type { 
   SunlightSettings, 
@@ -13,7 +14,8 @@ import type {
   EnvironmentSettings, 
   LoadedModel,
   BoxDimensions,
-  ShadowQuality
+  ShadowQuality,
+  SceneObject
 } from '../types/model';
 
 interface ThreeViewerProps {
@@ -42,6 +44,7 @@ const ThreeViewer = ({
   showPrimitives = true
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const { selectObject } = useSelection();
 
   const {
     sceneRef,
@@ -97,12 +100,32 @@ const ThreeViewer = ({
     };
   }, [loadFBXModel, switchToModel, removeModel]);
 
+  // Handle object selection from 3D viewport
+  const handleObjectSelect = (object: THREE.Object3D | null) => {
+    if (object) {
+      // Create a SceneObject from the THREE.Object3D
+      const sceneObject: SceneObject = {
+        id: object.userData.isPrimitive ? `primitive_${object.uuid}` : `object_${object.uuid}`,
+        name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
+        type: object.userData.isPrimitive ? 'primitive' : 'mesh',
+        object: object,
+        children: [],
+        visible: object.visible,
+        selected: true
+      };
+      selectObject(sceneObject);
+    } else {
+      selectObject(null);
+    }
+  };
+
   // Mouse interaction and hover effects
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
     rendererRef.current,
     cameraRef.current,
     currentModel ? currentModel.object : boxRef.current,
-    sceneRef.current
+    sceneRef.current,
+    handleObjectSelect
   );
 
   useLighting(

@@ -30,8 +30,9 @@ export const useEnvironment = (
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     planeRef.current = plane;
     
-    // Position ground plane at Z=0 (horizontal in Z-up system)
+    // Position and rotate ground plane to be horizontal at Z=0
     plane.position.set(0, 0, 0);
+    plane.rotation.x = -Math.PI / 2; // Rotate to make it horizontal
     plane.receiveShadow = true;
     plane.visible = environment.showGround;
     scene.add(plane);
