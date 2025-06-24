@@ -12,9 +12,10 @@ export const useBoxMesh = (
 ) => {
   const boxRef = useRef<THREE.Mesh | null>(null);
   const labelRef = useRef<CSS2DObject | null>(null);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
-    if (!scene) return;
+    if (!scene || isInitialized.current) return;
 
     // Create box geometry
     const geometry = new THREE.BoxGeometry(dimensions.length, dimensions.height, dimensions.width);
@@ -44,13 +45,41 @@ export const useBoxMesh = (
     labelRef.current = label;
 
     scene.add(box);
+    isInitialized.current = true;
 
     return () => {
-      scene.remove(box);
-      geometry.dispose();
-      material.dispose();
+      if (scene && box) {
+        scene.remove(box);
+        geometry.dispose();
+        material.dispose();
+      }
+      isInitialized.current = false;
     };
-  }, [scene, dimensions.length, dimensions.width, dimensions.height, color, name, visible]);
+  }, [scene]);
+
+  // Update dimensions, color, and name
+  useEffect(() => {
+    if (!boxRef.current) return;
+    
+    const box = boxRef.current;
+    const geometry = box.geometry as THREE.BoxGeometry;
+    const material = box.material as THREE.MeshPhongMaterial;
+    
+    // Update geometry
+    geometry.dispose();
+    const newGeometry = new THREE.BoxGeometry(dimensions.length, dimensions.height, dimensions.width);
+    box.geometry = newGeometry;
+    
+    // Update material color
+    material.color.set(color);
+    
+    // Update label
+    if (labelRef.current) {
+      const labelDiv = labelRef.current.element as HTMLElement;
+      labelDiv.textContent = name;
+      labelRef.current.position.set(0, dimensions.height / 2 + 0.5, 0);
+    }
+  }, [dimensions.length, dimensions.width, dimensions.height, color, name]);
 
   // Update visibility when it changes
   useEffect(() => {

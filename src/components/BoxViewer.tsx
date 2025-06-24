@@ -42,6 +42,7 @@ interface BoxViewerProps {
   shadowQuality: 'low' | 'medium' | 'high';
   environment: EnvironmentSettings;
   onFileUpload?: (file: File) => void;
+  onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
   loadedModels?: LoadedModel[];
   currentModel?: LoadedModel | null;
   showPrimitives?: boolean;
@@ -57,6 +58,7 @@ const BoxViewer = ({
   shadowQuality,
   environment,
   onFileUpload,
+  onModelsChange,
   loadedModels,
   currentModel,
   showPrimitives
@@ -72,8 +74,7 @@ const BoxViewer = ({
       shadowQuality={shadowQuality}
       environment={environment}
       onFileUpload={onFileUpload}
-      loadedModels={loadedModels}
-      currentModel={currentModel}
+      onModelsChange={onModelsChange}
       showPrimitives={showPrimitives}
     />
   );

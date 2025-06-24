@@ -14,14 +14,15 @@ export const useEnvironment = (
 ) => {
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const planeRef = useRef<THREE.Mesh | null>(null);
+  const isInitialized = useRef(false);
 
+  // Initialize environment objects once
   useEffect(() => {
-    if (!scene) return;
+    if (!scene || isInitialized.current) return;
 
     // Grid
     const grid = new THREE.GridHelper(20, 20, 0x444444, 0x444444);
     gridRef.current = grid;
-    grid.visible = environment.showGrid;
     scene.add(grid);
 
     // Ground plane
@@ -40,32 +41,41 @@ export const useEnvironment = (
     // Sky color
     scene.background = new THREE.Color(environment.skyColor);
 
+    isInitialized.current = true;
+
     return () => {
-      if (grid) scene.remove(grid);
-      if (plane) {
+      if (grid && scene) {
+        scene.remove(grid);
+        grid.dispose();
+      }
+      if (plane && scene) {
         scene.remove(plane);
         planeGeometry.dispose();
         planeMaterial.dispose();
       }
+      isInitialized.current = false;
     };
   }, [scene]);
 
   // Update grid visibility
   useEffect(() => {
-    if (!gridRef.current) return;
-    gridRef.current.visible = environment.showGrid;
+    if (gridRef.current) {
+      gridRef.current.visible = environment.showGrid;
+    }
   }, [environment.showGrid]);
 
   // Update ground color
   useEffect(() => {
-    if (!planeRef.current) return;
-    (planeRef.current.material as THREE.MeshStandardMaterial).color.set(environment.groundColor);
+    if (planeRef.current) {
+      (planeRef.current.material as THREE.MeshStandardMaterial).color.set(environment.groundColor);
+    }
   }, [environment.groundColor]);
 
   // Update sky color
   useEffect(() => {
-    if (!scene) return;
-    scene.background = new THREE.Color(environment.skyColor);
+    if (scene) {
+      scene.background = new THREE.Color(environment.skyColor);
+    }
   }, [scene, environment.skyColor]);
 
   return { gridRef, planeRef };

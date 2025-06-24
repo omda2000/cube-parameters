@@ -1,18 +1,20 @@
 
 import { useState } from 'react';
 import { useResponsiveMode } from '../hooks/useResponsiveMode';
-import { useFBXLoader } from '../hooks/useFBXLoader';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import BoxViewer from '../components/BoxViewer';
-import LightingControls from '../components/LightingControls';
-import MaterialControls from '../components/MaterialControls';
-import ViewControls from '../components/ViewControls';
-import TransformControls from '../components/TransformControls';
-import FileUploadDialog from '../components/FileUpload/FileUploadDialog';
-import ModelManager from '../components/ModelManager/ModelManager';
+import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import { useToast } from '@/hooks/use-toast';
+
+interface LoadedModel {
+  id: string;
+  name: string;
+  object: THREE.Group;
+  boundingBox: THREE.Box3;
+  size: number;
+}
 
 const Index = () => {
   const { isMobile, panelWidth } = useResponsiveMode();
@@ -49,9 +51,9 @@ const Index = () => {
     skyColor: '#87CEEB'
   });
 
-  // FBX loader states
-  const [loadedModels, setLoadedModels] = useState<any[]>([]);
-  const [currentModel, setCurrentModel] = useState<any>(null);
+  // Model states - these will be managed by ThreeViewer internally
+  const [loadedModels, setLoadedModels] = useState<LoadedModel[]>([]);
+  const [currentModel, setCurrentModel] = useState<LoadedModel | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -65,48 +67,8 @@ const Index = () => {
         description: `Processing ${file.name}`,
       });
 
-      // Create a temporary FBX loader to process the file
-      const FBXLoader = (await import('three/examples/jsm/loaders/FBXLoader.js')).FBXLoader;
-      const loader = new FBXLoader();
-      
-      const arrayBuffer = await file.arrayBuffer();
-      const object = loader.parse(arrayBuffer, '');
-      
-      // Calculate bounding box and center the model
-      const THREE = await import('three');
-      const boundingBox = new THREE.Box3().setFromObject(object);
-      const center = boundingBox.getCenter(new THREE.Vector3());
-      object.position.sub(center);
-
-      // Scale model to fit in view
-      const size = boundingBox.getSize(new THREE.Vector3());
-      const maxDimension = Math.max(size.x, size.y, size.z);
-      const scale = maxDimension > 3 ? 3 / maxDimension : 1;
-      object.scale.setScalar(scale);
-
-      // Enable shadows
-      object.traverse((child: any) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-
-      const modelData = {
-        id: Date.now().toString(),
-        name: file.name.replace('.fbx', ''),
-        object,
-        boundingBox,
-        size: file.size
-      };
-
-      setLoadedModels(prev => [...prev, modelData]);
-      setCurrentModel(modelData);
-      
-      toast({
-        title: "Model loaded successfully!",
-        description: `${file.name} is now ready to view`,
-      });
+      // The actual FBX loading will be handled by the useFBXLoader hook in ThreeViewer
+      setIsUploading(false);
       
     } catch (error) {
       console.error('Upload failed:', error);
@@ -117,9 +79,13 @@ const Index = () => {
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleModelsChange = (models: LoadedModel[], current: LoadedModel | null) => {
+    setLoadedModels(models);
+    setCurrentModel(current);
   };
 
   const handleModelSelect = (modelId: string) => {
@@ -158,56 +124,32 @@ const Index = () => {
   };
 
   const ControlsPanel = () => (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-2">
-        <FileUploadDialog 
-          onFileSelect={handleFileUpload} 
-          isLoading={isUploading}
-        />
-      </div>
-
-      {uploadError && (
-        <div className="p-3 bg-red-900/30 border border-red-800/50 rounded-lg text-red-200 text-sm">
-          {uploadError}
-        </div>
-      )}
-
-      <ModelManager
-        loadedModels={loadedModels}
-        currentModel={currentModel}
-        onModelSelect={handleModelSelect}
-        onModelRemove={handleModelRemove}
-        onPrimitiveSelect={handlePrimitiveSelect}
-      />
-      
-      <LightingControls 
-        sunlight={sunlight}
-        setSunlight={setSunlight}
-        ambientLight={ambientLight}
-        setAmbientLight={setAmbientLight}
-        shadowQuality={shadowQuality}
-        setShadowQuality={setShadowQuality}
-      />
-      
-      <MaterialControls 
-        dimensions={dimensions}
-        setDimensions={setDimensions}
-        boxColor={boxColor}
-        setBoxColor={setBoxColor}
-        objectName={objectName}
-        setObjectName={setObjectName}
-      />
-      
-      <TransformControls 
-        transformMode={transformMode}
-        setTransformMode={setTransformMode}
-      />
-      
-      <ViewControls 
-        environment={environment}
-        setEnvironment={setEnvironment}
-      />
-    </div>
+    <TabsControlPanel
+      loadedModels={loadedModels}
+      currentModel={currentModel}
+      isUploading={isUploading}
+      uploadError={uploadError}
+      onFileUpload={handleFileUpload}
+      onModelSelect={handleModelSelect}
+      onModelRemove={handleModelRemove}
+      onPrimitiveSelect={handlePrimitiveSelect}
+      sunlight={sunlight}
+      setSunlight={setSunlight}
+      ambientLight={ambientLight}
+      setAmbientLight={setAmbientLight}
+      shadowQuality={shadowQuality}
+      setShadowQuality={setShadowQuality}
+      dimensions={dimensions}
+      setDimensions={setDimensions}
+      boxColor={boxColor}
+      setBoxColor={setBoxColor}
+      objectName={objectName}
+      setObjectName={setObjectName}
+      transformMode={transformMode}
+      setTransformMode={setTransformMode}
+      environment={environment}
+      setEnvironment={setEnvironment}
+    />
   );
 
   return (
@@ -247,6 +189,7 @@ const Index = () => {
               shadowQuality={shadowQuality}
               environment={environment}
               onFileUpload={handleFileUpload}
+              onModelsChange={handleModelsChange}
               loadedModels={loadedModels}
               currentModel={currentModel}
               showPrimitives={!currentModel}

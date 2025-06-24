@@ -49,8 +49,7 @@ interface ThreeViewerProps {
   shadowQuality: 'low' | 'medium' | 'high';
   environment: EnvironmentSettings;
   onFileUpload?: (file: File) => void;
-  loadedModels?: LoadedModel[];
-  currentModel?: LoadedModel | null;
+  onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
   showPrimitives?: boolean;
 }
 
@@ -64,8 +63,7 @@ const ThreeViewer = ({
   shadowQuality,
   environment,
   onFileUpload,
-  loadedModels = [],
-  currentModel,
+  onModelsChange,
   showPrimitives = true
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -84,18 +82,32 @@ const ThreeViewer = ({
     dimensions,
     boxColor,
     objectName,
-    showPrimitives && !currentModel
+    showPrimitives
   );
 
   const {
-    loadedModels: fbxModels,
-    currentModel: fbxCurrentModel,
-    isLoading: fbxLoading,
-    error: fbxError,
+    loadedModels,
+    currentModel,
+    isLoading,
+    error,
     loadFBXModel,
     switchToModel,
     removeModel
   } = useFBXLoader(sceneRef.current);
+
+  // Expose models to parent component
+  React.useEffect(() => {
+    if (onModelsChange) {
+      onModelsChange(loadedModels, currentModel);
+    }
+  }, [loadedModels, currentModel, onModelsChange]);
+
+  // Handle file uploads
+  React.useEffect(() => {
+    if (onFileUpload) {
+      // This will be called from the parent component
+    }
+  }, [onFileUpload]);
 
   const { transformControlsRef } = useTransformControls(
     sceneRef.current,
@@ -130,6 +142,13 @@ const ThreeViewer = ({
     sceneRef.current,
     environment
   );
+
+  // Update box visibility based on current model and showPrimitives
+  React.useEffect(() => {
+    if (boxRef.current) {
+      boxRef.current.visible = showPrimitives && !currentModel;
+    }
+  }, [showPrimitives, currentModel]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 };
