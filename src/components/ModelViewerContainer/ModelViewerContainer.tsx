@@ -39,7 +39,7 @@ const ModelViewerContainer = ({
   onSceneReady
 }: ModelViewerContainerProps) => {
   return (
-    <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-slate-700/50 h-[calc(100vh-80px)] sm:h-[calc(100vh-120px)]">
+    <div className="w-full h-full">
       <BoxViewer 
         dimensions={dimensions} 
         boxColor={boxColor}
