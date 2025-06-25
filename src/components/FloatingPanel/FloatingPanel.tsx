@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Minus } from 'lucide-react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FloatingPanelProps {
@@ -33,6 +33,13 @@ const FloatingPanel = ({
     });
   };
 
+  const handleTitleClick = (e: React.MouseEvent) => {
+    // Only toggle if clicking on title area, not buttons
+    if (e.target === e.currentTarget && collapsible) {
+      setIsCollapsed(!isCollapsed);
+    }
+  };
+
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
       setPosition({
@@ -59,7 +66,7 @@ const FloatingPanel = ({
 
   return (
     <div
-      className="fixed bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg shadow-2xl z-50"
+      className="fixed bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg shadow-2xl z-50 transition-all duration-200"
       style={{
         left: position.x,
         top: position.y,
@@ -70,26 +77,27 @@ const FloatingPanel = ({
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between p-3 border-b border-slate-700/50 cursor-move select-none"
+        className="flex items-center justify-between p-3 border-b border-slate-700/50 cursor-move select-none hover:bg-slate-700/30 transition-colors"
         onMouseDown={handleMouseDown}
+        onClick={handleTitleClick}
       >
-        <h3 className="text-sm font-medium text-white">{title}</h3>
-        <div className="flex items-center gap-1">
+        <h3 className="text-sm font-medium text-white flex items-center gap-2">
+          {title}
           {collapsible && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-6 w-6 p-0 text-slate-400 hover:text-white"
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
+            <div className="text-slate-400">
+              {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+            </div>
           )}
+        </h3>
+        <div className="flex items-center gap-1">
           {onClose && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={onClose}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
               className="h-6 w-6 p-0 text-slate-400 hover:text-white"
             >
               <X className="h-3 w-3" />

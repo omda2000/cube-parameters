@@ -13,6 +13,15 @@ import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel
 import SettingsPanel from '../components/SettingsPanel/SettingsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import type { LoadedModel } from '../types/model';
+import * as THREE from 'three';
+
+interface MeasureData {
+  id: string;
+  startPoint: { x: number; y: number; z: number };
+  endPoint: { x: number; y: number; z: number };
+  distance: number;
+  label: string;
+}
 
 const Index = () => {
   const [scene, setScene] = useState<THREE.Scene | null>(null);
@@ -20,7 +29,7 @@ const Index = () => {
   const [showMeasurePanel, setShowMeasurePanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
-  const [measurements, setMeasurements] = useState<any[]>([]);
+  const [measurements, setMeasurements] = useState<MeasureData[]>([]);
   const [settings, setSettings] = useState({
     gridSize: 10,
     snapToGrid: false,
@@ -113,8 +122,37 @@ const Index = () => {
     }
   };
 
+  const handlePointCreate = (point: { x: number; y: number; z: number }) => {
+    console.log('Point created:', point);
+    toast({
+      title: "Point added",
+      description: `Position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)}, ${point.z.toFixed(2)})`,
+    });
+  };
+
+  const handleMeasureCreate = (start: THREE.Vector3, end: THREE.Vector3) => {
+    const distance = start.distanceTo(end);
+    const newMeasurement: MeasureData = {
+      id: `measure_${Date.now()}`,
+      startPoint: { x: start.x, y: start.y, z: start.z },
+      endPoint: { x: end.x, y: end.y, z: end.z },
+      distance,
+      label: `Measurement ${measurements.length + 1}`
+    };
+    
+    setMeasurements(prev => [...prev, newMeasurement]);
+    toast({
+      title: "Measurement added",
+      description: `Distance: ${distance.toFixed(3)} units`,
+    });
+  };
+
   const handleClearMeasurements = () => {
     setMeasurements([]);
+    toast({
+      title: "Measurements cleared",
+      description: "All measurements have been removed",
+    });
   };
 
   const handleRemoveMeasurement = (id: string) => {
@@ -197,6 +235,9 @@ const Index = () => {
             onFileUpload={handleFileUpload}
             onModelsChange={handleModelsChange}
             onSceneReady={setScene}
+            activeTool={activeTool}
+            onPointCreate={handlePointCreate}
+            onMeasureCreate={handleMeasureCreate}
           />
         </div>
 
@@ -239,6 +280,7 @@ const Index = () => {
             defaultPosition={{ x: Math.max(20, window.innerWidth - 360), y: 20 }}
             defaultSize={{ width: 340, height: 600 }}
             onClose={() => setShowControlPanel(false)}
+            collapsible={true}
           >
             <TabsControlPanel {...controlsPanelProps} />
           </FloatingPanel>

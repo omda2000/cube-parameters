@@ -6,6 +6,7 @@ import type {
   EnvironmentSettings, 
   LoadedModel 
 } from '../types/model';
+import * as THREE from 'three';
 
 interface BoxViewerProps {
   dimensions: {
@@ -25,6 +26,9 @@ interface BoxViewerProps {
   currentModel?: LoadedModel | null;
   showPrimitives?: boolean;
   onSceneReady?: (scene: THREE.Scene) => void;
+  activeTool?: 'select' | 'point' | 'measure' | 'move';
+  onPointCreate?: (point: { x: number; y: number; z: number }) => void;
+  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
 const BoxViewer = ({ 
@@ -40,7 +44,10 @@ const BoxViewer = ({
   loadedModels,
   currentModel,
   showPrimitives,
-  onSceneReady
+  onSceneReady,
+  activeTool,
+  onPointCreate,
+  onMeasureCreate
 }: BoxViewerProps) => {
   return (
     <ThreeViewer
@@ -55,6 +62,9 @@ const BoxViewer = ({
       onModelsChange={onModelsChange}
       showPrimitives={showPrimitives}
       onSceneReady={onSceneReady}
+      activeTool={activeTool}
+      onPointCreate={onPointCreate}
+      onMeasureCreate={onMeasureCreate}
     />
   );
 };

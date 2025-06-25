@@ -35,6 +35,9 @@ interface ThreeViewerProps {
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
   onSceneReady?: (scene: THREE.Scene) => void;
   showPrimitives?: boolean;
+  activeTool?: 'select' | 'point' | 'measure' | 'move';
+  onPointCreate?: (point: { x: number; y: number; z: number }) => void;
+  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
 const ThreeViewer = ({ 
@@ -48,7 +51,10 @@ const ThreeViewer = ({
   onFileUpload,
   onModelsChange,
   onSceneReady,
-  showPrimitives = true
+  showPrimitives = true,
+  activeTool = 'select',
+  onPointCreate,
+  onMeasureCreate
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const { selectObject, selectedObject, clearSelection } = useSelectionContext();
@@ -118,9 +124,11 @@ const ThreeViewer = ({
   const handleObjectSelect = React.useCallback((object: THREE.Object3D | null) => {
     if (object) {
       const sceneObject: SceneObject = {
-        id: object.userData.isPrimitive ? `primitive_${object.uuid}` : `object_${object.uuid}`,
+        id: object.userData.isPrimitive ? `primitive_${object.uuid}` : 
+            object.userData.isPoint ? `point_${object.uuid}` : `object_${object.uuid}`,
         name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
-        type: object.userData.isPrimitive ? 'primitive' : 'mesh',
+        type: object.userData.isPrimitive ? 'primitive' : 
+              object.userData.isPoint ? 'point' : 'mesh',
         object: object,
         children: [],
         visible: object.visible,
@@ -132,6 +140,20 @@ const ThreeViewer = ({
     }
   }, [selectObject, clearSelection]);
 
+  // Handle point creation
+  const handlePointCreate = React.useCallback((point: { x: number; y: number; z: number }) => {
+    if (onPointCreate) {
+      onPointCreate(point);
+    }
+  }, [onPointCreate]);
+
+  // Handle measure creation
+  const handleMeasureCreate = React.useCallback((start: THREE.Vector3, end: THREE.Vector3) => {
+    if (onMeasureCreate) {
+      onMeasureCreate(start, end);
+    }
+  }, [onMeasureCreate]);
+
   // Use selection effects hook for visual feedback
   useSelectionEffects(selectedObject);
 
@@ -141,7 +163,10 @@ const ThreeViewer = ({
     cameraRef.current,
     currentModel ? currentModel.object : boxRef.current,
     sceneRef.current,
-    handleObjectSelect
+    handleObjectSelect,
+    activeTool,
+    handlePointCreate,
+    handleMeasureCreate
   );
 
   // Zoom controls hook

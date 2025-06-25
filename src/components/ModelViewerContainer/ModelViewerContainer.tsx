@@ -8,6 +8,7 @@ import type {
   BoxDimensions, 
   ShadowQuality 
 } from '../../types/model';
+import * as THREE from 'three';
 
 interface ModelViewerContainerProps {
   dimensions: BoxDimensions;
@@ -22,6 +23,9 @@ interface ModelViewerContainerProps {
   onFileUpload: (file: File) => void;
   onModelsChange: (models: LoadedModel[], current: LoadedModel | null) => void;
   onSceneReady?: (scene: THREE.Scene) => void;
+  activeTool?: 'select' | 'point' | 'measure' | 'move';
+  onPointCreate?: (point: { x: number; y: number; z: number }) => void;
+  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
 const ModelViewerContainer = ({
@@ -36,7 +40,10 @@ const ModelViewerContainer = ({
   currentModel,
   onFileUpload,
   onModelsChange,
-  onSceneReady
+  onSceneReady,
+  activeTool,
+  onPointCreate,
+  onMeasureCreate
 }: ModelViewerContainerProps) => {
   return (
     <div className="w-full h-full">
@@ -54,6 +61,9 @@ const ModelViewerContainer = ({
         currentModel={currentModel}
         showPrimitives={true}
         onSceneReady={onSceneReady}
+        activeTool={activeTool}
+        onPointCreate={onPointCreate}
+        onMeasureCreate={onMeasureCreate}
       />
     </div>
   );

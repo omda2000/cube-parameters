@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Box, Sun, Palette, Eye, Settings } from 'lucide-react';
+import { Box, Globe, Palette, Eye, Settings } from 'lucide-react';
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
@@ -95,8 +94,8 @@ const TabsControlPanel = ({
             value="lighting" 
             className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
           >
-            <Sun className="h-3 w-3" />
-            <span>Light</span>
+            <Globe className="h-3 w-3" />
+            <span>Environment</span>
           </TabsTrigger>
           <TabsTrigger 
             value="materials" 
