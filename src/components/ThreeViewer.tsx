@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
@@ -9,7 +9,10 @@ import { useEnvironment } from '../hooks/useEnvironment';
 import { useFBXLoader } from '../hooks/useFBXLoader';
 import { useSelectionContext } from '../contexts/SelectionContext';
 import { useSelectionEffects } from '../hooks/useSelectionEffects';
+import { useZoomControls } from '../hooks/useZoomControls';
+import { useViewerKeyboardShortcuts } from '../hooks/useViewerKeyboardShortcuts';
 import ObjectDataOverlay from './ObjectDataOverlay';
+import SelectionOverlay from './SelectionOverlay/SelectionOverlay';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -141,6 +144,22 @@ const ThreeViewer = ({
     handleObjectSelect
   );
 
+  // Zoom controls hook
+  const { zoomAll, zoomToSelected, resetView } = useZoomControls(
+    sceneRef,
+    cameraRef,
+    controlsRef,
+    selectedObject
+  );
+
+  // Keyboard shortcuts
+  useViewerKeyboardShortcuts({
+    onClearSelection: clearSelection,
+    onZoomAll: zoomAll,
+    onZoomToSelected: zoomToSelected,
+    selectedObject
+  });
+
   useLighting(
     sceneRef.current,
     sunlight,
@@ -154,131 +173,6 @@ const ThreeViewer = ({
     gridHelperRef.current
   );
 
-  // Expose zoom controls to parent
-  useEffect(() => {
-    const zoomControls = {
-      zoomAll: () => {
-        if (!sceneRef.current || !cameraRef.current || !controlsRef.current) return;
-        
-        const allObjects: THREE.Object3D[] = [];
-        sceneRef.current.traverse((object) => {
-          if (object instanceof THREE.Mesh || object instanceof THREE.Group) {
-            allObjects.push(object);
-          }
-        });
-        
-        if (allObjects.length === 0) return;
-        
-        const box = new THREE.Box3();
-        allObjects.forEach(obj => {
-          if (obj.visible) {
-            const objBox = new THREE.Box3().setFromObject(obj);
-            box.union(objBox);
-          }
-        });
-        
-        if (box.isEmpty()) return;
-        
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 1.5;
-        
-        const targetPosition = center.clone().add(new THREE.Vector3(1, 1, 1).normalize().multiplyScalar(distance));
-        
-        // Smooth transition
-        const startPosition = cameraRef.current.position.clone();
-        const startTarget = controlsRef.current.target.clone();
-        const startTime = Date.now();
-        const duration = 1000;
-
-        const animate = () => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const easedProgress = 1 - Math.pow(1 - progress, 3);
-          
-          cameraRef.current!.position.lerpVectors(startPosition, targetPosition, easedProgress);
-          controlsRef.current!.target.lerpVectors(startTarget, center, easedProgress);
-          controlsRef.current!.update();
-          
-          if (progress < 1) {
-            requestAnimationFrame(animate);
-          }
-        };
-        
-        animate();
-      },
-      
-      zoomToSelected: () => {
-        if (!selectedObject || !cameraRef.current || !controlsRef.current) return;
-        
-        const object = selectedObject.object;
-        const box = new THREE.Box3().setFromObject(object);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 2;
-        
-        const targetPosition = center.clone().add(new THREE.Vector3(1, 1, 1).normalize().multiplyScalar(distance));
-        
-        // Smooth transition
-        const startPosition = cameraRef.current.position.clone();
-        const startTarget = controlsRef.current.target.clone();
-        const startTime = Date.now();
-        const duration = 1000;
-
-        const animate = () => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const easedProgress = 1 - Math.pow(1 - progress, 3);
-          
-          cameraRef.current!.position.lerpVectors(startPosition, targetPosition, easedProgress);
-          controlsRef.current!.target.lerpVectors(startTarget, center, easedProgress);
-          controlsRef.current!.update();
-          
-          if (progress < 1) {
-            requestAnimationFrame(animate);
-          }
-        };
-        
-        animate();
-      }
-    };
-
-    (window as any).__zoomControls = zoomControls;
-
-    return () => {
-      delete (window as any).__zoomControls;
-    };
-  }, [selectedObject, sceneRef.current, cameraRef.current, controlsRef.current]);
-
-  // Handle keyboard shortcuts for selection and zoom
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        clearSelection();
-        event.preventDefault();
-      } else if (event.key === 'a' || event.key === 'A') {
-        const zoomControls = (window as any).__zoomControls;
-        if (zoomControls) {
-          zoomControls.zoomAll();
-          event.preventDefault();
-        }
-      } else if (event.key === 'f' || event.key === 'F') {
-        const zoomControls = (window as any).__zoomControls;
-        if (zoomControls && selectedObject) {
-          zoomControls.zoomToSelected();
-          event.preventDefault();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [clearSelection, selectedObject]);
-
   return (
     <div className="relative w-full h-full">
       <div ref={mountRef} className="w-full h-full" />
@@ -287,20 +181,7 @@ const ThreeViewer = ({
         mousePosition={mousePosition}
         visible={isHovering}
       />
-      
-      {/* Selection info overlay */}
-      {selectedObject && (
-        <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg border border-blue-500/50">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="font-medium">Selected:</span>
-            <span className="text-blue-300">{selectedObject.name}</span>
-          </div>
-          <div className="text-xs text-gray-300 mt-1">
-            Press ESC to deselect • F to focus
-          </div>
-        </div>
-      )}
+      <SelectionOverlay selectedObject={selectedObject} />
     </div>
   );
 };
