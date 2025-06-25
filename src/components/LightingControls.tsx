@@ -20,6 +20,13 @@ interface AmbientLightSettings {
   color: string;
 }
 
+interface EnvironmentSettings {
+  showGrid: boolean;
+  groundColor: string;
+  skyColor: string;
+  showGround: boolean;
+}
+
 interface LightingControlsProps {
   sunlight: SunlightSettings;
   setSunlight: (settings: SunlightSettings) => void;
@@ -27,6 +34,8 @@ interface LightingControlsProps {
   setAmbientLight: (settings: AmbientLightSettings) => void;
   shadowQuality: 'low' | 'medium' | 'high';
   setShadowQuality: (quality: 'low' | 'medium' | 'high') => void;
+  environment: EnvironmentSettings;
+  setEnvironment: (settings: EnvironmentSettings) => void;
 }
 
 const LightingControls = ({ 
@@ -35,16 +44,50 @@ const LightingControls = ({
   ambientLight, 
   setAmbientLight,
   shadowQuality,
-  setShadowQuality
+  setShadowQuality,
+  environment,
+  setEnvironment
 }: LightingControlsProps) => {
   const { toast } = useToast();
 
   const setTimeOfDay = (preset: string) => {
     const presets = {
-      dawn: { azimuth: 90, elevation: 10, intensity: 0.6, color: '#FFE4B5' },
-      noon: { azimuth: 180, elevation: 90, intensity: 1.2, color: '#FFFFFF' },
-      sunset: { azimuth: 270, elevation: 15, intensity: 0.8, color: '#FF6347' },
-      night: { azimuth: 0, elevation: -10, intensity: 0.1, color: '#4169E1' }
+      dawn: { 
+        azimuth: 90, 
+        elevation: 10, 
+        intensity: 0.6, 
+        color: '#FFE4B5',
+        skyColor: '#FFB347',
+        ambientColor: '#FFF8DC',
+        ambientIntensity: 0.4
+      },
+      noon: { 
+        azimuth: 180, 
+        elevation: 90, 
+        intensity: 1.2, 
+        color: '#FFFFFF',
+        skyColor: '#87CEEB',
+        ambientColor: '#F0F8FF',
+        ambientIntensity: 0.5
+      },
+      sunset: { 
+        azimuth: 270, 
+        elevation: 15, 
+        intensity: 0.8, 
+        color: '#FF6347',
+        skyColor: '#FF4500',
+        ambientColor: '#FFE4B5',
+        ambientIntensity: 0.3
+      },
+      night: { 
+        azimuth: 0, 
+        elevation: -10, 
+        intensity: 0.1, 
+        color: '#4169E1',
+        skyColor: '#191970',
+        ambientColor: '#483D8B',
+        ambientIntensity: 0.2
+      }
     };
     
     const settings = presets[preset as keyof typeof presets];
@@ -57,9 +100,20 @@ const LightingControls = ({
         color: settings.color
       });
       
+      setAmbientLight({
+        ...ambientLight,
+        color: settings.ambientColor,
+        intensity: settings.ambientIntensity
+      });
+      
+      setEnvironment({
+        ...environment,
+        skyColor: settings.skyColor
+      });
+      
       toast({
         title: "Lighting preset applied",
-        description: `Changed to ${preset} lighting`,
+        description: `Changed to ${preset} lighting with matching sky`,
       });
     }
   };
@@ -75,10 +129,18 @@ const LightingControls = ({
       <div className="space-y-2">
         <label className="text-sm font-medium">Time of Day Presets</label>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('dawn')}>Dawn</Button>
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('noon')}>Noon</Button>
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('sunset')}>Sunset</Button>
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('night')}>Night</Button>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('dawn')}>
+            🌅 Dawn
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('noon')}>
+            ☀️ Noon
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('sunset')}>
+            🌇 Sunset
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('night')}>
+            🌙 Night
+          </Button>
         </div>
       </div>
 

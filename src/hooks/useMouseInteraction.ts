@@ -34,11 +34,11 @@ export const useMouseInteraction = (
 
     // Create hover material once
     const hoverMaterial = new THREE.MeshStandardMaterial({
-      color: 0xff6b35,
+      color: 0xffaa00,
       transparent: true,
-      opacity: 0.7,
-      emissive: 0x332211,
-      emissiveIntensity: 0.3
+      opacity: 0.4,
+      emissive: 0x442200,
+      emissiveIntensity: 0.2
     });
     hoverMaterialRef.current = hoverMaterial;
 
@@ -75,13 +75,11 @@ export const useMouseInteraction = (
       
       if (object instanceof THREE.Mesh) {
         if (hover) {
-          // Store original material if not already stored
           if (!originalMaterials.has(object)) {
             originalMaterials.set(object, object.material);
           }
           object.material = hoverMaterial;
         } else {
-          // Restore original material
           const originalMaterial = originalMaterials.get(object);
           if (originalMaterial) {
             object.material = originalMaterial;
@@ -92,7 +90,7 @@ export const useMouseInteraction = (
 
       // Apply to children recursively
       object.children.forEach(child => {
-        if (child instanceof THREE.Mesh) {
+        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
           if (hover) {
             if (!originalMaterials.has(child)) {
               originalMaterials.set(child, child.material);
@@ -118,7 +116,6 @@ export const useMouseInteraction = (
 
       raycaster.setFromCamera(mouse, camera);
       
-      // Get all intersectable objects
       const intersectableObjects: THREE.Object3D[] = [];
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
@@ -132,12 +129,10 @@ export const useMouseInteraction = (
         const newHoveredObject = intersects[0].object;
         
         if (hoveredObject !== newHoveredObject) {
-          // Remove hover effect from previous object
           if (hoveredObject) {
             setHoverEffect(hoveredObject, false);
           }
           
-          // Apply hover effect to new object
           setHoverEffect(newHoveredObject, true);
           setHoveredObject(newHoveredObject);
           setObjectData(extractObjectData(newHoveredObject));
@@ -152,7 +147,7 @@ export const useMouseInteraction = (
     };
 
     const handleClick = (event: MouseEvent) => {
-      if (event.button !== 0) return; // Only handle left clicks
+      if (event.button !== 0) return;
       
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -160,7 +155,6 @@ export const useMouseInteraction = (
 
       raycaster.setFromCamera(mouse, camera);
       
-      // Get all intersectable objects
       const intersectableObjects: THREE.Object3D[] = [];
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
@@ -173,6 +167,7 @@ export const useMouseInteraction = (
       if (intersects.length > 0 && onObjectSelect) {
         onObjectSelect(intersects[0].object);
       } else if (onObjectSelect) {
+        // Deselect when clicking on empty space
         onObjectSelect(null);
       }
     };
@@ -185,7 +180,6 @@ export const useMouseInteraction = (
       }
     };
 
-    // Add context menu prevention to avoid browser context menu
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault();
     };
@@ -201,12 +195,10 @@ export const useMouseInteraction = (
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
       
-      // Clean up hover effects
       if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
       }
       
-      // Clean up materials
       if (hoverMaterialRef.current) {
         hoverMaterialRef.current.dispose();
       }

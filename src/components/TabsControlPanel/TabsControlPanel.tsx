@@ -8,7 +8,7 @@ import PropertyPanel from '../PropertyPanel/PropertyPanel';
 import LightingControls from '../LightingControls';
 import MaterialControls from '../MaterialControls';
 import ViewControls from '../ViewControls';
-import { useSelection } from '../../hooks/useSelection';
+import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -46,6 +46,9 @@ interface TabsControlPanelProps {
   // Environment
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
+  
+  // Scene reference
+  scene?: THREE.Scene | null;
 }
 
 const TabsControlPanel = ({
@@ -70,14 +73,14 @@ const TabsControlPanel = ({
   objectName,
   setObjectName,
   environment,
-  setEnvironment
+  setEnvironment,
+  scene
 }: TabsControlPanelProps) => {
   const [activeTab, setActiveTab] = useState('scene');
-  const { selectedObject, selectObject } = useSelection();
+  const { selectedObject } = useSelectionContext();
 
   const handlePropertyChange = (property: string, value: any) => {
     if (selectedObject) {
-      // Handle property updates
       console.log(`Property changed: ${property} = ${value}`);
     }
   };
@@ -141,9 +144,7 @@ const TabsControlPanel = ({
             loadedModels={loadedModels}
             currentModel={currentModel}
             showPrimitives={!currentModel}
-            selectedObject={selectedObject}
-            onObjectSelect={selectObject}
-            scene={null}
+            scene={scene}
           />
         </TabsContent>
 
@@ -162,6 +163,8 @@ const TabsControlPanel = ({
             setAmbientLight={setAmbientLight}
             shadowQuality={shadowQuality}
             setShadowQuality={setShadowQuality}
+            environment={environment}
+            setEnvironment={setEnvironment}
           />
         </TabsContent>
 

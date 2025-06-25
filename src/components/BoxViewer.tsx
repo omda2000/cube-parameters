@@ -24,6 +24,7 @@ interface BoxViewerProps {
   loadedModels?: LoadedModel[];
   currentModel?: LoadedModel | null;
   showPrimitives?: boolean;
+  onSceneReady?: (scene: THREE.Scene) => void;
 }
 
 const BoxViewer = ({ 
@@ -38,7 +39,8 @@ const BoxViewer = ({
   onModelsChange,
   loadedModels,
   currentModel,
-  showPrimitives
+  showPrimitives,
+  onSceneReady
 }: BoxViewerProps) => {
   return (
     <ThreeViewer
@@ -52,6 +54,7 @@ const BoxViewer = ({
       onFileUpload={onFileUpload}
       onModelsChange={onModelsChange}
       showPrimitives={showPrimitives}
+      onSceneReady={onSceneReady}
     />
   );
 };

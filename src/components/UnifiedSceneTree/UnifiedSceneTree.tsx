@@ -3,14 +3,13 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Triangle, Sun, TreePine } from 'lucide-react';
 import * as THREE from 'three';
+import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { LoadedModel, SceneObject } from '../../types/model';
 
 interface UnifiedSceneTreeProps {
   loadedModels: LoadedModel[];
   currentModel: LoadedModel | null;
   showPrimitives: boolean;
-  selectedObject: SceneObject | null;
-  onObjectSelect: (object: SceneObject | null) => void;
   scene: THREE.Scene | null;
 }
 
@@ -18,12 +17,11 @@ const UnifiedSceneTree = ({
   loadedModels, 
   currentModel, 
   showPrimitives,
-  selectedObject,
-  onObjectSelect,
   scene
 }: UnifiedSceneTreeProps) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
+  const { selectedObject, selectObject } = useSelectionContext();
 
   // Build unified scene tree
   useEffect(() => {
@@ -52,7 +50,7 @@ const UnifiedSceneTree = ({
           if (object.userData.isPrimitive) {
             const primitiveObject: SceneObject = {
               id: `primitive_${object.uuid}`,
-              name: object.name || 'Primitive',
+              name: object.name || 'Box Primitive',
               type: 'primitive',
               object: object,
               children: [],
@@ -66,7 +64,7 @@ const UnifiedSceneTree = ({
 
       // Add environment objects
       const groundObject = scene.children.find(child => 
-        child instanceof THREE.Mesh && child.geometry instanceof THREE.PlaneGeometry
+        child instanceof THREE.Mesh && child.geometry instanceof THREE.PlaneGeometry && child.userData.isHelper
       );
       
       if (groundObject) {
@@ -85,15 +83,17 @@ const UnifiedSceneTree = ({
     };
 
     const buildChildren = (object: THREE.Object3D): SceneObject[] => {
-      return object.children.map(child => ({
-        id: `child_${child.uuid}`,
-        name: child.name || `${child.type}_${child.uuid.slice(0, 8)}`,
-        type: child instanceof THREE.Mesh ? 'mesh' : 'group',
-        object: child,
-        children: buildChildren(child),
-        visible: child.visible,
-        selected: selectedObject?.id === `child_${child.uuid}`
-      }));
+      return object.children
+        .filter(child => !child.userData.isHelper)
+        .map(child => ({
+          id: `child_${child.uuid}`,
+          name: child.name || `${child.type}_${child.uuid.slice(0, 8)}`,
+          type: child instanceof THREE.Mesh ? 'mesh' : 'group',
+          object: child,
+          children: buildChildren(child),
+          visible: child.visible,
+          selected: selectedObject?.id === `child_${child.uuid}`
+        }));
     };
 
     setSceneObjects(buildSceneObjects());
@@ -115,7 +115,8 @@ const UnifiedSceneTree = ({
   };
 
   const handleObjectSelect = (sceneObject: SceneObject) => {
-    onObjectSelect(selectedObject?.id === sceneObject.id ? null : sceneObject);
+    const isCurrentlySelected = selectedObject?.id === sceneObject.id;
+    selectObject(isCurrentlySelected ? null : sceneObject);
   };
 
   const getNodeIcon = (type: string) => {
@@ -139,12 +140,13 @@ const UnifiedSceneTree = ({
     const isExpanded = expandedNodes.has(sceneObject.id);
     const hasChildren = sceneObject.children.length > 0;
     const paddingLeft = level * 16;
+    const isSelected = selectedObject?.id === sceneObject.id;
 
     return (
       <div key={sceneObject.id}>
         <div 
           className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer ${
-            sceneObject.selected ? 'bg-indigo-600/30 border border-indigo-500/50' : ''
+            isSelected ? 'bg-blue-600/30 border border-blue-500/50' : ''
           }`}
           style={{ paddingLeft }}
           onClick={() => handleObjectSelect(sceneObject)}
@@ -172,7 +174,7 @@ const UnifiedSceneTree = ({
             
             {getNodeIcon(sceneObject.type)}
             
-            <span className="text-slate-200 truncate flex-1">
+            <span className={`truncate flex-1 ${isSelected ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
               {sceneObject.name}
             </span>
             

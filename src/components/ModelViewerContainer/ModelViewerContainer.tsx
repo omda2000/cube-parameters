@@ -21,6 +21,7 @@ interface ModelViewerContainerProps {
   currentModel: LoadedModel | null;
   onFileUpload: (file: File) => void;
   onModelsChange: (models: LoadedModel[], current: LoadedModel | null) => void;
+  onSceneReady?: (scene: THREE.Scene) => void;
 }
 
 const ModelViewerContainer = ({
@@ -34,7 +35,8 @@ const ModelViewerContainer = ({
   loadedModels,
   currentModel,
   onFileUpload,
-  onModelsChange
+  onModelsChange,
+  onSceneReady
 }: ModelViewerContainerProps) => {
   return (
     <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-slate-700/50 h-[calc(100vh-80px)] sm:h-[calc(100vh-120px)]">
@@ -51,6 +53,7 @@ const ModelViewerContainer = ({
         loadedModels={loadedModels}
         currentModel={currentModel}
         showPrimitives={!currentModel}
+        onSceneReady={onSceneReady}
       />
     </div>
   );
