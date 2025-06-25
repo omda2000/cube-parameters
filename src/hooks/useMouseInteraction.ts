@@ -29,6 +29,7 @@ export const useMouseInteraction = (
   const originalMaterialsRef = useRef<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
   const hoverMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const measureStartPoint = useRef<THREE.Vector3 | null>(null);
+  const previewLineRef = useRef<THREE.Line | null>(null);
 
   useEffect(() => {
     if (!renderer || !camera || !scene) return;
@@ -36,11 +37,11 @@ export const useMouseInteraction = (
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // Create better hover material (outline effect instead of transparency)
+    // Create hover material with better highlighting
     const hoverMaterial = new THREE.MeshStandardMaterial({
       color: 0xffaa00,
-      emissive: 0x331100,
-      emissiveIntensity: 0.3,
+      emissive: 0x442200,
+      emissiveIntensity: 0.4,
       transparent: false
     });
     hoverMaterialRef.current = hoverMaterial;
@@ -74,7 +75,7 @@ export const useMouseInteraction = (
     };
 
     const setHoverEffect = (object: THREE.Object3D, hover: boolean) => {
-      if (activeTool !== 'select') return; // Only show hover effect in select mode
+      if (activeTool !== 'select') return;
       
       const originalMaterials = originalMaterialsRef.current;
       
@@ -93,7 +94,6 @@ export const useMouseInteraction = (
         }
       }
 
-      // Apply to children recursively
       object.children.forEach(child => {
         if (child instanceof THREE.Mesh && !child.userData.isHelper) {
           if (hover) {
@@ -146,6 +146,41 @@ export const useMouseInteraction = (
       return point;
     };
 
+    const createMeasurementLine = (start: THREE.Vector3, end: THREE.Vector3, isPreview = false) => {
+      const points = [start, end];
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({ 
+        color: isPreview ? 0x888888 : 0x00ff00,
+        linewidth: 2,
+        transparent: isPreview,
+        opacity: isPreview ? 0.5 : 1.0
+      });
+      const line = new THREE.Line(geometry, material);
+      line.userData.isMeasurementLine = true;
+      line.userData.isHelper = true;
+      line.name = isPreview ? 'PreviewLine' : `MeasureLine_${Date.now()}`;
+      scene.add(line);
+      return line;
+    };
+
+    const updatePreviewLine = (startPoint: THREE.Vector3, currentPoint: THREE.Vector3) => {
+      if (previewLineRef.current) {
+        scene.remove(previewLineRef.current);
+        previewLineRef.current.geometry.dispose();
+        (previewLineRef.current.material as THREE.Material).dispose();
+      }
+      previewLineRef.current = createMeasurementLine(startPoint, currentPoint, true);
+    };
+
+    const clearPreviewLine = () => {
+      if (previewLineRef.current) {
+        scene.remove(previewLineRef.current);
+        previewLineRef.current.geometry.dispose();
+        (previewLineRef.current.material as THREE.Material).dispose();
+        previewLineRef.current = null;
+      }
+    };
+
     const handleMouseMove = (event: MouseEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -153,7 +188,7 @@ export const useMouseInteraction = (
 
       setMousePosition({ x: event.clientX, y: event.clientY });
 
-      // Change cursor based on active tool
+      // Update cursor based on active tool
       if (activeTool === 'point') {
         renderer.domElement.style.cursor = 'crosshair';
       } else if (activeTool === 'measure') {
@@ -162,6 +197,14 @@ export const useMouseInteraction = (
         renderer.domElement.style.cursor = 'move';
       } else {
         renderer.domElement.style.cursor = 'default';
+      }
+
+      // Handle measure tool preview
+      if (activeTool === 'measure' && measureStartPoint.current) {
+        const currentPoint = getIntersectionPoint(event.clientX, event.clientY);
+        if (currentPoint) {
+          updatePreviewLine(measureStartPoint.current, currentPoint);
+        }
       }
 
       if (activeTool === 'select') {
@@ -213,7 +256,6 @@ export const useMouseInteraction = (
           });
         }
         
-        // Auto-select the created point
         if (onObjectSelect) {
           onObjectSelect(pointMarker);
         }
@@ -224,13 +266,15 @@ export const useMouseInteraction = (
         if (!measureStartPoint.current) {
           // First click - start measurement
           measureStartPoint.current = intersectionPoint.clone();
-          createPointMarker(intersectionPoint); // Visual feedback
+          createPointMarker(intersectionPoint);
         } else {
           // Second click - complete measurement
           const startPoint = measureStartPoint.current;
           const endPoint = intersectionPoint;
           
-          createPointMarker(endPoint); // Visual feedback
+          createPointMarker(endPoint);
+          createMeasurementLine(startPoint, endPoint);
+          clearPreviewLine();
           
           if (onMeasureCreate) {
             onMeasureCreate(startPoint, endPoint);
@@ -271,11 +315,17 @@ export const useMouseInteraction = (
         setHoveredObject(null);
         setObjectData(null);
       }
+      clearPreviewLine();
       renderer.domElement.style.cursor = 'default';
     };
 
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault();
+      // Cancel measurement on right click
+      if (activeTool === 'measure' && measureStartPoint.current) {
+        measureStartPoint.current = null;
+        clearPreviewLine();
+      }
     };
 
     renderer.domElement.addEventListener('mousemove', handleMouseMove);
@@ -292,6 +342,8 @@ export const useMouseInteraction = (
       if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
       }
+      
+      clearPreviewLine();
       
       if (hoverMaterialRef.current) {
         hoverMaterialRef.current.dispose();

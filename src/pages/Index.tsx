@@ -5,6 +5,7 @@ import { useModelState } from '../hooks/useModelState';
 import { useLightingState } from '../hooks/useLightingState';
 import { useEnvironmentState } from '../hooks/useEnvironmentState';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useMeasurements } from '../hooks/useMeasurements';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
 import FloatingPanel from '../components/FloatingPanel/FloatingPanel';
 import FloatingZoomControls from '../components/FloatingZoomControls/FloatingZoomControls';
@@ -15,21 +16,12 @@ import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
 
-interface MeasureData {
-  id: string;
-  startPoint: { x: number; y: number; z: number };
-  endPoint: { x: number; y: number; z: number };
-  distance: number;
-  label: string;
-}
-
 const Index = () => {
   const [scene, setScene] = useState<THREE.Scene | null>(null);
   const [showControlPanel, setShowControlPanel] = useState(true);
   const [showMeasurePanel, setShowMeasurePanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
-  const [measurements, setMeasurements] = useState<MeasureData[]>([]);
   const [settings, setSettings] = useState({
     gridSize: 10,
     snapToGrid: false,
@@ -39,10 +31,33 @@ const Index = () => {
   });
   
   const { toast } = useToast();
-
   const modelState = useModelState();
   const lightingState = useLightingState();
   const environmentState = useEnvironmentState();
+  const { measurements, addMeasurement, removeMeasurement, clearAllMeasurements } = useMeasurements();
+
+  const handleToolSelect = (tool: 'select' | 'point' | 'measure' | 'move') => {
+    setActiveTool(tool);
+    if (tool === 'measure') {
+      setShowMeasurePanel(true);
+    }
+  };
+
+  const handlePointCreate = (point: { x: number; y: number; z: number }) => {
+    console.log('Point created:', point);
+    toast({
+      title: "Point added",
+      description: `Position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)}, ${point.z.toFixed(2)})`,
+    });
+  };
+
+  const handleMeasureCreate = (start: THREE.Vector3, end: THREE.Vector3) => {
+    const measurement = addMeasurement(start, end);
+    toast({
+      title: "Measurement added",
+      description: `Distance: ${measurement.distance.toFixed(3)} units`,
+    });
+  };
 
   const handleFileUpload = async (file: File) => {
     try {
@@ -115,51 +130,6 @@ const Index = () => {
     }
   };
 
-  const handleToolSelect = (tool: 'select' | 'point' | 'measure' | 'move') => {
-    setActiveTool(tool);
-    if (tool === 'measure') {
-      setShowMeasurePanel(true);
-    }
-  };
-
-  const handlePointCreate = (point: { x: number; y: number; z: number }) => {
-    console.log('Point created:', point);
-    toast({
-      title: "Point added",
-      description: `Position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)}, ${point.z.toFixed(2)})`,
-    });
-  };
-
-  const handleMeasureCreate = (start: THREE.Vector3, end: THREE.Vector3) => {
-    const distance = start.distanceTo(end);
-    const newMeasurement: MeasureData = {
-      id: `measure_${Date.now()}`,
-      startPoint: { x: start.x, y: start.y, z: start.z },
-      endPoint: { x: end.x, y: end.y, z: end.z },
-      distance,
-      label: `Measurement ${measurements.length + 1}`
-    };
-    
-    setMeasurements(prev => [...prev, newMeasurement]);
-    toast({
-      title: "Measurement added",
-      description: `Distance: ${distance.toFixed(3)} units`,
-    });
-  };
-
-  const handleClearMeasurements = () => {
-    setMeasurements([]);
-    toast({
-      title: "Measurements cleared",
-      description: "All measurements have been removed",
-    });
-  };
-
-  const handleRemoveMeasurement = (id: string) => {
-    setMeasurements(prev => prev.filter(m => m.id !== id));
-  };
-
-  // Zoom control handlers
   const handleZoomAll = () => {
     const zoomControls = (window as any).__zoomControls;
     if (zoomControls) {
@@ -194,7 +164,6 @@ const Index = () => {
     setShowSettingsPanel(!showSettingsPanel);
   };
 
-  // Setup keyboard shortcuts
   useKeyboardShortcuts({
     onToggleControlPanel: toggleControlPanel,
     onZoomAll: handleZoomAll,
@@ -259,8 +228,8 @@ const Index = () => {
         {/* Measure Tools Panel */}
         <MeasureToolsPanel
           measurements={measurements}
-          onClearAll={handleClearMeasurements}
-          onRemoveMeasurement={handleRemoveMeasurement}
+          onClearAll={clearAllMeasurements}
+          onRemoveMeasurement={removeMeasurement}
           visible={showMeasurePanel}
           onClose={() => setShowMeasurePanel(false)}
         />
