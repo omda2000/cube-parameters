@@ -2,13 +2,11 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Box, Sun, Palette, Eye, Settings } from 'lucide-react';
-import FileUploadDialog from '../FileUpload/FileUploadDialog';
-import UnifiedSceneTree from '../UnifiedSceneTree/UnifiedSceneTree';
-import PropertyPanel from '../PropertyPanel/PropertyPanel';
-import LightingControls from '../LightingControls';
-import MaterialControls from '../MaterialControls';
-import ViewControls from '../ViewControls';
-import { useSelectionContext } from '../../contexts/SelectionContext';
+import SceneTab from './tabs/SceneTab';
+import PropertiesTab from './tabs/PropertiesTab';
+import LightingTab from './tabs/LightingTab';
+import MaterialsTab from './tabs/MaterialsTab';
+import ViewTab from './tabs/ViewTab';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -57,9 +55,6 @@ const TabsControlPanel = ({
   isUploading,
   uploadError,
   onFileUpload,
-  onModelSelect,
-  onModelRemove,
-  onPrimitiveSelect,
   sunlight,
   setSunlight,
   ambientLight,
@@ -77,43 +72,6 @@ const TabsControlPanel = ({
   scene
 }: TabsControlPanelProps) => {
   const [activeTab, setActiveTab] = useState('scene');
-  const { selectedObject } = useSelectionContext();
-
-  const handlePropertyChange = (property: string, value: any) => {
-    if (selectedObject) {
-      console.log(`Property changed: ${property} = ${value}`);
-    }
-  };
-
-  // Zoom control handlers
-  const handleZoomAll = () => {
-    const zoomControls = (window as any).__zoomControls;
-    if (zoomControls) {
-      zoomControls.zoomAll();
-    }
-  };
-
-  const handleZoomToSelected = () => {
-    const zoomControls = (window as any).__zoomControls;
-    if (zoomControls) {
-      zoomControls.zoomToSelected();
-    }
-  };
-
-  const handleZoomIn = () => {
-    // Simple zoom in implementation
-    console.log('Zoom in');
-  };
-
-  const handleZoomOut = () => {
-    // Simple zoom out implementation
-    console.log('Zoom out');
-  };
-
-  const handleResetView = () => {
-    // Reset view implementation
-    console.log('Reset view');
-  };
 
   return (
     <div className="space-y-4">
@@ -157,36 +115,22 @@ const TabsControlPanel = ({
         </TabsList>
 
         <TabsContent value="scene" className="space-y-4 mt-4">
-          <div className="flex flex-col gap-2">
-            <FileUploadDialog 
-              onFileSelect={onFileUpload} 
-              isLoading={isUploading}
-            />
-          </div>
-
-          {uploadError && (
-            <div className="p-3 bg-red-900/30 border border-red-800/50 rounded-lg text-red-200 text-sm">
-              {uploadError}
-            </div>
-          )}
-
-          <UnifiedSceneTree
+          <SceneTab
             loadedModels={loadedModels}
             currentModel={currentModel}
-            showPrimitives={true}
+            isUploading={isUploading}
+            uploadError={uploadError}
+            onFileUpload={onFileUpload}
             scene={scene}
           />
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-4 mt-4">
-          <PropertyPanel
-            selectedObject={selectedObject}
-            onPropertyChange={handlePropertyChange}
-          />
+          <PropertiesTab />
         </TabsContent>
 
         <TabsContent value="lighting" className="space-y-4 mt-4">
-          <LightingControls 
+          <LightingTab
             sunlight={sunlight}
             setSunlight={setSunlight}
             ambientLight={ambientLight}
@@ -199,7 +143,7 @@ const TabsControlPanel = ({
         </TabsContent>
 
         <TabsContent value="materials" className="space-y-4 mt-4">
-          <MaterialControls 
+          <MaterialsTab
             dimensions={dimensions}
             setDimensions={setDimensions}
             boxColor={boxColor}
@@ -210,14 +154,9 @@ const TabsControlPanel = ({
         </TabsContent>
 
         <TabsContent value="environment" className="space-y-4 mt-4">
-          <ViewControls 
+          <ViewTab
             environment={environment}
             setEnvironment={setEnvironment}
-            onZoomAll={handleZoomAll}
-            onZoomToSelected={handleZoomToSelected}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onResetView={handleResetView}
           />
         </TabsContent>
       </Tabs>
