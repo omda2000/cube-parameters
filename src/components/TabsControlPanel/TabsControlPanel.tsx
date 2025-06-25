@@ -85,6 +85,36 @@ const TabsControlPanel = ({
     }
   };
 
+  // Zoom control handlers
+  const handleZoomAll = () => {
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls) {
+      zoomControls.zoomAll();
+    }
+  };
+
+  const handleZoomToSelected = () => {
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls) {
+      zoomControls.zoomToSelected();
+    }
+  };
+
+  const handleZoomIn = () => {
+    // Simple zoom in implementation
+    console.log('Zoom in');
+  };
+
+  const handleZoomOut = () => {
+    // Simple zoom out implementation
+    console.log('Zoom out');
+  };
+
+  const handleResetView = () => {
+    // Reset view implementation
+    console.log('Reset view');
+  };
+
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -143,7 +173,7 @@ const TabsControlPanel = ({
           <UnifiedSceneTree
             loadedModels={loadedModels}
             currentModel={currentModel}
-            showPrimitives={!currentModel}
+            showPrimitives={true}
             scene={scene}
           />
         </TabsContent>
@@ -183,6 +213,11 @@ const TabsControlPanel = ({
           <ViewControls 
             environment={environment}
             setEnvironment={setEnvironment}
+            onZoomAll={handleZoomAll}
+            onZoomToSelected={handleZoomToSelected}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onResetView={handleResetView}
           />
         </TabsContent>
       </Tabs>

@@ -52,7 +52,7 @@ const ModelViewerContainer = ({
         onModelsChange={onModelsChange}
         loadedModels={loadedModels}
         currentModel={currentModel}
-        showPrimitives={!currentModel}
+        showPrimitives={true}
         onSceneReady={onSceneReady}
       />
     </div>
