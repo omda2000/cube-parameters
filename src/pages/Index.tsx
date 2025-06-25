@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SelectionProvider } from '../contexts/SelectionContext';
@@ -9,12 +8,27 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
 import FloatingPanel from '../components/FloatingPanel/FloatingPanel';
 import FloatingZoomControls from '../components/FloatingZoomControls/FloatingZoomControls';
+import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
+import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
+import SettingsPanel from '../components/SettingsPanel/SettingsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import type { LoadedModel } from '../types/model';
 
 const Index = () => {
   const [scene, setScene] = useState<THREE.Scene | null>(null);
   const [showControlPanel, setShowControlPanel] = useState(true);
+  const [showMeasurePanel, setShowMeasurePanel] = useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
+  const [measurements, setMeasurements] = useState<any[]>([]);
+  const [settings, setSettings] = useState({
+    gridSize: 10,
+    snapToGrid: false,
+    showAxes: true,
+    renderQuality: 'medium' as 'low' | 'medium' | 'high',
+    shadowQuality: 'medium' as 'low' | 'medium' | 'high'
+  });
+  
   const { toast } = useToast();
 
   const modelState = useModelState();
@@ -92,6 +106,21 @@ const Index = () => {
     }
   };
 
+  const handleToolSelect = (tool: 'select' | 'point' | 'measure' | 'move') => {
+    setActiveTool(tool);
+    if (tool === 'measure') {
+      setShowMeasurePanel(true);
+    }
+  };
+
+  const handleClearMeasurements = () => {
+    setMeasurements([]);
+  };
+
+  const handleRemoveMeasurement = (id: string) => {
+    setMeasurements(prev => prev.filter(m => m.id !== id));
+  };
+
   // Zoom control handlers
   const handleZoomAll = () => {
     const zoomControls = (window as any).__zoomControls;
@@ -121,6 +150,10 @@ const Index = () => {
 
   const toggleControlPanel = () => {
     setShowControlPanel(!showControlPanel);
+  };
+
+  const toggleSettingsPanel = () => {
+    setShowSettingsPanel(!showSettingsPanel);
   };
 
   // Setup keyboard shortcuts
@@ -167,6 +200,12 @@ const Index = () => {
           />
         </div>
 
+        {/* Aid Tools Bar */}
+        <AidToolsBar
+          onToolSelect={handleToolSelect}
+          activeTool={activeTool}
+        />
+
         {/* Floating zoom controls */}
         <FloatingZoomControls
           onZoomAll={handleZoomAll}
@@ -174,6 +213,23 @@ const Index = () => {
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           onResetView={handleResetView}
+        />
+
+        {/* Measure Tools Panel */}
+        <MeasureToolsPanel
+          measurements={measurements}
+          onClearAll={handleClearMeasurements}
+          onRemoveMeasurement={handleRemoveMeasurement}
+          visible={showMeasurePanel}
+          onClose={() => setShowMeasurePanel(false)}
+        />
+
+        {/* Settings Panel */}
+        <SettingsPanel
+          visible={showSettingsPanel}
+          onClose={() => setShowSettingsPanel(false)}
+          settings={settings}
+          onSettingsChange={setSettings}
         />
 
         {/* Floating control panel */}
@@ -200,6 +256,18 @@ const Index = () => {
             </svg>
           </button>
         )}
+
+        {/* Settings toggle button */}
+        <button
+          onClick={toggleSettingsPanel}
+          className="fixed top-4 right-16 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 text-slate-300 hover:text-white hover:bg-slate-700/50 z-40"
+          title="Settings"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
 
         {/* Keyboard shortcuts help */}
         <div className="fixed bottom-4 left-4 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 text-xs text-slate-400 z-40">
