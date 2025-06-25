@@ -1,5 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
+import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
 import { useMouseInteraction } from '../hooks/useMouseInteraction';
