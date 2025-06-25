@@ -1,8 +1,7 @@
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Box, Triangle, Sun, TreePine } from 'lucide-react';
+import { Settings, Box, Triangle, Sun, TreePine, MapPin } from 'lucide-react';
 import * as THREE from 'three';
 import type { SceneObject } from '../../types/model';
 
@@ -40,6 +39,8 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
         return <TreePine className="h-5 w-5 text-brown-400" />;
       case 'light':
         return <Sun className="h-5 w-5 text-yellow-400" />;
+      case 'point':
+        return <MapPin className="h-5 w-5 text-red-400" />;
       default:
         return <Settings className="h-5 w-5 text-gray-400" />;
     }
@@ -121,8 +122,8 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
 
         <Separator className="bg-slate-600" />
 
-        {/* Geometry Info */}
-        {meshInfo && (
+        {/* Geometry Info - only show for mesh objects */}
+        {meshInfo && selectedObject.type === 'mesh' && (
           <>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -148,7 +149,9 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
 
         {/* Transform Properties */}
         <div>
-          <Label className="text-sm font-medium text-slate-300 mb-2 block">Position</Label>
+          <Label className="text-sm font-medium text-slate-300 mb-2 block">
+            {selectedObject.type === 'point' ? 'Coordinates' : 'Position'}
+          </Label>
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label className="text-xs text-slate-400">X</Label>
@@ -183,77 +186,82 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
           </div>
         </div>
 
-        <div>
-          <Label className="text-sm font-medium text-slate-300 mb-2 block">Rotation (degrees)</Label>
-          <div className="grid grid-cols-3 gap-2">
+        {/* Hide rotation and scale for point objects */}
+        {selectedObject.type !== 'point' && (
+          <>
             <div>
-              <Label className="text-xs text-slate-400">X</Label>
-              <Input
-                type="number"
-                step="1"
-                value={(selectedObject.object.rotation.x * 180 / Math.PI).toFixed(1)}
-                onChange={(e) => handleTransformChange('x', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                className="mt-1"
-              />
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">Rotation (degrees)</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label className="text-xs text-slate-400">X</Label>
+                  <Input
+                    type="number"
+                    step="1"
+                    value={(selectedObject.object.rotation.x * 180 / Math.PI).toFixed(1)}
+                    onChange={(e) => handleTransformChange('x', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-400">Y</Label>
+                  <Input
+                    type="number"
+                    step="1"
+                    value={(selectedObject.object.rotation.y * 180 / Math.PI).toFixed(1)}
+                    onChange={(e) => handleTransformChange('y', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-400">Z</Label>
+                  <Input
+                    type="number"
+                    step="1"
+                    value={(selectedObject.object.rotation.z * 180 / Math.PI).toFixed(1)}
+                    onChange={(e) => handleTransformChange('z', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs text-slate-400">Y</Label>
-              <Input
-                type="number"
-                step="1"
-                value={(selectedObject.object.rotation.y * 180 / Math.PI).toFixed(1)}
-                onChange={(e) => handleTransformChange('y', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-slate-400">Z</Label>
-              <Input
-                type="number"
-                step="1"
-                value={(selectedObject.object.rotation.z * 180 / Math.PI).toFixed(1)}
-                onChange={(e) => handleTransformChange('z', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </div>
 
-        <div>
-          <Label className="text-sm font-medium text-slate-300 mb-2 block">Scale</Label>
-          <div className="grid grid-cols-3 gap-2">
             <div>
-              <Label className="text-xs text-slate-400">X</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={selectedObject.object.scale.x.toFixed(2)}
-                onChange={(e) => handleTransformChange('x', 'scale', parseFloat(e.target.value))}
-                className="mt-1"
-              />
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">Scale</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label className="text-xs text-slate-400">X</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={selectedObject.object.scale.x.toFixed(2)}
+                    onChange={(e) => handleTransformChange('x', 'scale', parseFloat(e.target.value))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-400">Y</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={selectedObject.object.scale.y.toFixed(2)}
+                    onChange={(e) => handleTransformChange('y', 'scale', parseFloat(e.target.value))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-400">Z</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={selectedObject.object.scale.z.toFixed(2)}
+                    onChange={(e) => handleTransformChange('z', 'scale', parseFloat(e.target.value))}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs text-slate-400">Y</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={selectedObject.object.scale.y.toFixed(2)}
-                onChange={(e) => handleTransformChange('y', 'scale', parseFloat(e.target.value))}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-slate-400">Z</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={selectedObject.object.scale.z.toFixed(2)}
-                onChange={(e) => handleTransformChange('z', 'scale', parseFloat(e.target.value))}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
