@@ -181,6 +181,8 @@ const Index = () => {
     onModelRemove: handleModelRemove,
     onPrimitiveSelect: handlePrimitiveSelect,
     scene: scene,
+    measurements: measurements,
+    onRemoveMeasurement: removeMeasurement,
     ...lightingState,
     ...modelState,
     ...environmentState

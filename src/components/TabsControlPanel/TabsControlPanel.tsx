@@ -1,11 +1,13 @@
+
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Box, Globe, Palette, Eye, Settings } from 'lucide-react';
+import { Box, Globe, Palette, Eye, Settings, Sun } from 'lucide-react';
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
 import MaterialsTab from './tabs/MaterialsTab';
 import ViewTab from './tabs/ViewTab';
+import SettingsTab from './tabs/SettingsTab';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -75,41 +77,48 @@ const TabsControlPanel = ({
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-slate-700/50 h-12">
+        <TabsList className="grid w-full grid-cols-6 bg-slate-700/50 h-12">
           <TabsTrigger 
             value="scene" 
-            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-0.5 p-1"
           >
             <Box className="h-3 w-3" />
             <span>Scene</span>
           </TabsTrigger>
           <TabsTrigger 
             value="properties" 
-            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-0.5 p-1"
           >
             <Settings className="h-3 w-3" />
             <span>Props</span>
           </TabsTrigger>
           <TabsTrigger 
             value="lighting" 
-            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-0.5 p-1"
           >
-            <Globe className="h-3 w-3" />
-            <span>Environment</span>
+            <Sun className="h-3 w-3" />
+            <span>Lighting</span>
           </TabsTrigger>
           <TabsTrigger 
             value="materials" 
-            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-0.5 p-1"
           >
             <Palette className="h-3 w-3" />
             <span>Material</span>
           </TabsTrigger>
           <TabsTrigger 
             value="environment" 
-            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-1 p-2"
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-0.5 p-1"
           >
             <Eye className="h-3 w-3" />
             <span>View</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="settings" 
+            className="text-xs text-slate-300 data-[state=active]:bg-indigo-600 flex flex-col items-center gap-0.5 p-1"
+          >
+            <Globe className="h-3 w-3" />
+            <span>Settings</span>
           </TabsTrigger>
         </TabsList>
 
@@ -157,6 +166,10 @@ const TabsControlPanel = ({
             environment={environment}
             setEnvironment={setEnvironment}
           />
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4 mt-4">
+          <SettingsTab />
         </TabsContent>
       </Tabs>
     </div>
