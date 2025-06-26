@@ -1,9 +1,10 @@
+
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sun, Lightbulb, Settings, Globe } from "lucide-react";
+import { Sun, Lightbulb, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SunlightSettings {
@@ -24,7 +25,6 @@ interface EnvironmentSettings {
   groundColor: string;
   skyColor: string;
   showGround: boolean;
-  enabled?: boolean;
 }
 
 interface LightingControlsProps {
@@ -124,23 +124,6 @@ const LightingControls = ({
         <Sun className="h-5 w-5 text-yellow-400" />
         Lighting Controls
       </h2>
-
-      {/* Environment Toggle */}
-      <div className="space-y-2 border-b border-slate-700/50 pb-4">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium flex items-center gap-2">
-            <Globe className="h-4 w-4 text-blue-400" />
-            Enable Environment Lighting
-          </label>
-          <Switch
-            checked={environment.enabled !== false}
-            onCheckedChange={(checked) => setEnvironment({ ...environment, enabled: checked })}
-          />
-        </div>
-        <p className="text-xs text-slate-400">
-          Turn off for basic lighting setup
-        </p>
-      </div>
       
       {/* Time of Day Presets */}
       <div className="space-y-2">
