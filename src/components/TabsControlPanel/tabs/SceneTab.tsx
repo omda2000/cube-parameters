@@ -89,8 +89,8 @@ const SceneTab = ({
       />
 
       <FileUploadDialog
-        isOpen={showUploadDialog}
-        onClose={() => setShowUploadDialog(false)}
+        open={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
         onFileUpload={onFileUpload}
         isUploading={isUploading}
         uploadError={uploadError}
