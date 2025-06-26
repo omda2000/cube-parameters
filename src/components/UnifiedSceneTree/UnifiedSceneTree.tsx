@@ -78,14 +78,11 @@ const UnifiedSceneTree = ({
         }
       });
 
-      // Add measurements
+      // Add measurement groups
       scene.traverse((object) => {
-        if (object.userData.isMeasurementLine && object instanceof THREE.Line) {
-          const geometry = object.geometry;
-          const positions = geometry.attributes.position.array;
-          const startPoint = new THREE.Vector3(positions[0], positions[1], positions[2]);
-          const endPoint = new THREE.Vector3(positions[3], positions[4], positions[5]);
-          const distance = startPoint.distanceTo(endPoint);
+        if (object.userData.isMeasurementGroup && object instanceof THREE.Group) {
+          const measurementData = object.userData.measurementData;
+          const distance = measurementData ? measurementData.distance : 0;
           
           const measurementObject: SceneObject = {
             id: `measurement_${object.uuid}`,
@@ -95,11 +92,11 @@ const UnifiedSceneTree = ({
             children: [],
             visible: object.visible,
             selected: selectedObject?.id === `measurement_${object.uuid}`,
-            measurementData: {
-              startPoint,
-              endPoint,
-              distance
-            }
+            measurementData: measurementData ? {
+              startPoint: measurementData.startPoint,
+              endPoint: measurementData.endPoint,
+              distance: measurementData.distance
+            } : undefined
           };
           objects.push(measurementObject);
         }
@@ -169,17 +166,31 @@ const UnifiedSceneTree = ({
       // Remove from scene
       scene?.remove(sceneObject.object);
       
-      // Dispose geometry and material
-      if (sceneObject.object instanceof THREE.Mesh) {
+      // Dispose geometry and material for measurement groups
+      if (sceneObject.type === 'measurement' && sceneObject.object instanceof THREE.Group) {
+        sceneObject.object.children.forEach(child => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry?.dispose();
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => mat.dispose());
+            } else {
+              child.material?.dispose();
+            }
+          } else if (child instanceof THREE.Line) {
+            child.geometry?.dispose();
+            (child.material as THREE.Material)?.dispose();
+          }
+        });
+      }
+      
+      // Dispose geometry and material for points
+      if (sceneObject.type === 'point' && sceneObject.object instanceof THREE.Mesh) {
         sceneObject.object.geometry?.dispose();
         if (Array.isArray(sceneObject.object.material)) {
           sceneObject.object.material.forEach(mat => mat.dispose());
         } else {
           sceneObject.object.material?.dispose();
         }
-      } else if (sceneObject.object instanceof THREE.Line) {
-        sceneObject.object.geometry?.dispose();
-        (sceneObject.object.material as THREE.Material)?.dispose();
       }
       
       // Clear selection if this object was selected

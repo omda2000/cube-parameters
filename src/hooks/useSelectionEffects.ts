@@ -8,7 +8,7 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
   const outlineRef = useRef<THREE.LineSegments | null>(null);
   const overlayMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const pointOutlineRef = useRef<THREE.Mesh | null>(null);
-  const lineOutlineRef = useRef<THREE.Line | null>(null);
+  const measurementOutlineRef = useRef<THREE.Group | null>(null);
 
   // Create materials once
   useEffect(() => {
@@ -62,23 +62,45 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
     return null;
   };
 
-  const createLineSelectionEffect = (lineObject: THREE.Object3D) => {
-    if (lineObject instanceof THREE.Line) {
-      const geometry = lineObject.geometry.clone();
-      const material = new THREE.LineBasicMaterial({ 
-        color: 0x0088ff,
-        linewidth: 5,
-        transparent: true,
-        opacity: 0.8
-      });
-      const outline = new THREE.Line(geometry, material);
-      outline.position.copy(lineObject.position);
-      outline.rotation.copy(lineObject.rotation);
-      outline.scale.copy(lineObject.scale);
-      outline.userData.isHelper = true;
-      return outline;
-    }
-    return null;
+  const createMeasurementSelectionEffect = (measurementGroup: THREE.Group) => {
+    const selectionGroup = new THREE.Group();
+    selectionGroup.userData.isHelper = true;
+
+    // Create selection effects for each child
+    measurementGroup.children.forEach(child => {
+      if (child instanceof THREE.Mesh) {
+        // Create larger sphere for points
+        const geometry = new THREE.SphereGeometry(0.12, 16, 16);
+        const material = new THREE.MeshStandardMaterial({ 
+          color: 0x0088ff,
+          transparent: true,
+          opacity: 0.5,
+          depthTest: false
+        });
+        const outline = new THREE.Mesh(geometry, material);
+        outline.position.copy(child.position);
+        selectionGroup.add(outline);
+      } else if (child instanceof THREE.Line) {
+        // Create thicker blue line for measurement line
+        const geometry = child.geometry.clone();
+        const material = new THREE.LineDashedMaterial({ 
+          color: 0x0088ff,
+          linewidth: 5,
+          dashSize: 0.1,
+          gapSize: 0.05,
+          transparent: true,
+          opacity: 0.8
+        });
+        const outline = new THREE.Line(geometry, material);
+        outline.computeLineDistances();
+        outline.position.copy(child.position);
+        outline.rotation.copy(child.rotation);
+        outline.scale.copy(child.scale);
+        selectionGroup.add(outline);
+      }
+    });
+
+    return selectionGroup;
   };
 
   const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
@@ -106,20 +128,28 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
       return;
     }
 
-    // Handle measurements
-    if (objectType === 'measurement') {
+    // Handle measurements (groups)
+    if (objectType === 'measurement' && object instanceof THREE.Group) {
       if (selected) {
-        const lineOutline = createLineSelectionEffect(object);
-        if (lineOutline) {
-          lineOutlineRef.current = lineOutline;
-          object.parent?.add(lineOutline);
+        const measurementOutline = createMeasurementSelectionEffect(object);
+        if (measurementOutline) {
+          measurementOutlineRef.current = measurementOutline;
+          object.parent?.add(measurementOutline);
         }
       } else {
-        if (lineOutlineRef.current) {
-          lineOutlineRef.current.parent?.remove(lineOutlineRef.current);
-          lineOutlineRef.current.geometry.dispose();
-          (lineOutlineRef.current.material as THREE.Material).dispose();
-          lineOutlineRef.current = null;
+        if (measurementOutlineRef.current) {
+          measurementOutlineRef.current.parent?.remove(measurementOutlineRef.current);
+          // Dispose all children materials and geometries
+          measurementOutlineRef.current.children.forEach(child => {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              (child.material as THREE.Material).dispose();
+            } else if (child instanceof THREE.Line) {
+              child.geometry.dispose();
+              (child.material as THREE.Material).dispose();
+            }
+          });
+          measurementOutlineRef.current = null;
         }
       }
       return;
@@ -165,29 +195,31 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
       }
     }
 
-    // Apply to children recursively
-    object.children.forEach(child => {
-      if (child instanceof THREE.Mesh && !child.userData.isHelper) {
-        if (selected) {
-          if (!originalMaterials.has(child)) {
-            originalMaterials.set(child, child.material);
-          }
-          
-          const originalMaterial = originalMaterials.get(child);
-          if (Array.isArray(originalMaterial)) {
-            child.material = [...originalMaterial, overlayMaterial];
+    // Apply to children recursively (but skip measurement groups as they're handled above)
+    if (!object.userData.isMeasurementGroup) {
+      object.children.forEach(child => {
+        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
+          if (selected) {
+            if (!originalMaterials.has(child)) {
+              originalMaterials.set(child, child.material);
+            }
+            
+            const originalMaterial = originalMaterials.get(child);
+            if (Array.isArray(originalMaterial)) {
+              child.material = [...originalMaterial, overlayMaterial];
+            } else {
+              child.material = [originalMaterial as THREE.Material, overlayMaterial];
+            }
           } else {
-            child.material = [originalMaterial as THREE.Material, overlayMaterial];
-          }
-        } else {
-          const originalMaterial = originalMaterials.get(child);
-          if (originalMaterial) {
-            child.material = originalMaterial;
-            originalMaterials.delete(child);
+            const originalMaterial = originalMaterials.get(child);
+            if (originalMaterial) {
+              child.material = originalMaterial;
+              originalMaterials.delete(child);
+            }
           }
         }
-      }
-    });
+      });
+    }
   };
 
   // Apply/remove selection effects when selectedObject changes

@@ -74,6 +74,28 @@ export const useMouseInteraction = (
       };
     };
 
+    const clearHoverEffect = (object: THREE.Object3D) => {
+      const originalMaterials = originalMaterialsRef.current;
+      
+      if (object instanceof THREE.Mesh) {
+        const originalMaterial = originalMaterials.get(object);
+        if (originalMaterial) {
+          object.material = originalMaterial;
+          originalMaterials.delete(object);
+        }
+      }
+
+      object.children.forEach(child => {
+        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
+          const originalMaterial = originalMaterials.get(child);
+          if (originalMaterial) {
+            child.material = originalMaterial;
+            originalMaterials.delete(child);
+          }
+        }
+      });
+    };
+
     const setHoverEffect = (object: THREE.Object3D, hover: boolean) => {
       if (activeTool !== 'select') return;
       
@@ -86,11 +108,7 @@ export const useMouseInteraction = (
           }
           object.material = hoverMaterial;
         } else {
-          const originalMaterial = originalMaterials.get(object);
-          if (originalMaterial) {
-            object.material = originalMaterial;
-            originalMaterials.delete(object);
-          }
+          clearHoverEffect(object);
         }
       }
 
@@ -146,21 +164,52 @@ export const useMouseInteraction = (
       return point;
     };
 
-    const createMeasurementLine = (start: THREE.Vector3, end: THREE.Vector3, isPreview = false) => {
+    const createMeasurementGroup = (start: THREE.Vector3, end: THREE.Vector3) => {
+      const measurementGroup = new THREE.Group();
+      measurementGroup.userData.isMeasurementGroup = true;
+      measurementGroup.userData.isHelper = true;
+      measurementGroup.name = `Measurement_${Date.now()}`;
+
+      // Create start point
+      const startGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+      const pointMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xff0000,
+        emissive: 0x220000,
+        emissiveIntensity: 0.2
+      });
+      const startPoint = new THREE.Mesh(startGeometry, pointMaterial);
+      startPoint.position.copy(start);
+      measurementGroup.add(startPoint);
+
+      // Create end point
+      const endGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+      const endPoint = new THREE.Mesh(endGeometry, pointMaterial.clone());
+      endPoint.position.copy(end);
+      measurementGroup.add(endPoint);
+
+      // Create dashed line
       const points = [start, end];
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const material = new THREE.LineBasicMaterial({ 
-        color: isPreview ? 0x888888 : 0x00ff00,
-        linewidth: 2,
-        transparent: isPreview,
-        opacity: isPreview ? 0.5 : 1.0
+      const material = new THREE.LineDashedMaterial({ 
+        color: 0xff0000,
+        linewidth: 3,
+        dashSize: 0.1,
+        gapSize: 0.05
       });
       const line = new THREE.Line(geometry, material);
-      line.userData.isMeasurementLine = true;
-      line.userData.isHelper = true;
-      line.name = isPreview ? 'PreviewLine' : `MeasureLine_${Date.now()}`;
-      scene.add(line);
-      return line;
+      line.computeLineDistances(); // Required for dashed lines
+      measurementGroup.add(line);
+
+      // Store measurement data
+      const distance = start.distanceTo(end);
+      measurementGroup.userData.measurementData = {
+        startPoint: start,
+        endPoint: end,
+        distance: distance
+      };
+
+      scene.add(measurementGroup);
+      return measurementGroup;
     };
 
     const updatePreviewLine = (startPoint: THREE.Vector3, currentPoint: THREE.Vector3) => {
@@ -169,7 +218,23 @@ export const useMouseInteraction = (
         previewLineRef.current.geometry.dispose();
         (previewLineRef.current.material as THREE.Material).dispose();
       }
-      previewLineRef.current = createMeasurementLine(startPoint, currentPoint, true);
+      
+      const points = [startPoint, currentPoint];
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineDashedMaterial({ 
+        color: 0x888888,
+        linewidth: 2,
+        dashSize: 0.05,
+        gapSize: 0.025,
+        transparent: true,
+        opacity: 0.5
+      });
+      const line = new THREE.Line(geometry, material);
+      line.computeLineDistances();
+      line.userData.isHelper = true;
+      line.name = 'PreviewLine';
+      scene.add(line);
+      previewLineRef.current = line;
     };
 
     const clearPreviewLine = () => {
@@ -213,6 +278,9 @@ export const useMouseInteraction = (
         const intersectableObjects: THREE.Object3D[] = [];
         scene.traverse((object) => {
           if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
+            intersectableObjects.push(object);
+          }
+          if ((object.userData.isPoint || object.userData.isMeasurementGroup) && object.visible) {
             intersectableObjects.push(object);
           }
         });
@@ -266,18 +334,20 @@ export const useMouseInteraction = (
         if (!measureStartPoint.current) {
           // First click - start measurement
           measureStartPoint.current = intersectionPoint.clone();
-          createPointMarker(intersectionPoint);
         } else {
           // Second click - complete measurement
           const startPoint = measureStartPoint.current;
           const endPoint = intersectionPoint;
           
-          createPointMarker(endPoint);
-          createMeasurementLine(startPoint, endPoint);
+          const measurementGroup = createMeasurementGroup(startPoint, endPoint);
           clearPreviewLine();
           
           if (onMeasureCreate) {
             onMeasureCreate(startPoint, endPoint);
+          }
+          
+          if (onObjectSelect) {
+            onObjectSelect(measurementGroup);
           }
           
           measureStartPoint.current = null;
@@ -286,6 +356,12 @@ export const useMouseInteraction = (
       }
       
       if (activeTool === 'select') {
+        // Clear any existing hover effects before selection
+        if (hoveredObject) {
+          setHoverEffect(hoveredObject, false);
+          setHoveredObject(null);
+        }
+
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -298,7 +374,7 @@ export const useMouseInteraction = (
           if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
             intersectableObjects.push(object);
           }
-          if ((object.userData.isPoint || object.userData.isMeasurementLine) && object.visible) {
+          if ((object.userData.isPoint || object.userData.isMeasurementGroup) && object.visible) {
             intersectableObjects.push(object);
           }
         });
@@ -306,7 +382,14 @@ export const useMouseInteraction = (
         const intersects = raycaster.intersectObjects(intersectableObjects, true);
         
         if (intersects.length > 0 && onObjectSelect) {
-          onObjectSelect(intersects[0].object);
+          let targetObject = intersects[0].object;
+          
+          // If clicked on a child of a measurement group, select the group
+          if (targetObject.parent && targetObject.parent.userData.isMeasurementGroup) {
+            targetObject = targetObject.parent;
+          }
+          
+          onObjectSelect(targetObject);
         } else if (onObjectSelect) {
           onObjectSelect(null);
         }
