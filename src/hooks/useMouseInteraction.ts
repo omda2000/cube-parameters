@@ -1,6 +1,11 @@
 
 import { useEffect, useState, useRef } from 'react';
 import * as THREE from 'three';
+import { MaterialManager } from './utils/materialManager';
+import { createRaycaster, getIntersectableObjects } from './utils/raycastUtils';
+import { useSelectTool } from './tools/useSelectTool';
+import { usePointTool } from './tools/usePointTool';
+import { useMeasureTool } from './tools/useMeasureTool';
 
 interface ObjectData {
   name: string;
@@ -26,25 +31,17 @@ export const useMouseInteraction = (
   const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const originalMaterialsRef = useRef<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
-  const hoverMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const measureStartPoint = useRef<THREE.Vector3 | null>(null);
-  const previewLineRef = useRef<THREE.Line | null>(null);
+  const materialManagerRef = useRef<MaterialManager | null>(null);
+
+  // Initialize tools
+  const selectTool = useSelectTool(renderer, camera, scene, onObjectSelect);
+  const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
+  const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
 
   useEffect(() => {
     if (!renderer || !camera || !scene) return;
 
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-
-    // Create hover material with better highlighting
-    const hoverMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffaa00,
-      emissive: 0x442200,
-      emissiveIntensity: 0.4,
-      transparent: false
-    });
-    hoverMaterialRef.current = hoverMaterial;
+    materialManagerRef.current = new MaterialManager();
 
     const extractObjectData = (object: THREE.Object3D): ObjectData => {
       let vertices = 0;
@@ -74,179 +71,8 @@ export const useMouseInteraction = (
       };
     };
 
-    const clearHoverEffect = (object: THREE.Object3D) => {
-      const originalMaterials = originalMaterialsRef.current;
-      
-      if (object instanceof THREE.Mesh) {
-        const originalMaterial = originalMaterials.get(object);
-        if (originalMaterial) {
-          object.material = originalMaterial;
-          originalMaterials.delete(object);
-        }
-      }
-
-      object.children.forEach(child => {
-        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
-          const originalMaterial = originalMaterials.get(child);
-          if (originalMaterial) {
-            child.material = originalMaterial;
-            originalMaterials.delete(child);
-          }
-        }
-      });
-    };
-
-    const setHoverEffect = (object: THREE.Object3D, hover: boolean) => {
-      if (activeTool !== 'select') return;
-      
-      const originalMaterials = originalMaterialsRef.current;
-      
-      if (object instanceof THREE.Mesh) {
-        if (hover) {
-          if (!originalMaterials.has(object)) {
-            originalMaterials.set(object, object.material);
-          }
-          object.material = hoverMaterial;
-        } else {
-          clearHoverEffect(object);
-        }
-      }
-
-      object.children.forEach(child => {
-        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
-          if (hover) {
-            if (!originalMaterials.has(child)) {
-              originalMaterials.set(child, child.material);
-            }
-            child.material = hoverMaterial;
-          } else {
-            const originalMaterial = originalMaterials.get(child);
-            if (originalMaterial) {
-              child.material = originalMaterial;
-              originalMaterials.delete(child);
-            }
-          }
-        }
-      });
-    };
-
-    const getIntersectionPoint = (clientX: number, clientY: number): THREE.Vector3 | null => {
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      
-      const intersectableObjects: THREE.Object3D[] = [];
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh && object.visible) {
-          intersectableObjects.push(object);
-        }
-      });
-
-      const intersects = raycaster.intersectObjects(intersectableObjects, true);
-      return intersects.length > 0 ? intersects[0].point : null;
-    };
-
-    const createPointMarker = (position: THREE.Vector3) => {
-      const geometry = new THREE.SphereGeometry(0.1, 16, 16);
-      const material = new THREE.MeshStandardMaterial({ 
-        color: 0xff4444,
-        emissive: 0x220000,
-        emissiveIntensity: 0.2
-      });
-      const point = new THREE.Mesh(geometry, material);
-      point.position.copy(position);
-      point.userData.isPoint = true;
-      point.userData.isHelper = true;
-      point.name = `Point_${Date.now()}`;
-      scene.add(point);
-      return point;
-    };
-
-    const createMeasurementGroup = (start: THREE.Vector3, end: THREE.Vector3) => {
-      const measurementGroup = new THREE.Group();
-      measurementGroup.userData.isMeasurementGroup = true;
-      measurementGroup.userData.isHelper = true;
-      measurementGroup.name = `Measurement_${Date.now()}`;
-
-      // Create start point
-      const startGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-      const pointMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xff0000,
-        emissive: 0x220000,
-        emissiveIntensity: 0.2
-      });
-      const startPoint = new THREE.Mesh(startGeometry, pointMaterial);
-      startPoint.position.copy(start);
-      measurementGroup.add(startPoint);
-
-      // Create end point
-      const endGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-      const endPoint = new THREE.Mesh(endGeometry, pointMaterial.clone());
-      endPoint.position.copy(end);
-      measurementGroup.add(endPoint);
-
-      // Create dashed line
-      const points = [start, end];
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const material = new THREE.LineDashedMaterial({ 
-        color: 0xff0000,
-        linewidth: 3,
-        dashSize: 0.1,
-        gapSize: 0.05
-      });
-      const line = new THREE.Line(geometry, material);
-      line.computeLineDistances(); // Required for dashed lines
-      measurementGroup.add(line);
-
-      // Store measurement data
-      const distance = start.distanceTo(end);
-      measurementGroup.userData.measurementData = {
-        startPoint: start,
-        endPoint: end,
-        distance: distance
-      };
-
-      scene.add(measurementGroup);
-      return measurementGroup;
-    };
-
-    const updatePreviewLine = (startPoint: THREE.Vector3, currentPoint: THREE.Vector3) => {
-      if (previewLineRef.current) {
-        scene.remove(previewLineRef.current);
-        previewLineRef.current.geometry.dispose();
-        (previewLineRef.current.material as THREE.Material).dispose();
-      }
-      
-      const points = [startPoint, currentPoint];
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const material = new THREE.LineDashedMaterial({ 
-        color: 0x888888,
-        linewidth: 2,
-        dashSize: 0.05,
-        gapSize: 0.025,
-        transparent: true,
-        opacity: 0.5
-      });
-      const line = new THREE.Line(geometry, material);
-      line.computeLineDistances();
-      line.userData.isHelper = true;
-      line.name = 'PreviewLine';
-      scene.add(line);
-      previewLineRef.current = line;
-    };
-
-    const clearPreviewLine = () => {
-      if (previewLineRef.current) {
-        scene.remove(previewLineRef.current);
-        previewLineRef.current.geometry.dispose();
-        (previewLineRef.current.material as THREE.Material).dispose();
-        previewLineRef.current = null;
-      }
-    };
-
     const handleMouseMove = (event: MouseEvent) => {
+      const { raycaster, mouse } = createRaycaster();
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -254,54 +80,42 @@ export const useMouseInteraction = (
       setMousePosition({ x: event.clientX, y: event.clientY });
 
       // Update cursor based on active tool
-      if (activeTool === 'point') {
-        renderer.domElement.style.cursor = 'crosshair';
-      } else if (activeTool === 'measure') {
-        renderer.domElement.style.cursor = 'crosshair';
-      } else if (activeTool === 'move') {
-        renderer.domElement.style.cursor = 'move';
-      } else {
-        renderer.domElement.style.cursor = 'default';
-      }
+      const cursors = {
+        point: 'crosshair',
+        measure: 'crosshair',
+        move: 'move',
+        select: 'default'
+      };
+      renderer.domElement.style.cursor = cursors[activeTool];
 
       // Handle measure tool preview
-      if (activeTool === 'measure' && measureStartPoint.current) {
-        const currentPoint = getIntersectionPoint(event.clientX, event.clientY);
-        if (currentPoint) {
-          updatePreviewLine(measureStartPoint.current, currentPoint);
-        }
+      if (activeTool === 'measure') {
+        measureTool.handleMouseMove(event);
       }
 
+      // Handle hover effects for select tool
       if (activeTool === 'select') {
         raycaster.setFromCamera(mouse, camera);
-        
-        const intersectableObjects: THREE.Object3D[] = [];
-        scene.traverse((object) => {
-          if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
-            intersectableObjects.push(object);
-          }
-          if ((object.userData.isPoint || object.userData.isMeasurementGroup) && object.visible) {
-            intersectableObjects.push(object);
-          }
-        });
-
+        const intersectableObjects = getIntersectableObjects(scene);
         const intersects = raycaster.intersectObjects(intersectableObjects, true);
         
         if (intersects.length > 0) {
           const newHoveredObject = intersects[0].object;
           
           if (hoveredObject !== newHoveredObject) {
-            if (hoveredObject) {
-              setHoverEffect(hoveredObject, false);
+            if (hoveredObject && materialManagerRef.current) {
+              materialManagerRef.current.setHoverEffect(hoveredObject, false);
             }
             
-            setHoverEffect(newHoveredObject, true);
+            if (materialManagerRef.current) {
+              materialManagerRef.current.setHoverEffect(newHoveredObject, true);
+            }
             setHoveredObject(newHoveredObject);
             setObjectData(extractObjectData(newHoveredObject));
           }
         } else {
-          if (hoveredObject) {
-            setHoverEffect(hoveredObject, false);
+          if (hoveredObject && materialManagerRef.current) {
+            materialManagerRef.current.setHoverEffect(hoveredObject, false);
             setHoveredObject(null);
             setObjectData(null);
           }
@@ -310,109 +124,38 @@ export const useMouseInteraction = (
     };
 
     const handleClick = (event: MouseEvent) => {
-      if (event.button !== 0) return;
-      
-      const intersectionPoint = getIntersectionPoint(event.clientX, event.clientY);
-      
-      if (activeTool === 'point' && intersectionPoint) {
-        const pointMarker = createPointMarker(intersectionPoint);
-        if (onPointCreate) {
-          onPointCreate({ 
-            x: intersectionPoint.x, 
-            y: intersectionPoint.y, 
-            z: intersectionPoint.z 
-          });
-        }
-        
-        if (onObjectSelect) {
-          onObjectSelect(pointMarker);
-        }
-        return;
+      // Clear any existing hover effects before selection
+      if (hoveredObject && materialManagerRef.current) {
+        materialManagerRef.current.setHoverEffect(hoveredObject, false);
+        setHoveredObject(null);
       }
-      
-      if (activeTool === 'measure' && intersectionPoint) {
-        if (!measureStartPoint.current) {
-          // First click - start measurement
-          measureStartPoint.current = intersectionPoint.clone();
-        } else {
-          // Second click - complete measurement
-          const startPoint = measureStartPoint.current;
-          const endPoint = intersectionPoint;
-          
-          const measurementGroup = createMeasurementGroup(startPoint, endPoint);
-          clearPreviewLine();
-          
-          if (onMeasureCreate) {
-            onMeasureCreate(startPoint, endPoint);
-          }
-          
-          if (onObjectSelect) {
-            onObjectSelect(measurementGroup);
-          }
-          
-          measureStartPoint.current = null;
-        }
-        return;
-      }
-      
-      if (activeTool === 'select') {
-        // Clear any existing hover effects before selection
-        if (hoveredObject) {
-          setHoverEffect(hoveredObject, false);
-          setHoveredObject(null);
-        }
 
-        const rect = renderer.domElement.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        
-        const intersectableObjects: THREE.Object3D[] = [];
-        scene.traverse((object) => {
-          // Include meshes, points, and measurements
-          if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
-            intersectableObjects.push(object);
-          }
-          if ((object.userData.isPoint || object.userData.isMeasurementGroup) && object.visible) {
-            intersectableObjects.push(object);
-          }
-        });
-
-        const intersects = raycaster.intersectObjects(intersectableObjects, true);
-        
-        if (intersects.length > 0 && onObjectSelect) {
-          let targetObject = intersects[0].object;
-          
-          // If clicked on a child of a measurement group, select the group
-          if (targetObject.parent && targetObject.parent.userData.isMeasurementGroup) {
-            targetObject = targetObject.parent;
-          }
-          
-          onObjectSelect(targetObject);
-        } else if (onObjectSelect) {
-          onObjectSelect(null);
-        }
+      switch (activeTool) {
+        case 'select':
+          selectTool.handleClick(event);
+          break;
+        case 'point':
+          pointTool.handleClick(event);
+          break;
+        case 'measure':
+          measureTool.handleClick(event);
+          break;
       }
     };
 
     const handleMouseLeave = () => {
-      if (hoveredObject) {
-        setHoverEffect(hoveredObject, false);
+      if (hoveredObject && materialManagerRef.current) {
+        materialManagerRef.current.setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
         setObjectData(null);
       }
-      clearPreviewLine();
+      measureTool.cleanup();
       renderer.domElement.style.cursor = 'default';
     };
 
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault();
-      // Cancel measurement on right click
-      if (activeTool === 'measure' && measureStartPoint.current) {
-        measureStartPoint.current = null;
-        clearPreviewLine();
-      }
+      measureTool.handleRightClick();
     };
 
     renderer.domElement.addEventListener('mousemove', handleMouseMove);
@@ -426,17 +169,17 @@ export const useMouseInteraction = (
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
       
-      if (hoveredObject) {
-        setHoverEffect(hoveredObject, false);
+      if (hoveredObject && materialManagerRef.current) {
+        materialManagerRef.current.setHoverEffect(hoveredObject, false);
       }
       
-      clearPreviewLine();
+      measureTool.cleanup();
       
-      if (hoverMaterialRef.current) {
-        hoverMaterialRef.current.dispose();
+      if (materialManagerRef.current) {
+        materialManagerRef.current.dispose();
       }
     };
-  }, [renderer, camera, scene, hoveredObject, onObjectSelect, activeTool, onPointCreate, onMeasureCreate]);
+  }, [renderer, camera, scene, hoveredObject, activeTool, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate]);
 
   return { objectData, mousePosition, isHovering: !!hoveredObject };
 };
