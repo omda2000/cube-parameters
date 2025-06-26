@@ -25,6 +25,7 @@ export interface EnvironmentSettings {
   groundColor: string;
   skyColor: string;
   showGround: boolean;
+  enableEnvironment: boolean;
 }
 
 export interface BoxDimensions {
@@ -39,7 +40,7 @@ export type ShadowQuality = 'low' | 'medium' | 'high';
 export interface SceneObject {
   id: string;
   name: string;
-  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point';
+  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point' | 'measurement';
   object: THREE.Object3D;
   children: SceneObject[];
   visible: boolean;

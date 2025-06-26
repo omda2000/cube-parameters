@@ -1,19 +1,14 @@
 
 import { useState } from 'react';
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showGround: boolean;
-}
+import type { EnvironmentSettings } from '../types/model';
 
 export const useEnvironmentState = () => {
   const [environment, setEnvironment] = useState<EnvironmentSettings>({
     showGrid: true,
-    groundColor: '#4a5568',
-    skyColor: '#1a202c',
-    showGround: true
+    groundColor: '#444444',
+    skyColor: '#87CEEB',
+    showGround: true,
+    enableEnvironment: true
   });
 
   return {

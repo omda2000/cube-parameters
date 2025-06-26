@@ -124,6 +124,18 @@ const LightingControls = ({
         <Sun className="h-5 w-5 text-yellow-400" />
         Lighting Controls
       </h2>
+
+      {/* Environment Toggle */}
+      <div className="space-y-2 border-b border-slate-700/50 pb-4">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Enable Environment Lighting</label>
+          <Switch
+            checked={environment.enableEnvironment}
+            onCheckedChange={(checked) => setEnvironment({ ...environment, enableEnvironment: checked })}
+          />
+        </div>
+        <p className="text-xs text-slate-400">Toggle advanced environment lighting effects on/off</p>
+      </div>
       
       {/* Time of Day Presets */}
       <div className="space-y-2">
