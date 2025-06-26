@@ -10,20 +10,6 @@ interface SceneTabProps {
   uploadError: string | null;
   onFileUpload: (file: File) => void;
   scene?: THREE.Scene | null;
-  measurements?: Array<{
-    id: string;
-    startPoint: { x: number; y: number; z: number };
-    endPoint: { x: number; y: number; z: number };
-    distance: number;
-    label: string;
-  }>;
-  points?: Array<{
-    id: string;
-    position: { x: number; y: number; z: number };
-    name: string;
-  }>;
-  onRemoveMeasurement?: (id: string) => void;
-  onRemovePoint?: (id: string) => void;
 }
 
 const SceneTab = ({
@@ -32,11 +18,7 @@ const SceneTab = ({
   isUploading,
   uploadError,
   onFileUpload,
-  scene,
-  measurements,
-  points,
-  onRemoveMeasurement,
-  onRemovePoint
+  scene
 }: SceneTabProps) => {
   return (
     <div className="space-y-4">
@@ -58,10 +40,6 @@ const SceneTab = ({
         currentModel={currentModel}
         showPrimitives={true}
         scene={scene}
-        measurements={measurements}
-        points={points}
-        onRemoveMeasurement={onRemoveMeasurement}
-        onRemovePoint={onRemovePoint}
       />
     </div>
   );

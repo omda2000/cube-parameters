@@ -7,7 +7,6 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
   const originalMaterialsRef = useRef<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
   const outlineRef = useRef<THREE.LineSegments | null>(null);
   const overlayMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const previousSelectedRef = useRef<SceneObject | null>(null);
 
   // Create materials once
   useEffect(() => {
@@ -111,19 +110,6 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
 
   // Apply/remove selection effects when selectedObject changes
   useEffect(() => {
-    // Clean up previous selection
-    if (previousSelectedRef.current?.object) {
-      applySelectionEffects(previousSelectedRef.current.object, false);
-    }
-
-    // Apply new selection
-    if (selectedObject?.object) {
-      applySelectionEffects(selectedObject.object, true);
-    }
-
-    // Update previous selected reference
-    previousSelectedRef.current = selectedObject;
-
     return () => {
       // Cleanup on unmount
       if (selectedObject?.object) {
@@ -131,6 +117,18 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
       }
       if (overlayMaterialRef.current) {
         overlayMaterialRef.current.dispose();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedObject?.object) {
+      applySelectionEffects(selectedObject.object, true);
+    }
+
+    return () => {
+      if (selectedObject?.object) {
+        applySelectionEffects(selectedObject.object, false);
       }
     };
   }, [selectedObject]);

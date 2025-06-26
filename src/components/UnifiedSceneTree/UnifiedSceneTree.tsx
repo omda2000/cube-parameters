@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Triangle, Sun, TreePine, MapPin, Ruler } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Triangle, Sun, TreePine } from 'lucide-react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { LoadedModel, SceneObject } from '../../types/model';
@@ -11,33 +11,15 @@ interface UnifiedSceneTreeProps {
   currentModel: LoadedModel | null;
   showPrimitives: boolean;
   scene: THREE.Scene | null;
-  measurements?: Array<{
-    id: string;
-    startPoint: { x: number; y: number; z: number };
-    endPoint: { x: number; y: number; z: number };
-    distance: number;
-    label: string;
-  }>;
-  points?: Array<{
-    id: string;
-    position: { x: number; y: number; z: number };
-    name: string;
-  }>;
-  onRemoveMeasurement?: (id: string) => void;
-  onRemovePoint?: (id: string) => void;
 }
 
 const UnifiedSceneTree = ({ 
   loadedModels, 
   currentModel, 
   showPrimitives,
-  scene,
-  measurements = [],
-  points = [],
-  onRemoveMeasurement,
-  onRemovePoint
+  scene
 }: UnifiedSceneTreeProps) => {
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root', 'measurements', 'points']));
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const { selectedObject, selectObject } = useSelectionContext();
 
@@ -80,52 +62,6 @@ const UnifiedSceneTree = ({
         });
       }
 
-      // Add measurements
-      if (measurements.length > 0) {
-        const measurementObjects: SceneObject[] = measurements.map(measurement => ({
-          id: `measurement_${measurement.id}`,
-          name: `${measurement.label} (${measurement.distance.toFixed(2)}u)`,
-          type: 'measurement',
-          object: new THREE.Object3D(), // Placeholder object
-          children: [],
-          visible: true,
-          selected: selectedObject?.id === `measurement_${measurement.id}`
-        }));
-
-        objects.push({
-          id: 'measurements',
-          name: 'Measurements',
-          type: 'group',
-          object: new THREE.Object3D(),
-          children: measurementObjects,
-          visible: true,
-          selected: false
-        });
-      }
-
-      // Add points
-      if (points.length > 0) {
-        const pointObjects: SceneObject[] = points.map(point => ({
-          id: `point_${point.id}`,
-          name: `${point.name} (${point.position.x.toFixed(1)}, ${point.position.y.toFixed(1)}, ${point.position.z.toFixed(1)})`,
-          type: 'point',
-          object: new THREE.Object3D(), // Placeholder object
-          children: [],
-          visible: true,
-          selected: selectedObject?.id === `point_${point.id}`
-        }));
-
-        objects.push({
-          id: 'points',
-          name: 'Points',
-          type: 'group',
-          object: new THREE.Object3D(),
-          children: pointObjects,
-          visible: true,
-          selected: false
-        });
-      }
-
       // Add environment objects
       const groundObject = scene.children.find(child => 
         child instanceof THREE.Mesh && child.geometry instanceof THREE.PlaneGeometry && child.userData.isHelper
@@ -161,7 +97,7 @@ const UnifiedSceneTree = ({
     };
 
     setSceneObjects(buildSceneObjects());
-  }, [scene, loadedModels, showPrimitives, selectedObject, measurements, points]);
+  }, [scene, loadedModels, showPrimitives, selectedObject]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
@@ -183,18 +119,6 @@ const UnifiedSceneTree = ({
     selectObject(isCurrentlySelected ? null : sceneObject);
   };
 
-  const handleDelete = (sceneObject: SceneObject, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (sceneObject.type === 'measurement' && onRemoveMeasurement) {
-      const measurementId = sceneObject.id.replace('measurement_', '');
-      onRemoveMeasurement(measurementId);
-    } else if (sceneObject.type === 'point' && onRemovePoint) {
-      const pointId = sceneObject.id.replace('point_', '');
-      onRemovePoint(pointId);
-    }
-  };
-
   const getNodeIcon = (type: string) => {
     switch (type) {
       case 'mesh':
@@ -207,10 +131,6 @@ const UnifiedSceneTree = ({
         return <TreePine className="h-4 w-4 text-brown-400" />;
       case 'light':
         return <Sun className="h-4 w-4 text-yellow-400" />;
-      case 'point':
-        return <MapPin className="h-4 w-4 text-cyan-400" />;
-      case 'measurement':
-        return <Ruler className="h-4 w-4 text-orange-400" />;
       default:
         return <Box className="h-4 w-4 text-gray-400" />;
     }
@@ -221,7 +141,6 @@ const UnifiedSceneTree = ({
     const hasChildren = sceneObject.children.length > 0;
     const paddingLeft = level * 16;
     const isSelected = selectedObject?.id === sceneObject.id;
-    const canDelete = sceneObject.type === 'measurement' || sceneObject.type === 'point';
 
     return (
       <div key={sceneObject.id}>
@@ -259,35 +178,21 @@ const UnifiedSceneTree = ({
               {sceneObject.name}
             </span>
             
-            <div className="flex gap-1">
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
-                  onClick={(e) => handleDelete(sceneObject, e)}
-                  title="Delete"
-                >
-                  <span className="text-xs">×</span>
-                </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleVisibility(sceneObject);
+              }}
+            >
+              {sceneObject.object.visible ? (
+                <Eye className="h-3 w-3" />
+              ) : (
+                <EyeOff className="h-3 w-3" />
               )}
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleVisibility(sceneObject);
-                }}
-              >
-                {sceneObject.object.visible ? (
-                  <Eye className="h-3 w-3" />
-                ) : (
-                  <EyeOff className="h-3 w-3" />
-                )}
-              </Button>
-            </div>
+            </Button>
           </div>
         </div>
         
