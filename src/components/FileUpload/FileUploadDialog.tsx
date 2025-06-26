@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Upload, File, X } from 'lucide-react';
 
 interface FileUploadDialogProps {
-  onFileSelect: (file: File) => void;
-  isLoading: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onFileUpload: (file: File) => void;
+  isUploading: boolean;
+  uploadError: string | null;
 }
 
-const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) => {
-  const [open, setOpen] = useState(false);
+const FileUploadDialog = ({ open, onOpenChange, onFileUpload, isUploading, uploadError }: FileUploadDialogProps) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,26 +63,26 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
 
   const handleUpload = () => {
     if (selectedFile) {
-      onFileSelect(selectedFile);
+      onFileUpload(selectedFile);
       setSelectedFile(null);
-      setOpen(false);
+      onOpenChange(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Model
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-slate-800 border-slate-700">
         <DialogHeader>
           <DialogTitle className="text-white">Upload 3D Model</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
+          {uploadError && (
+            <div className="text-red-400 text-sm bg-red-500/10 p-2 rounded">
+              {uploadError}
+            </div>
+          )}
+
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragActive 
@@ -138,16 +140,16 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
             <Button
               variant="outline"
               className="flex-1 text-slate-300 border-slate-600"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
             <Button
               className="flex-1 bg-green-600 hover:bg-green-700"
               onClick={handleUpload}
-              disabled={!selectedFile || isLoading}
+              disabled={!selectedFile || isUploading}
             >
-              {isLoading ? 'Uploading...' : 'Upload'}
+              {isUploading ? 'Uploading...' : 'Upload'}
             </Button>
           </div>
         </div>
