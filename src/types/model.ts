@@ -39,10 +39,15 @@ export type ShadowQuality = 'low' | 'medium' | 'high';
 export interface SceneObject {
   id: string;
   name: string;
-  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point';
+  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point' | 'measurement';
   object: THREE.Object3D;
   children: SceneObject[];
   visible: boolean;
   selected: boolean;
   parent?: SceneObject;
+  measurementData?: {
+    startPoint: THREE.Vector3;
+    endPoint: THREE.Vector3;
+    distance: number;
+  };
 }

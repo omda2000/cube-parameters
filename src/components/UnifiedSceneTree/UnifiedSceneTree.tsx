@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Triangle, Sun, TreePine } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, EyeOff, Box, Triangle, Sun, TreePine, MapPin, Ruler } from 'lucide-react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { LoadedModel, SceneObject } from '../../types/model';
@@ -62,6 +62,49 @@ const UnifiedSceneTree = ({
         });
       }
 
+      // Add points
+      scene.traverse((object) => {
+        if (object.userData.isPoint) {
+          const pointObject: SceneObject = {
+            id: `point_${object.uuid}`,
+            name: object.name || `Point (${object.position.x.toFixed(2)}, ${object.position.y.toFixed(2)}, ${object.position.z.toFixed(2)})`,
+            type: 'point',
+            object: object,
+            children: [],
+            visible: object.visible,
+            selected: selectedObject?.id === `point_${object.uuid}`
+          };
+          objects.push(pointObject);
+        }
+      });
+
+      // Add measurements
+      scene.traverse((object) => {
+        if (object.userData.isMeasurementLine && object instanceof THREE.Line) {
+          const geometry = object.geometry;
+          const positions = geometry.attributes.position.array;
+          const startPoint = new THREE.Vector3(positions[0], positions[1], positions[2]);
+          const endPoint = new THREE.Vector3(positions[3], positions[4], positions[5]);
+          const distance = startPoint.distanceTo(endPoint);
+          
+          const measurementObject: SceneObject = {
+            id: `measurement_${object.uuid}`,
+            name: `Measurement (${distance.toFixed(3)} units)`,
+            type: 'measurement',
+            object: object,
+            children: [],
+            visible: object.visible,
+            selected: selectedObject?.id === `measurement_${object.uuid}`,
+            measurementData: {
+              startPoint,
+              endPoint,
+              distance
+            }
+          };
+          objects.push(measurementObject);
+        }
+      });
+
       // Add environment objects
       const groundObject = scene.children.find(child => 
         child instanceof THREE.Mesh && child.geometry instanceof THREE.PlaneGeometry && child.userData.isHelper
@@ -119,6 +162,36 @@ const UnifiedSceneTree = ({
     selectObject(isCurrentlySelected ? null : sceneObject);
   };
 
+  const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    if (sceneObject.type === 'point' || sceneObject.type === 'measurement') {
+      // Remove from scene
+      scene?.remove(sceneObject.object);
+      
+      // Dispose geometry and material
+      if (sceneObject.object instanceof THREE.Mesh) {
+        sceneObject.object.geometry?.dispose();
+        if (Array.isArray(sceneObject.object.material)) {
+          sceneObject.object.material.forEach(mat => mat.dispose());
+        } else {
+          sceneObject.object.material?.dispose();
+        }
+      } else if (sceneObject.object instanceof THREE.Line) {
+        sceneObject.object.geometry?.dispose();
+        (sceneObject.object.material as THREE.Material)?.dispose();
+      }
+      
+      // Clear selection if this object was selected
+      if (selectedObject?.id === sceneObject.id) {
+        selectObject(null);
+      }
+      
+      // Force re-render
+      setSceneObjects([...sceneObjects]);
+    }
+  };
+
   const getNodeIcon = (type: string) => {
     switch (type) {
       case 'mesh':
@@ -131,6 +204,10 @@ const UnifiedSceneTree = ({
         return <TreePine className="h-4 w-4 text-brown-400" />;
       case 'light':
         return <Sun className="h-4 w-4 text-yellow-400" />;
+      case 'point':
+        return <MapPin className="h-4 w-4 text-red-400" />;
+      case 'measurement':
+        return <Ruler className="h-4 w-4 text-orange-400" />;
       default:
         return <Box className="h-4 w-4 text-gray-400" />;
     }
@@ -141,6 +218,7 @@ const UnifiedSceneTree = ({
     const hasChildren = sceneObject.children.length > 0;
     const paddingLeft = level * 16;
     const isSelected = selectedObject?.id === sceneObject.id;
+    const isDeletable = sceneObject.type === 'point' || sceneObject.type === 'measurement';
 
     return (
       <div key={sceneObject.id}>
@@ -178,21 +256,37 @@ const UnifiedSceneTree = ({
               {sceneObject.name}
             </span>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleVisibility(sceneObject);
-              }}
-            >
-              {sceneObject.object.visible ? (
-                <Eye className="h-3 w-3" />
-              ) : (
-                <EyeOff className="h-3 w-3" />
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleVisibility(sceneObject);
+                }}
+              >
+                {sceneObject.object.visible ? (
+                  <Eye className="h-3 w-3" />
+                ) : (
+                  <EyeOff className="h-3 w-3" />
+                )}
+              </Button>
+              
+              {isDeletable && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
+                  onClick={(e) => handleDelete(sceneObject, e)}
+                  title="Delete"
+                >
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         </div>
         
@@ -203,6 +297,15 @@ const UnifiedSceneTree = ({
         )}
       </div>
     );
+  };
+
+  // Group objects by type for better organization
+  const groupedObjects = {
+    models: sceneObjects.filter(obj => obj.type === 'group'),
+    primitives: sceneObjects.filter(obj => obj.type === 'primitive'),
+    points: sceneObjects.filter(obj => obj.type === 'point'),
+    measurements: sceneObjects.filter(obj => obj.type === 'measurement'),
+    environment: sceneObjects.filter(obj => obj.type === 'ground')
   };
 
   return (
@@ -219,7 +322,57 @@ const UnifiedSceneTree = ({
               <p className="text-sm">No objects in scene</p>
             </div>
           ) : (
-            sceneObjects.map(obj => renderNode(obj))
+            <div className="space-y-1">
+              {/* Models */}
+              {groupedObjects.models.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
+                    Models ({groupedObjects.models.length})
+                  </div>
+                  {groupedObjects.models.map(obj => renderNode(obj))}
+                </div>
+              )}
+              
+              {/* Primitives */}
+              {groupedObjects.primitives.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
+                    Primitives ({groupedObjects.primitives.length})
+                  </div>
+                  {groupedObjects.primitives.map(obj => renderNode(obj))}
+                </div>
+              )}
+              
+              {/* Points */}
+              {groupedObjects.points.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
+                    Points ({groupedObjects.points.length})
+                  </div>
+                  {groupedObjects.points.map(obj => renderNode(obj))}
+                </div>
+              )}
+              
+              {/* Measurements */}
+              {groupedObjects.measurements.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
+                    Measurements ({groupedObjects.measurements.length})
+                  </div>
+                  {groupedObjects.measurements.map(obj => renderNode(obj))}
+                </div>
+              )}
+              
+              {/* Environment */}
+              {groupedObjects.environment.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
+                    Environment
+                  </div>
+                  {groupedObjects.environment.map(obj => renderNode(obj))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -294,7 +294,11 @@ export const useMouseInteraction = (
         
         const intersectableObjects: THREE.Object3D[] = [];
         scene.traverse((object) => {
+          // Include meshes, points, and measurements
           if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
+            intersectableObjects.push(object);
+          }
+          if ((object.userData.isPoint || object.userData.isMeasurementLine) && object.visible) {
             intersectableObjects.push(object);
           }
         });
