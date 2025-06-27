@@ -38,12 +38,10 @@ interface ControlsPanelProps {
 const ControlsPanel = ({ panelWidth, ...props }: ControlsPanelProps) => {
   return (
     <div 
-      className="bg-slate-800/60 backdrop-blur-sm border-l border-slate-700/50 overflow-y-auto"
+      className="bg-slate-800/60 backdrop-blur-sm border-l border-slate-700/50 overflow-hidden"
       style={{ width: panelWidth }}
     >
-      <div className="p-4">
-        <TabsControlPanel {...props} />
-      </div>
+      <TabsControlPanel {...props} />
     </div>
   );
 };
