@@ -15,7 +15,7 @@ export class MaterialManager {
         emissiveIntensity: 0.4,
         transparent: false
       })
-    );
+    ) as THREE.MeshStandardMaterial;
   }
 
   setHoverEffect(object: THREE.Object3D, hover: boolean) {
