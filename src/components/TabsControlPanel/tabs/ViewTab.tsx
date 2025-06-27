@@ -6,14 +6,22 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import CameraTypeToggle from '../../CameraTypeToggle/CameraTypeToggle';
 import type { EnvironmentSettings } from '../../../types/model';
 
 interface ViewTabProps {
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
+  isOrthographic?: boolean;
+  onCameraToggle?: (isOrthographic: boolean) => void;
 }
 
-const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
+const ViewTab = ({ 
+  environment, 
+  setEnvironment, 
+  isOrthographic = false, 
+  onCameraToggle 
+}: ViewTabProps) => {
   return (
     <TooltipProvider>
       <div className="space-y-2 p-1">
@@ -22,6 +30,33 @@ const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
           <Eye className="h-4 w-4 text-slate-400" />
           <span className="text-xs font-medium text-slate-300">View</span>
         </div>
+
+        {/* Camera controls */}
+        <div className="space-y-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Camera className="h-3 w-3 text-slate-400" />
+                    <Label className="text-xs text-slate-300">Camera</Label>
+                  </div>
+                  {onCameraToggle && (
+                    <CameraTypeToggle
+                      isOrthographic={isOrthographic}
+                      onToggle={onCameraToggle}
+                    />
+                  )}
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Camera Type</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <Separator className="bg-slate-600" />
 
         {/* Grid controls */}
         <div className="space-y-2">
@@ -80,7 +115,7 @@ const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
 
         <Separator className="bg-slate-600" />
 
-        {/* Camera controls */}
+        {/* FOV controls */}
         <div className="space-y-2">
           <Tooltip>
             <TooltipTrigger asChild>
