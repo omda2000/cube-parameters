@@ -7,9 +7,10 @@ import { Box, Globe, Palette, Eye, Settings } from 'lucide-react';
 interface ControlPanelTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  panelVisible: boolean;
 }
 
-const ControlPanelTabs = ({ activeTab, onTabChange }: ControlPanelTabsProps) => {
+const ControlPanelTabs = ({ activeTab, onTabChange, panelVisible }: ControlPanelTabsProps) => {
   const tabs = [
     { id: 'scene', label: 'Scene', icon: Box },
     { id: 'properties', label: 'Properties', icon: Settings },
@@ -18,9 +19,18 @@ const ControlPanelTabs = ({ activeTab, onTabChange }: ControlPanelTabsProps) => 
     { id: 'environment', label: 'View', icon: Eye },
   ];
 
+  const handleTabClick = (tabId: string) => {
+    // If clicking the same active tab and panel is visible, close panel
+    if (activeTab === tabId && panelVisible) {
+      onTabChange(''); // Empty string means close panel
+    } else {
+      onTabChange(tabId);
+    }
+  };
+
   return (
     <TooltipProvider>
-      <div className="fixed right-4 top-1/2 -translate-y-1/2 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-1 z-40">
+      <div className="fixed right-4 top-20 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-1 z-40">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
@@ -30,9 +40,9 @@ const ControlPanelTabs = ({ activeTab, onTabChange }: ControlPanelTabsProps) => 
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onTabChange(tab.id)}
+                    onClick={() => handleTabClick(tab.id)}
                     className={`h-10 w-10 p-0 transition-all duration-200 hover:scale-105 ${
-                      activeTab === tab.id
+                      activeTab === tab.id && panelVisible
                         ? 'bg-indigo-600 text-white'
                         : 'text-slate-300 hover:bg-slate-600/50 hover:text-white'
                     }`}
