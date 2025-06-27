@@ -195,13 +195,6 @@ const Index = () => {
   return (
     <SelectionProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
-        {/* Clean header */}
-        <div className="absolute top-4 left-4 z-40">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
-            Architectural Model Viewer
-          </h1>
-        </div>
-
         {/* Full-screen canvas */}
         <div className="absolute inset-0">
           <ModelViewerContainer

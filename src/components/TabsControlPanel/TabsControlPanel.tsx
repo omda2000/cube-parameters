@@ -1,3 +1,4 @@
+
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
@@ -123,8 +124,8 @@ const TabsControlPanel = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto p-3">
-      <div className="space-y-3">
+    <div className="h-full overflow-y-auto p-2">
+      <div className="space-y-2">
         {renderContent()}
       </div>
     </div>

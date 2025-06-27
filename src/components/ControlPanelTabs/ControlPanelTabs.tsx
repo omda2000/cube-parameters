@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -11,23 +12,21 @@ interface ControlPanelTabsProps {
 
 const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelTabsProps) => {
   const tabs = [
-    { id: 'scene', label: 'Scene', icon: Box },
+    { id: 'scene', label: 'Scene Objects', icon: Box },
     { id: 'properties', label: 'Properties', icon: Settings },
-    { id: 'lighting', label: 'Environment', icon: Globe },
-    { id: 'materials', label: 'Material', icon: Palette },
-    { id: 'environment', label: 'View', icon: Eye },
+    { id: 'lighting', label: 'Lighting & Environment', icon: Globe },
+    { id: 'materials', label: 'Materials', icon: Palette },
+    { id: 'environment', label: 'View Settings', icon: Eye },
   ];
 
   const handleTabClick = (tabId: string) => {
-    // If clicking the same active tab and panel is open, close panel
-    // Otherwise, switch to that tab and ensure panel is open
     onTabChange(tabId);
   };
 
   return (
     <TooltipProvider>
-      <div className="fixed right-2 top-20 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-1 z-50">
-        <div className="flex flex-col gap-0.5">
+      <div className="fixed right-1 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-0.5 z-50">
+        <div className="flex flex-col gap-0">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id && isPanelOpen;
@@ -39,17 +38,17 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     variant="ghost"
                     size="sm"
                     onClick={() => handleTabClick(tab.id)}
-                    className={`h-9 w-9 p-0 transition-all duration-200 hover:scale-105 ${
+                    className={`h-7 w-7 p-0 transition-all duration-150 hover:scale-105 ${
                       isActive
                         ? 'bg-indigo-600 text-white shadow-md'
                         : 'text-slate-300 hover:bg-slate-600/60 hover:text-white'
                     }`}
                   >
-                    <IconComponent className="h-4 w-4" />
+                    <IconComponent className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="left">
-                  <p>{tab.label}</p>
+                  <p className="text-xs">{tab.label}</p>
                 </TooltipContent>
               </Tooltip>
             );
