@@ -48,7 +48,7 @@ const ExpandableShadeSelector = ({ currentShadeType, onShadeTypeChange }: Expand
   return (
     <TooltipProvider>
       <div ref={containerRef} className="relative">
-        {/* Main shade button */}
+        {/* Main shade button - icon only */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -68,22 +68,21 @@ const ExpandableShadeSelector = ({ currentShadeType, onShadeTypeChange }: Expand
 
         {/* Floating options overlay - expands upward */}
         {isExpanded && (
-          <div className="absolute bottom-full left-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-1 z-50 shadow-lg animate-scale-in">
-            <div className="flex flex-col gap-1">
+          <div className="absolute bottom-full left-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-1 z-50 shadow-lg">
+            <div className="flex gap-1">
               {shadeTypes.map((shade) => (
                 <Tooltip key={shade.type}>
                   <TooltipTrigger asChild>
                     <Button
                       variant={currentShadeType === shade.type ? "default" : "ghost"}
                       size="sm"
-                      className="h-8 px-3 justify-start text-xs"
+                      className="h-8 w-8 p-0"
                       onClick={() => handleShadeTypeSelect(shade.type)}
                     >
                       {shade.icon}
-                      <span className="ml-2">{shade.label}</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="left">
+                  <TooltipContent>
                     <p>{shade.label}</p>
                   </TooltipContent>
                 </Tooltip>

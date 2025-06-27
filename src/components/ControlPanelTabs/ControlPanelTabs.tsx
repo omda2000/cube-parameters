@@ -25,8 +25,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      {/* Repositioned to prevent collision - moved from right-1 to right-4 and from top-1/2 to top-1/4 */}
-      <div className="fixed right-4 top-1/4 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50 shadow-lg">
+      {/* Fixed positioning to prevent collision - moved from right-4 to right-6 */}
+      <div className="fixed right-6 top-1/4 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50 shadow-lg">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;

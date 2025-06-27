@@ -5,7 +5,6 @@ import FixedControlPanel from '../FixedControlPanel/FixedControlPanel';
 import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
 import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
 import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
-import VerticalZoomControls from '../VerticalZoomControls/VerticalZoomControls';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -71,16 +70,6 @@ const UIOverlay = ({
         />
       </div>
 
-      {/* Vertical Zoom Controls - positioned on left side */}
-      <VerticalZoomControls
-        onZoomAll={onZoomAll}
-        onZoomToSelected={onZoomToSelected}
-        onZoomIn={onZoomIn}
-        onZoomOut={onZoomOut}
-        onResetView={onResetView}
-        zoomLevel={100}
-      />
-
       {/* Control Panel Tabs - repositioned to prevent collision */}
       <ControlPanelTabs
         activeTab={activeControlTab}
@@ -88,7 +77,7 @@ const UIOverlay = ({
         isPanelOpen={showControlPanel}
       />
 
-      {/* Fixed Control Panel - adjusted position */}
+      {/* Fixed Control Panel - adjusted position to prevent collision */}
       <FixedControlPanel
         isOpen={showControlPanel}
         onClose={onCloseControlPanel}
@@ -105,7 +94,7 @@ const UIOverlay = ({
         onClose={onCloseMeasurePanel}
       />
 
-      {/* Bottom Floating Bar - now icon-only design */}
+      {/* Enhanced Bottom Floating Bar with zoom and snap controls */}
       <BottomFloatingBar
         objectCount={modelCount}
         gridEnabled={true}
@@ -115,6 +104,15 @@ const UIOverlay = ({
         zoomLevel={100}
         shadeType={shadeType}
         onShadeTypeChange={onShadeTypeChange}
+        onZoomAll={onZoomAll}
+        onZoomToSelected={onZoomToSelected}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        onResetView={onResetView}
+        snapToGrid={false}
+        onSnapToGridChange={() => {}}
+        gridSize={1}
+        onGridSizeChange={() => {}}
       />
     </>
   );
