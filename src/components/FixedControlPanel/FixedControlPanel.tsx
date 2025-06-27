@@ -22,16 +22,16 @@ const FixedControlPanel = ({
 
   return (
     <div
-      className="fixed right-8 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md shadow-2xl z-40"
+      className="fixed right-8 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded shadow-2xl z-40"
       style={{
-        width: 260,
-        height: 480,
+        width: 240,
+        height: 460,
         maxHeight: '85vh'
       }}
     >
       {/* Header */}
       {title && (
-        <div className="flex items-center justify-between p-1.5 border-b border-slate-700/50">
+        <div className="flex items-center justify-between p-1 border-b border-slate-700/50">
           <h3 className="text-xs font-medium text-white">{title}</h3>
           {onClose && (
             <Button
@@ -47,7 +47,7 @@ const FixedControlPanel = ({
       )}
 
       {/* Content */}
-      <div className="overflow-y-auto" style={{ height: title ? 'calc(100% - 35px)' : '100%' }}>
+      <div className="overflow-y-auto" style={{ height: title ? 'calc(100% - 28px)' : '100%' }}>
         {children}
       </div>
     </div>

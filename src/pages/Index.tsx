@@ -9,7 +9,6 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useMeasurements } from '../hooks/useMeasurements';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
 import FixedControlPanel from '../components/FixedControlPanel/FixedControlPanel';
-import FloatingZoomControls from '../components/FloatingZoomControls/FloatingZoomControls';
 import ControlPanelTabs from '../components/ControlPanelTabs/ControlPanelTabs';
 import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
 import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
@@ -217,22 +216,13 @@ const Index = () => {
           />
         </div>
 
-        {/* Aid Tools Bar */}
-        <AidToolsBar
-          onToolSelect={handleToolSelect}
-          activeTool={activeTool}
-        />
-
-        {/* Floating zoom controls - aligned to top */}
-        <FloatingZoomControls
-          onZoomAll={handleZoomAll}
-          onZoomToSelected={handleZoomToSelected}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onResetView={handleResetView}
-          shadeType={shadeType}
-          onShadeTypeChange={setShadeType}
-        />
+        {/* Aid Tools Bar - positioned at 1/3 screen with restored size */}
+        <div className="fixed left-1/3 top-4 z-40">
+          <AidToolsBar
+            onToolSelect={handleToolSelect}
+            activeTool={activeTool}
+          />
+        </div>
 
         {/* Control Panel Tabs (Icon Bar) */}
         <ControlPanelTabs
@@ -258,7 +248,7 @@ const Index = () => {
           onClose={() => setShowMeasurePanel(false)}
         />
 
-        {/* Bottom Floating Bar */}
+        {/* Enhanced Bottom Floating Bar with view controls */}
         <BottomFloatingBar
           objectCount={modelState.loadedModels.length + 1}
           gridEnabled={true}
@@ -266,6 +256,13 @@ const Index = () => {
           units="m"
           cursorPosition={{ x: 0, y: 0 }}
           zoomLevel={100}
+          onZoomAll={handleZoomAll}
+          onZoomToSelected={handleZoomToSelected}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onResetView={handleResetView}
+          shadeType={shadeType}
+          onShadeTypeChange={setShadeType}
         />
       </div>
     </SelectionProvider>
