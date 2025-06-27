@@ -12,16 +12,15 @@ interface ExpandableShadeServerProps {
 }
 
 const shadeTypes: Array<{ type: ShadeType; label: string; icon: React.ReactNode }> = [
-  { type: 'shaded', label: 'Shaded', icon: <Box className="h-3.5 w-3.5" /> },
-  { type: 'wireframe', label: 'Wireframe', icon: <Grid3X3 className="h-3.5 w-3.5" /> },
-  { type: 'hidden', label: 'Hidden', icon: <EyeOff className="h-3.5 w-3.5" /> },
-  { type: 'shaded-with-edges', label: 'Shaded with Edges', icon: <Layers className="h-3.5 w-3.5" /> },
+  { type: 'shaded', label: 'Shaded', icon: <Box className="h-3 w-3" /> },
+  { type: 'wireframe', label: 'Wireframe', icon: <Grid3X3 className="h-3 w-3" /> },
+  { type: 'hidden', label: 'Hidden', icon: <EyeOff className="h-3 w-3" /> },
+  { type: 'shaded-with-edges', label: 'Shaded with Edges', icon: <Layers className="h-3 w-3" /> },
 ];
 
 const ExpandableShadeSelector = ({ currentShadeType, onShadeTypeChange }: ExpandableShadeServerProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
   const currentShade = shadeTypes.find(shade => shade.type === currentShadeType) || shadeTypes[0];
 
   const handleShadeTypeSelect = (type: ShadeType) => {
@@ -46,76 +45,46 @@ const ExpandableShadeSelector = ({ currentShadeType, onShadeTypeChange }: Expand
     }
   }, [isExpanded]);
 
-  // Smart positioning to prevent overflow
-  useEffect(() => {
-    if (isExpanded && overlayRef.current && containerRef.current) {
-      const overlay = overlayRef.current;
-      const container = containerRef.current;
-      const rect = container.getBoundingClientRect();
-      const overlayRect = overlay.getBoundingClientRect();
-      
-      // Check if there's enough space above
-      const spaceAbove = rect.top;
-      const overlayHeight = overlayRect.height;
-      
-      // If not enough space above, position differently
-      if (spaceAbove < overlayHeight + 20) {
-        overlay.style.bottom = 'auto';
-        overlay.style.top = '100%';
-        overlay.style.marginTop = '8px';
-        overlay.style.marginBottom = '0';
-      } else {
-        overlay.style.top = 'auto';
-        overlay.style.bottom = '100%';
-        overlay.style.marginBottom = '8px';
-        overlay.style.marginTop = '0';
-      }
-    }
-  }, [isExpanded]);
-
   return (
     <TooltipProvider>
       <div ref={containerRef} className="relative">
-        {/* Main shade button - icon only */}
+        {/* Main shade button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0 text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center justify-center"
+              className="h-6 px-2 text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
               onClick={handleMainButtonClick}
             >
               {currentShade.icon}
-              <ChevronUp className={`h-3 w-3 ml-0.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              <ChevronUp className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="font-medium">{currentShade.label} - Click for options</p>
+            <p>{currentShade.label} (Click for options)</p>
           </TooltipContent>
         </Tooltip>
 
-        {/* Floating options overlay with smart positioning */}
+        {/* Floating options overlay - expands upward */}
         {isExpanded && (
-          <div 
-            ref={overlayRef}
-            className="absolute left-0 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-1.5 z-50 shadow-xl animate-in fade-in-0 zoom-in-95 duration-200"
-          >
-            <div className="flex flex-col gap-1 min-w-36">
+          <div className="absolute bottom-full left-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-1 z-50 shadow-lg animate-scale-in">
+            <div className="flex flex-col gap-1">
               {shadeTypes.map((shade) => (
                 <Tooltip key={shade.type}>
                   <TooltipTrigger asChild>
                     <Button
                       variant={currentShadeType === shade.type ? "default" : "ghost"}
                       size="sm"
-                      className="h-8 px-3 justify-start text-sm font-medium"
+                      className="h-8 px-3 justify-start text-xs"
                       onClick={() => handleShadeTypeSelect(shade.type)}
                     >
                       {shade.icon}
-                      <span className="ml-2.5">{shade.label}</span>
+                      <span className="ml-2">{shade.label}</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="left">
-                    <p className="font-medium">{shade.label}</p>
+                    <p>{shade.label}</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
