@@ -124,8 +124,8 @@ const TabsControlPanel = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto p-2">
-      <div className="space-y-2">
+    <div className="h-full overflow-y-auto p-1.5">
+      <div className="space-y-1.5">
         {renderContent()}
       </div>
     </div>

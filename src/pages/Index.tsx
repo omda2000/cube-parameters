@@ -14,6 +14,7 @@ import ControlPanelTabs from '../components/ControlPanelTabs/ControlPanelTabs';
 import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
 import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
+import BottomFloatingBar from '../components/BottomFloatingBar/BottomFloatingBar';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
 
@@ -222,7 +223,7 @@ const Index = () => {
           activeTool={activeTool}
         />
 
-        {/* Floating zoom controls with enhanced shade controls */}
+        {/* Floating zoom controls - aligned to top */}
         <FloatingZoomControls
           onZoomAll={handleZoomAll}
           onZoomToSelected={handleZoomToSelected}
@@ -255,6 +256,16 @@ const Index = () => {
           onRemoveMeasurement={removeMeasurement}
           visible={showMeasurePanel}
           onClose={() => setShowMeasurePanel(false)}
+        />
+
+        {/* Bottom Floating Bar */}
+        <BottomFloatingBar
+          objectCount={modelState.loadedModels.length + 1}
+          gridEnabled={true}
+          gridSpacing="1m"
+          units="m"
+          cursorPosition={{ x: 0, y: 0 }}
+          zoomLevel={100}
         />
       </div>
     </SelectionProvider>
