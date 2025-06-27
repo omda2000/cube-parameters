@@ -1,4 +1,3 @@
-
 import React from 'react';
 import AidToolsBar from '../AidToolsBar/AidToolsBar';
 import ControlPanelTabs from '../ControlPanelTabs/ControlPanelTabs';
@@ -8,7 +7,14 @@ import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
 import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
 import VerticalZoomControls from '../VerticalZoomControls/VerticalZoomControls';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
-import type { Measurement } from '../../hooks/useMeasurements';
+
+interface MeasureData {
+  id: string;
+  startPoint: { x: number; y: number; z: number };
+  endPoint: { x: number; y: number; z: number };
+  distance: number;
+  label: string;
+}
 
 interface UIOverlayProps {
   activeTool: 'select' | 'point' | 'measure' | 'move';
@@ -20,7 +26,7 @@ interface UIOverlayProps {
   controlsPanelProps: any;
   showMeasurePanel: boolean;
   onCloseMeasurePanel: () => void;
-  measurements: Measurement[];
+  measurements: MeasureData[];
   onClearAllMeasurements: () => void;
   onRemoveMeasurement: (id: string) => void;
   onZoomAll: () => void;
