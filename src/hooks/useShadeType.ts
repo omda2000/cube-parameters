@@ -30,12 +30,12 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
               mesh.material.forEach(mat => {
-                if (mat instanceof THREE.Material) {
-                  mat.wireframe = false;
+                if ('wireframe' in mat) {
+                  (mat as any).wireframe = false;
                 }
               });
-            } else if (mesh.material instanceof THREE.Material) {
-              mesh.material.wireframe = false;
+            } else if ('wireframe' in mesh.material) {
+              (mesh.material as any).wireframe = false;
             }
             break;
 
@@ -43,12 +43,12 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
               mesh.material.forEach(mat => {
-                if (mat instanceof THREE.Material) {
-                  mat.wireframe = true;
+                if ('wireframe' in mat) {
+                  (mat as any).wireframe = true;
                 }
               });
-            } else if (mesh.material instanceof THREE.Material) {
-              mesh.material.wireframe = true;
+            } else if ('wireframe' in mesh.material) {
+              (mesh.material as any).wireframe = true;
             }
             break;
 
@@ -64,12 +64,12 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
               mesh.material.forEach(mat => {
-                if (mat instanceof THREE.Material) {
-                  mat.wireframe = false;
+                if ('wireframe' in mat) {
+                  (mat as any).wireframe = false;
                 }
               });
-            } else if (mesh.material instanceof THREE.Material) {
-              mesh.material.wireframe = false;
+            } else if ('wireframe' in mesh.material) {
+              (mesh.material as any).wireframe = false;
             }
             
             // Add wireframe edges
