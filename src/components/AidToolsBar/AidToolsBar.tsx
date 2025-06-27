@@ -10,46 +10,46 @@ interface AidToolsBarProps {
 
 const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-40">
-      <div className="flex gap-1">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-1 z-40 shadow-sm">
+      <div className="flex gap-0">
         <Button
           variant={activeTool === 'select' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('select')}
-          className="h-8 w-8 p-0 text-slate-300 hover:text-white"
+          className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
           title="Select Tool"
         >
-          <Target className="h-4 w-4" />
+          <Target className="h-3.5 w-3.5" />
         </Button>
         
         <Button
           variant={activeTool === 'point' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('point')}
-          className="h-8 w-8 p-0 text-slate-300 hover:text-white"
+          className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
           title="Point Tool - Click to add points"
         >
-          <MapPin className="h-4 w-4" />
+          <MapPin className="h-3.5 w-3.5" />
         </Button>
         
         <Button
           variant={activeTool === 'measure' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('measure')}
-          className="h-8 w-8 p-0 text-slate-300 hover:text-white"
+          className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
           title="Measure Tool"
         >
-          <Ruler className="h-4 w-4" />
+          <Ruler className="h-3.5 w-3.5" />
         </Button>
         
         <Button
           variant={activeTool === 'move' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('move')}
-          className="h-8 w-8 p-0 text-slate-300 hover:text-white"
+          className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
           title="Move Tool"
         >
-          <Move className="h-4 w-4" />
+          <Move className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

@@ -118,14 +118,28 @@ const TabsControlPanel = ({
             setEnvironment={setEnvironment}
           />
         );
+      case 'settings':
+        return (
+          <div className="p-3 space-y-3">
+            <h3 className="text-sm font-medium text-gray-900">Settings</h3>
+            <div className="space-y-2">
+              <div className="text-xs text-gray-600">
+                <p>• Keyboard shortcuts</p>
+                <p>• Display preferences</p>
+                <p>• Export settings</p>
+                <p>• Application info</p>
+              </div>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
   };
 
   return (
-    <div className="h-full overflow-y-auto p-2">
-      <div className="space-y-2">
+    <div className="h-full overflow-y-auto p-1">
+      <div className="space-y-1">
         {renderContent()}
       </div>
     </div>
