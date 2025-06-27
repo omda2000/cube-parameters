@@ -33,15 +33,16 @@ interface ControlsPanelProps {
   setObjectName: (name: string) => void;
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
+  activeTab: string;
 }
 
-const ControlsPanel = ({ panelWidth, ...props }: ControlsPanelProps) => {
+const ControlsPanel = ({ panelWidth, activeTab, ...props }: ControlsPanelProps) => {
   return (
     <div 
       className="bg-slate-800/60 backdrop-blur-sm border-l border-slate-700/50 overflow-hidden"
       style={{ width: panelWidth }}
     >
-      <TabsControlPanel {...props} />
+      <TabsControlPanel {...props} activeTab={activeTab} />
     </div>
   );
 };
