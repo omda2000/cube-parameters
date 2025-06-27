@@ -14,6 +14,7 @@ import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
 import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import BottomFloatingBar from '../components/BottomFloatingBar/BottomFloatingBar';
+import VerticalZoomControls from '../components/VerticalZoomControls/VerticalZoomControls';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
 
@@ -23,6 +24,7 @@ const Index = () => {
   const [showMeasurePanel, setShowMeasurePanel] = useState(false);
   const [activeControlTab, setActiveControlTab] = useState('scene');
   const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
+  const [isOrthographic, setIsOrthographic] = useState(false);
   
   const { toast } = useToast();
   const modelState = useModelState();
@@ -169,6 +171,14 @@ const Index = () => {
     }
   };
 
+  const handleCameraToggle = (orthographic: boolean) => {
+    setIsOrthographic(orthographic);
+    const cameraControls = (window as any).__cameraControls;
+    if (cameraControls) {
+      cameraControls.toggleCameraType(orthographic);
+    }
+  };
+
   useKeyboardShortcuts({
     onToggleControlPanel: () => setShowControlPanel(!showControlPanel),
     onZoomAll: handleZoomAll,
@@ -187,6 +197,8 @@ const Index = () => {
     onPrimitiveSelect: handlePrimitiveSelect,
     scene: scene,
     activeTab: activeControlTab,
+    isOrthographic,
+    onCameraToggle: handleCameraToggle,
     ...lightingState,
     ...modelState,
     ...environmentState
@@ -224,14 +236,24 @@ const Index = () => {
           />
         </div>
 
-        {/* Control Panel Tabs - now positioned at middle of screen vertically */}
+        {/* Vertical Zoom Controls - positioned on left side */}
+        <VerticalZoomControls
+          onZoomAll={handleZoomAll}
+          onZoomToSelected={handleZoomToSelected}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onResetView={handleResetView}
+          zoomLevel={100}
+        />
+
+        {/* Control Panel Tabs - repositioned to prevent collision */}
         <ControlPanelTabs
           activeTab={activeControlTab}
           onTabChange={handleTabChange}
           isPanelOpen={showControlPanel}
         />
 
-        {/* Fixed Control Panel */}
+        {/* Fixed Control Panel - adjusted position */}
         <FixedControlPanel
           isOpen={showControlPanel}
           onClose={() => setShowControlPanel(false)}
@@ -248,7 +270,7 @@ const Index = () => {
           onClose={() => setShowMeasurePanel(false)}
         />
 
-        {/* Enhanced Bottom Floating Bar with new expandable controls */}
+        {/* Bottom Floating Bar - now icon-only design */}
         <BottomFloatingBar
           objectCount={modelState.loadedModels.length + 1}
           gridEnabled={true}
@@ -256,11 +278,6 @@ const Index = () => {
           units="m"
           cursorPosition={{ x: 0, y: 0 }}
           zoomLevel={100}
-          onZoomAll={handleZoomAll}
-          onZoomToSelected={handleZoomToSelected}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onResetView={handleResetView}
           shadeType={shadeType}
           onShadeTypeChange={setShadeType}
         />

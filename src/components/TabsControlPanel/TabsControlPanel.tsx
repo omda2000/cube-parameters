@@ -70,8 +70,13 @@ const TabsControlPanel = ({
   shadeType = 'shaded',
   onShadeTypeChange,
   scene,
-  activeTab
-}: TabsControlPanelProps) => {
+  activeTab,
+  isOrthographic,
+  onCameraToggle
+}: TabsControlPanelProps & {
+  isOrthographic?: boolean;
+  onCameraToggle?: (orthographic: boolean) => void;
+}) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'scene':
@@ -116,6 +121,8 @@ const TabsControlPanel = ({
           <ViewTab
             environment={environment}
             setEnvironment={setEnvironment}
+            isOrthographic={isOrthographic}
+            onCameraToggle={onCameraToggle}
           />
         );
       default:

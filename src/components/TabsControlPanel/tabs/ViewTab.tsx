@@ -6,14 +6,22 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import CameraTypeToggle from '../../CameraTypeToggle/CameraTypeToggle';
 import type { EnvironmentSettings } from '../../../types/model';
 
 interface ViewTabProps {
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
+  isOrthographic?: boolean;
+  onCameraToggle?: (orthographic: boolean) => void;
 }
 
-const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
+const ViewTab = ({ 
+  environment, 
+  setEnvironment, 
+  isOrthographic = false,
+  onCameraToggle
+}: ViewTabProps) => {
   return (
     <TooltipProvider>
       <div className="space-y-2 p-1">
@@ -22,6 +30,17 @@ const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
           <Eye className="h-4 w-4 text-slate-400" />
           <span className="text-xs font-medium text-slate-300">View</span>
         </div>
+
+        {/* Camera Type Toggle */}
+        {onCameraToggle && (
+          <>
+            <CameraTypeToggle
+              isOrthographic={isOrthographic}
+              onToggle={onCameraToggle}
+            />
+            <Separator className="bg-slate-600" />
+          </>
+        )}
 
         {/* Grid controls */}
         <div className="space-y-2">

@@ -4,7 +4,6 @@ import { Separator } from '@/components/ui/separator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
-import ExpandableViewControls from '../ExpandableViewControls/ExpandableViewControls';
 
 interface BottomFloatingBarProps {
   objectCount?: number;
@@ -13,11 +12,6 @@ interface BottomFloatingBarProps {
   units?: string;
   cursorPosition?: { x: number; y: number };
   zoomLevel?: number;
-  onZoomAll: () => void;
-  onZoomToSelected: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onResetView: () => void;
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
 }
@@ -29,11 +23,6 @@ const BottomFloatingBar = ({
   units = "m",
   cursorPosition = { x: 0, y: 0 },
   zoomLevel = 100,
-  onZoomAll,
-  onZoomToSelected,
-  onZoomIn,
-  onZoomOut,
-  onResetView,
   shadeType,
   onShadeTypeChange
 }: BottomFloatingBarProps) => {
@@ -68,7 +57,6 @@ const BottomFloatingBar = ({
 
             <Separator orientation="vertical" className="h-4 bg-gray-600" />
             
-            {/* Moved coordinates and zoom to left after units */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <span className="text-gray-400">X:</span>
@@ -84,19 +72,8 @@ const BottomFloatingBar = ({
             </div>
           </div>
           
-          {/* Right section - Expandable controls */}
-          <div className="flex items-center gap-2">
-            <ExpandableViewControls
-              onZoomAll={onZoomAll}
-              onZoomToSelected={onZoomToSelected}
-              onZoomIn={onZoomIn}
-              onZoomOut={onZoomOut}
-              onResetView={onResetView}
-              selectedObject={selectedObject}
-            />
-            
-            <div className="h-4 w-px bg-gray-600" />
-            
+          {/* Right section - Only shade selector now */}
+          <div className="flex items-center">
             <ExpandableShadeSelector
               currentShadeType={shadeType}
               onShadeTypeChange={onShadeTypeChange}
