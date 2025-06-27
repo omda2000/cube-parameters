@@ -45,9 +45,6 @@ interface TabsControlPanelProps {
   scene?: THREE.Scene | null;
   
   activeTab: string;
-  
-  isOrthographic?: boolean;
-  onCameraToggle?: (isOrthographic: boolean) => void;
 }
 
 const TabsControlPanel = ({
@@ -73,9 +70,7 @@ const TabsControlPanel = ({
   shadeType = 'shaded',
   onShadeTypeChange,
   scene,
-  activeTab,
-  isOrthographic = false,
-  onCameraToggle
+  activeTab
 }: TabsControlPanelProps) => {
   const renderContent = () => {
     switch (activeTab) {
@@ -121,8 +116,6 @@ const TabsControlPanel = ({
           <ViewTab
             environment={environment}
             setEnvironment={setEnvironment}
-            isOrthographic={isOrthographic}
-            onCameraToggle={onCameraToggle}
           />
         );
       default:

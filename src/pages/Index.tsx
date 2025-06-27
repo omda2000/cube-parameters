@@ -14,7 +14,6 @@ import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
 import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import BottomFloatingBar from '../components/BottomFloatingBar/BottomFloatingBar';
-import VerticalZoomControls from '../components/VerticalZoomControls/VerticalZoomControls';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
 
@@ -24,7 +23,6 @@ const Index = () => {
   const [showMeasurePanel, setShowMeasurePanel] = useState(false);
   const [activeControlTab, setActiveControlTab] = useState('scene');
   const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
-  const [isOrthographic, setIsOrthographic] = useState(false);
   
   const { toast } = useToast();
   const modelState = useModelState();
@@ -53,15 +51,6 @@ const Index = () => {
     toast({
       title: "Measurement added",
       description: `Distance: ${measurement.distance.toFixed(3)} units`,
-    });
-  };
-
-  const handleCameraToggle = (isOrtho: boolean) => {
-    setIsOrthographic(isOrtho);
-    // Add camera switching logic here
-    toast({
-      title: "Camera switched",
-      description: `Now using ${isOrtho ? 'orthographic' : 'perspective'} camera`,
     });
   };
 
@@ -198,8 +187,6 @@ const Index = () => {
     onPrimitiveSelect: handlePrimitiveSelect,
     scene: scene,
     activeTab: activeControlTab,
-    isOrthographic,
-    onCameraToggle: handleCameraToggle,
     ...lightingState,
     ...modelState,
     ...environmentState
@@ -229,15 +216,6 @@ const Index = () => {
           />
         </div>
 
-        {/* Vertical Zoom Controls - positioned on left */}
-        <VerticalZoomControls
-          onZoomAll={handleZoomAll}
-          onZoomToSelected={handleZoomToSelected}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onResetView={handleResetView}
-        />
-
         {/* Aid Tools Bar - positioned at 1/3 screen */}
         <div className="fixed left-1/3 top-4 z-40">
           <AidToolsBar
@@ -246,7 +224,7 @@ const Index = () => {
           />
         </div>
 
-        {/* Control Panel Tabs - repositioned to avoid collisions */}
+        {/* Control Panel Tabs - now positioned at middle of screen vertically */}
         <ControlPanelTabs
           activeTab={activeControlTab}
           onTabChange={handleTabChange}
@@ -270,7 +248,7 @@ const Index = () => {
           onClose={() => setShowMeasurePanel(false)}
         />
 
-        {/* Enhanced Bottom Floating Bar - icon-only design */}
+        {/* Enhanced Bottom Floating Bar with new expandable controls */}
         <BottomFloatingBar
           objectCount={modelState.loadedModels.length + 1}
           gridEnabled={true}
@@ -278,6 +256,11 @@ const Index = () => {
           units="m"
           cursorPosition={{ x: 0, y: 0 }}
           zoomLevel={100}
+          onZoomAll={handleZoomAll}
+          onZoomToSelected={handleZoomToSelected}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onResetView={handleResetView}
           shadeType={shadeType}
           onShadeTypeChange={setShadeType}
         />
