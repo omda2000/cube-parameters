@@ -25,8 +25,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      {/* Positioned at middle of screen vertically, same size as top toolbar */}
-      <div className="fixed right-1 top-1/2 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50">
+      {/* Repositioned to right-4 top-1/3 to prevent collision and align better */}
+      <div className="fixed right-4 top-1/3 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50 shadow-xl">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
@@ -39,17 +39,17 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     variant="ghost"
                     size="sm"
                     onClick={() => handleTabClick(tab.id)}
-                    className={`h-8 w-8 p-0 transition-all duration-150 hover:scale-105 ${
+                    className={`h-10 w-10 p-0 transition-all duration-200 hover:scale-105 ${
                       isActive
-                        ? 'bg-indigo-600 text-white shadow-md'
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
                         : 'text-slate-300 hover:bg-slate-600/60 hover:text-white'
                     }`}
                   >
-                    <IconComponent className="h-4 w-4" />
+                    <IconComponent className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="left">
-                  <p className="text-xs">{tab.label}</p>
+                <TooltipContent side="left" className="font-medium">
+                  <p>{tab.label}</p>
                 </TooltipContent>
               </Tooltip>
             );

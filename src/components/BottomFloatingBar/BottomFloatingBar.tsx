@@ -41,51 +41,51 @@ const BottomFloatingBar = ({
 
   return (
     <TooltipProvider>
-      <div className="fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-2 z-30">
+      <div className="fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-2.5 z-30 shadow-xl">
         <div className="flex items-center justify-between text-xs text-gray-300">
           {/* Left section - Status and coordinate information */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <span className="text-gray-400">Objects:</span>
-              <span className="text-white font-medium">{objectCount}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium">Objects:</span>
+              <span className="text-white font-semibold">{objectCount}</span>
             </div>
             
             <Separator orientation="vertical" className="h-4 bg-gray-600" />
             
-            <div className="flex items-center gap-1">
-              <span className="text-gray-400">Grid:</span>
-              <span className="text-white font-medium">
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium">Grid:</span>
+              <span className="text-white font-semibold">
                 {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
               </span>
             </div>
             
             <Separator orientation="vertical" className="h-4 bg-gray-600" />
             
-            <div className="flex items-center gap-1">
-              <span className="text-gray-400">Units:</span>
-              <span className="text-white font-medium">{units}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium">Units:</span>
+              <span className="text-white font-semibold">{units}</span>
             </div>
 
             <Separator orientation="vertical" className="h-4 bg-gray-600" />
             
-            {/* Moved coordinates and zoom to left after units */}
+            {/* Coordinates and zoom information */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <span className="text-gray-400">X:</span>
-                <span className="text-white font-medium">{cursorPosition.x.toFixed(2)}</span>
-                <span className="text-gray-400 ml-2">Y:</span>
-                <span className="text-white font-medium">{cursorPosition.y.toFixed(2)}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-gray-400 font-medium">X:</span>
+                <span className="text-white font-semibold">{cursorPosition.x.toFixed(2)}</span>
+                <span className="text-gray-400 font-medium ml-3">Y:</span>
+                <span className="text-white font-semibold">{cursorPosition.y.toFixed(2)}</span>
               </div>
               
-              <div className="flex items-center gap-1">
-                <span className="text-gray-400">Zoom:</span>
-                <span className="text-white font-medium">{zoomLevel}%</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-gray-400 font-medium">Zoom:</span>
+                <span className="text-white font-semibold">{zoomLevel}%</span>
               </div>
             </div>
           </div>
           
-          {/* Right section - Expandable controls */}
-          <div className="flex items-center gap-2">
+          {/* Right section - Expandable controls with better spacing */}
+          <div className="flex items-center gap-3">
             <ExpandableViewControls
               onZoomAll={onZoomAll}
               onZoomToSelected={onZoomToSelected}
@@ -95,7 +95,7 @@ const BottomFloatingBar = ({
               selectedObject={selectedObject}
             />
             
-            <div className="h-4 w-px bg-gray-600" />
+            <div className="h-5 w-px bg-gray-600" />
             
             <ExpandableShadeSelector
               currentShadeType={shadeType}
