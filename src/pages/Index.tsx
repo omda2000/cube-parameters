@@ -4,6 +4,7 @@ import { SelectionProvider } from '../contexts/SelectionContext';
 import { useModelState } from '../hooks/useModelState';
 import { useLightingState } from '../hooks/useLightingState';
 import { useEnvironmentState } from '../hooks/useEnvironmentState';
+import { useShadeType } from '../hooks/useShadeType';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useMeasurements } from '../hooks/useMeasurements';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
@@ -34,6 +35,7 @@ const Index = () => {
   const modelState = useModelState();
   const lightingState = useLightingState();
   const environmentState = useEnvironmentState();
+  const { shadeType, setShadeType } = useShadeType({ current: scene });
   const { measurements, addMeasurement, removeMeasurement, clearAllMeasurements } = useMeasurements();
 
   const handleToolSelect = (tool: 'select' | 'point' | 'measure' | 'move') => {
@@ -145,15 +147,24 @@ const Index = () => {
   };
 
   const handleZoomIn = () => {
-    console.log('Zoom in');
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls && zoomControls.zoomIn) {
+      zoomControls.zoomIn();
+    }
   };
 
   const handleZoomOut = () => {
-    console.log('Zoom out');
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls && zoomControls.zoomOut) {
+      zoomControls.zoomOut();
+    }
   };
 
   const handleResetView = () => {
-    console.log('Reset view');
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls) {
+      zoomControls.resetView();
+    }
   };
 
   const toggleControlPanel = () => {
@@ -181,6 +192,8 @@ const Index = () => {
     onModelRemove: handleModelRemove,
     onPrimitiveSelect: handlePrimitiveSelect,
     scene: scene,
+    shadeType: shadeType,
+    onShadeTypeChange: setShadeType,
     ...lightingState,
     ...modelState,
     ...environmentState
@@ -246,8 +259,8 @@ const Index = () => {
         {showControlPanel && (
           <FloatingPanel
             title="Controls"
-            defaultPosition={{ x: Math.max(20, window.innerWidth - 360), y: 20 }}
-            defaultSize={{ width: 340, height: 600 }}
+            defaultPosition={{ x: Math.max(20, window.innerWidth - 400), y: 20 }}
+            defaultSize={{ width: 400, height: 600 }}
             onClose={() => setShowControlPanel(false)}
             collapsible={true}
           >

@@ -7,6 +7,8 @@ import type { SceneObject } from '../types/model';
 interface ZoomControlsHook {
   zoomAll: () => void;
   zoomToSelected: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
   resetView: () => void;
 }
 
@@ -107,6 +109,66 @@ export const useZoomControls = (
         animate();
       },
 
+      zoomIn: () => {
+        if (!cameraRef.current || !controlsRef.current) return;
+        
+        const target = controlsRef.current.target;
+        const direction = cameraRef.current.position.clone().sub(target).normalize();
+        const currentDistance = cameraRef.current.position.distanceTo(target);
+        const newDistance = Math.max(currentDistance * 0.8, controlsRef.current.minDistance);
+        const newPosition = target.clone().add(direction.multiplyScalar(newDistance));
+        
+        // Smooth zoom
+        const startPosition = cameraRef.current.position.clone();
+        const startTime = Date.now();
+        const duration = 300;
+
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = 1 - Math.pow(1 - progress, 3);
+          
+          cameraRef.current!.position.lerpVectors(startPosition, newPosition, easedProgress);
+          controlsRef.current!.update();
+          
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          }
+        };
+        
+        animate();
+      },
+
+      zoomOut: () => {
+        if (!cameraRef.current || !controlsRef.current) return;
+        
+        const target = controlsRef.current.target;
+        const direction = cameraRef.current.position.clone().sub(target).normalize();
+        const currentDistance = cameraRef.current.position.distanceTo(target);
+        const newDistance = Math.min(currentDistance * 1.25, controlsRef.current.maxDistance);
+        const newPosition = target.clone().add(direction.multiplyScalar(newDistance));
+        
+        // Smooth zoom
+        const startPosition = cameraRef.current.position.clone();
+        const startTime = Date.now();
+        const duration = 300;
+
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = 1 - Math.pow(1 - progress, 3);
+          
+          cameraRef.current!.position.lerpVectors(startPosition, newPosition, easedProgress);
+          controlsRef.current!.update();
+          
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          }
+        };
+        
+        animate();
+      },
+
       resetView: () => {
         if (!cameraRef.current || !controlsRef.current) return;
         
@@ -150,6 +212,8 @@ export const useZoomControls = (
   return controlsRefInternal.current || {
     zoomAll: () => {},
     zoomToSelected: () => {},
+    zoomIn: () => {},
+    zoomOut: () => {},
     resetView: () => {}
   };
 };

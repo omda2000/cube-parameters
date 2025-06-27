@@ -1,13 +1,16 @@
 
 import ViewControls from '../../ViewControls';
 import type { EnvironmentSettings } from '../../../types/model';
+import type { ShadeType } from '../../ShadeTypeSelector/ShadeTypeSelector';
 
 interface ViewTabProps {
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
+  shadeType?: ShadeType;
+  onShadeTypeChange?: (type: ShadeType) => void;
 }
 
-const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
+const ViewTab = ({ environment, setEnvironment, shadeType = 'shaded', onShadeTypeChange }: ViewTabProps) => {
   // Zoom control handlers
   const handleZoomAll = () => {
     const zoomControls = (window as any).__zoomControls;
@@ -24,21 +27,32 @@ const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
   };
 
   const handleZoomIn = () => {
-    console.log('Zoom in');
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls && zoomControls.zoomIn) {
+      zoomControls.zoomIn();
+    }
   };
 
   const handleZoomOut = () => {
-    console.log('Zoom out');
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls && zoomControls.zoomOut) {
+      zoomControls.zoomOut();
+    }
   };
 
   const handleResetView = () => {
-    console.log('Reset view');
+    const zoomControls = (window as any).__zoomControls;
+    if (zoomControls) {
+      zoomControls.resetView();
+    }
   };
 
   return (
     <ViewControls 
       environment={environment}
       setEnvironment={setEnvironment}
+      shadeType={shadeType}
+      onShadeTypeChange={onShadeTypeChange || (() => {})}
       onZoomAll={handleZoomAll}
       onZoomToSelected={handleZoomToSelected}
       onZoomIn={handleZoomIn}
