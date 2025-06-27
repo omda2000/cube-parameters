@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SelectionProvider } from '../contexts/SelectionContext';
@@ -179,29 +180,6 @@ const Index = () => {
     setShowSettingsPanel(!showSettingsPanel);
   };
 
-  useKeyboardShortcuts({
-    onToggleControlPanel: toggleControlPanel,
-    onZoomAll: handleZoomAll,
-    onZoomToSelected: handleZoomToSelected,
-    onResetView: handleResetView
-  });
-
-  const controlsPanelProps = {
-    loadedModels: modelState.loadedModels,
-    currentModel: modelState.currentModel,
-    isUploading: modelState.isUploading,
-    uploadError: modelState.uploadError,
-    onFileUpload: handleFileUpload,
-    onModelSelect: handleModelSelect,
-    onModelRemove: handleModelRemove,
-    onPrimitiveSelect: handlePrimitiveSelect,
-    scene: scene,
-    activeTab: activeControlTab,
-    ...lightingState,
-    ...modelState,
-    ...environmentState
-  };
-
   const handleTabChange = (tab: string) => {
     if (tab === '') {
       // Empty string means close panel
@@ -212,10 +190,6 @@ const Index = () => {
       setShowControlPanel(true);
       setActiveControlTab(tab);
     }
-  };
-
-  const toggleSettingsPanel = () => {
-    setShowSettingsPanel(!showSettingsPanel);
   };
 
   useKeyboardShortcuts({
