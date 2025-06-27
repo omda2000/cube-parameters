@@ -17,7 +17,6 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
     { id: 'lighting', label: 'Lighting & Environment', icon: Globe },
     { id: 'materials', label: 'Materials', icon: Palette },
     { id: 'environment', label: 'View Settings', icon: Eye },
-    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const handleTabClick = (tabId: string) => {
@@ -26,8 +25,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      <div className="fixed right-1 top-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg z-50">
-        <div className="flex flex-col">
+      <div className="fixed right-1 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-0.5 z-50">
+        <div className="flex flex-col gap-0">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id && isPanelOpen;
@@ -39,13 +38,13 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     variant="ghost"
                     size="sm"
                     onClick={() => handleTabClick(tab.id)}
-                    className={`h-6 w-6 p-0 transition-all duration-150 hover:scale-105 ${
+                    className={`h-7 w-7 p-0 transition-all duration-150 hover:scale-105 ${
                       isActive
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'text-slate-300 hover:bg-slate-600/60 hover:text-white'
                     }`}
                   >
-                    <IconComponent className="h-3 w-3" />
+                    <IconComponent className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="left">

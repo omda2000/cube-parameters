@@ -12,10 +12,10 @@ interface ShadeTypeSelectorProps {
 }
 
 const shadeTypes: Array<{ type: ShadeType; label: string; icon: React.ReactNode }> = [
-  { type: 'shaded', label: 'Shaded', icon: <Box className="h-3 w-3" /> },
-  { type: 'wireframe', label: 'Wireframe', icon: <Grid3X3 className="h-3 w-3" /> },
-  { type: 'hidden', label: 'Hidden', icon: <EyeOff className="h-3 w-3" /> },
-  { type: 'shaded-with-edges', label: 'Shaded with Edges', icon: <Layers className="h-3 w-3" /> },
+  { type: 'shaded', label: 'Shaded', icon: <Box className="h-4 w-4" /> },
+  { type: 'wireframe', label: 'Wireframe', icon: <Grid3X3 className="h-4 w-4" /> },
+  { type: 'hidden', label: 'Hidden', icon: <EyeOff className="h-4 w-4" /> },
+  { type: 'shaded-with-edges', label: 'Shaded with Edges', icon: <Layers className="h-4 w-4" /> },
 ];
 
 const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSelectorProps) => {
@@ -54,7 +54,7 @@ const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSel
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700/50"
               onClick={handleMainButtonClick}
             >
               {currentShade.icon}
@@ -67,15 +67,15 @@ const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSel
 
         {/* Floating options overlay */}
         {isExpanded && (
-          <div className="absolute left-8 top-0 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-0.5 z-50 shadow-lg">
-            <div className="flex gap-0">
+          <div className="absolute left-10 top-0 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-1 z-50 shadow-lg">
+            <div className="flex gap-1">
               {shadeTypes.map((shade) => (
                 <Tooltip key={shade.type}>
                   <TooltipTrigger asChild>
                     <Button
                       variant={currentShadeType === shade.type ? "default" : "ghost"}
                       size="sm"
-                      className="h-7 w-7 p-0"
+                      className="h-8 w-8 p-0"
                       onClick={() => handleShadeTypeSelect(shade.type)}
                     >
                       {shade.icon}

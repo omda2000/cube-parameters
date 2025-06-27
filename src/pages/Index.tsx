@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SelectionProvider } from '../contexts/SelectionContext';
@@ -15,7 +14,6 @@ import ControlPanelTabs from '../components/ControlPanelTabs/ControlPanelTabs';
 import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
 import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
-import BottomFloatingBar from '../components/BottomFloatingBar/BottomFloatingBar';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
 
@@ -196,7 +194,7 @@ const Index = () => {
 
   return (
     <SelectionProvider>
-      <div className="min-h-screen bg-gray-50 text-gray-900 overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
         {/* Full-screen canvas */}
         <div className="absolute inset-0">
           <ModelViewerContainer
@@ -224,7 +222,7 @@ const Index = () => {
           activeTool={activeTool}
         />
 
-        {/* Floating zoom controls */}
+        {/* Floating zoom controls with enhanced shade controls */}
         <FloatingZoomControls
           onZoomAll={handleZoomAll}
           onZoomToSelected={handleZoomToSelected}
@@ -257,16 +255,6 @@ const Index = () => {
           onRemoveMeasurement={removeMeasurement}
           visible={showMeasurePanel}
           onClose={() => setShowMeasurePanel(false)}
-        />
-
-        {/* Bottom Floating Bar */}
-        <BottomFloatingBar
-          objectCount={modelState.loadedModels.length}
-          gridSpacing={1}
-          units="units"
-          cursorX={0}
-          cursorY={0}
-          zoomLevel={100}
         />
       </div>
     </SelectionProvider>
