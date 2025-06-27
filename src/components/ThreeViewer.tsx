@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, memo, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
@@ -40,7 +40,7 @@ interface ThreeViewerProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
-const ThreeViewer = ({ 
+const ThreeViewer = memo(({ 
   dimensions, 
   boxColor, 
   objectName, 
@@ -65,7 +65,8 @@ const ThreeViewer = ({
     rendererRef,
     labelRendererRef,
     controlsRef,
-    gridHelperRef
+    gridHelperRef,
+    performanceMetrics
   } = useThreeScene(mountRef);
 
   // Expose scene to parent components
@@ -120,8 +121,8 @@ const ThreeViewer = ({
     };
   }, [loadFBXModel, switchToModel, removeModel]);
 
-  // Handle object selection from 3D viewport
-  const handleObjectSelect = React.useCallback((object: THREE.Object3D | null) => {
+  // Memoize object selection handler to prevent recreating on each render
+  const handleObjectSelect = useMemo(() => (object: THREE.Object3D | null) => {
     if (object) {
       const sceneObject: SceneObject = {
         id: object.userData.isPrimitive ? `primitive_${object.uuid}` : 
@@ -140,15 +141,15 @@ const ThreeViewer = ({
     }
   }, [selectObject, clearSelection]);
 
-  // Handle point creation
-  const handlePointCreate = React.useCallback((point: { x: number; y: number; z: number }) => {
+  // Memoize point creation handler
+  const handlePointCreate = useMemo(() => (point: { x: number; y: number; z: number }) => {
     if (onPointCreate) {
       onPointCreate(point);
     }
   }, [onPointCreate]);
 
-  // Handle measure creation
-  const handleMeasureCreate = React.useCallback((start: THREE.Vector3, end: THREE.Vector3) => {
+  // Memoize measure creation handler
+  const handleMeasureCreate = useMemo(() => (start: THREE.Vector3, end: THREE.Vector3) => {
     if (onMeasureCreate) {
       onMeasureCreate(start, end);
     }
@@ -198,6 +199,13 @@ const ThreeViewer = ({
     gridHelperRef.current
   );
 
+  // Debug performance metrics in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Performance Metrics:', performanceMetrics);
+    }
+  }, [performanceMetrics]);
+
   return (
     <div className="relative w-full h-full">
       <div ref={mountRef} className="w-full h-full" />
@@ -209,6 +217,8 @@ const ThreeViewer = ({
       <SelectionOverlay selectedObject={selectedObject} />
     </div>
   );
-};
+});
+
+ThreeViewer.displayName = 'ThreeViewer';
 
 export default ThreeViewer;

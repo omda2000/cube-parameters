@@ -1,8 +1,8 @@
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { MaterialManager } from './utils/materialManager';
-import { createRaycaster, getIntersectableObjects } from './utils/raycastUtils';
+import { createRaycaster, getIntersectableObjects, invalidateIntersectableCache } from './utils/raycastUtils';
 import { useSelectTool } from './tools/useSelectTool';
 import { usePointTool } from './tools/usePointTool';
 import { useMeasureTool } from './tools/useMeasureTool';
@@ -38,41 +38,56 @@ export const useMouseInteraction = (
   const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
   const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
 
+  // Memoize object data extraction to avoid recalculation
+  const extractObjectData = useCallback((object: THREE.Object3D): ObjectData => {
+    let vertices = 0;
+    let triangles = 0;
+
+    if (object instanceof THREE.Mesh && object.geometry) {
+      const geometry = object.geometry;
+      if (geometry.attributes.position) {
+        vertices = geometry.attributes.position.count;
+      }
+      if (geometry.index) {
+        triangles = geometry.index.count / 3;
+      } else {
+        triangles = vertices / 3;
+      }
+    }
+
+    return {
+      name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
+      type: object.type,
+      vertices: vertices > 0 ? vertices : undefined,
+      triangles: triangles > 0 ? Math.floor(triangles) : undefined,
+      position: object.position.clone(),
+      rotation: object.rotation.clone(),
+      scale: object.scale.clone(),
+      visible: object.visible
+    };
+  }, []);
+
+  // Throttle mouse move to improve performance
+  const throttledMouseMove = useCallback((callback: (event: MouseEvent) => void) => {
+    let isThrottled = false;
+    return (event: MouseEvent) => {
+      if (!isThrottled) {
+        callback(event);
+        isThrottled = true;
+        requestAnimationFrame(() => {
+          isThrottled = false;
+        });
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!renderer || !camera || !scene) return;
 
     materialManagerRef.current = new MaterialManager();
 
-    const extractObjectData = (object: THREE.Object3D): ObjectData => {
-      let vertices = 0;
-      let triangles = 0;
-
-      if (object instanceof THREE.Mesh && object.geometry) {
-        const geometry = object.geometry;
-        if (geometry.attributes.position) {
-          vertices = geometry.attributes.position.count;
-        }
-        if (geometry.index) {
-          triangles = geometry.index.count / 3;
-        } else {
-          triangles = vertices / 3;
-        }
-      }
-
-      return {
-        name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
-        type: object.type,
-        vertices: vertices > 0 ? vertices : undefined,
-        triangles: triangles > 0 ? Math.floor(triangles) : undefined,
-        position: object.position.clone(),
-        rotation: object.rotation.clone(),
-        scale: object.scale.clone(),
-        visible: object.visible
-      };
-    };
-
-    const handleMouseMove = (event: MouseEvent) => {
-      const { raycaster, mouse } = createRaycaster();
+    const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
+      const { raycaster, mouse, dispose } = createRaycaster();
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -121,7 +136,9 @@ export const useMouseInteraction = (
           }
         }
       }
-    };
+
+      dispose();
+    });
 
     const handleClick = (event: MouseEvent) => {
       // Clear any existing hover effects before selection
@@ -179,7 +196,14 @@ export const useMouseInteraction = (
         materialManagerRef.current.dispose();
       }
     };
-  }, [renderer, camera, scene, hoveredObject, activeTool, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate]);
+  }, [renderer, camera, scene, hoveredObject, activeTool, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
+
+  // Invalidate intersection cache when scene changes
+  useEffect(() => {
+    if (scene) {
+      invalidateIntersectableCache();
+    }
+  }, [scene, targetObject]);
 
   return { objectData, mousePosition, isHovering: !!hoveredObject };
 };

@@ -1,8 +1,10 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { ResourceManager } from './utils/ResourceManager';
+import { useThreePerformance } from './useThreePerformance';
 
 export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -12,6 +14,23 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const controlsRef = useRef<OrbitControls | null>(null);
   const ucsHelperRef = useRef<THREE.AxesHelper | null>(null);
   const gridHelperRef = useRef<THREE.GridHelper | null>(null);
+  const animationIdRef = useRef<number | null>(null);
+  const resourceManagerRef = useRef<ResourceManager>(ResourceManager.getInstance());
+
+  const { metrics } = useThreePerformance(rendererRef.current);
+
+  const handleResize = useCallback(() => {
+    if (!mountRef.current || !cameraRef.current || !rendererRef.current || !labelRendererRef.current) return;
+
+    const camera = cameraRef.current;
+    const renderer = rendererRef.current;
+    const labelRenderer = labelRendererRef.current;
+
+    camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    labelRenderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+  }, [mountRef]);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -31,11 +50,12 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
 
-    // Renderer setup with better quality
+    // Renderer setup with better quality and performance optimizations
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       alpha: true,
-      logarithmicDepthBuffer: true
+      logarithmicDepthBuffer: true,
+      powerPreference: "high-performance" // Request high-performance GPU
     });
     rendererRef.current = renderer;
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
@@ -44,6 +64,10 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
+    
+    // Performance optimizations
+    renderer.info.autoReset = false; // Manual reset for better performance tracking
+    
     mountRef.current.appendChild(renderer.domElement);
 
     // Label renderer setup
@@ -85,42 +109,50 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     controls.zoomSpeed = 0.8;
     controls.panSpeed = 0.8;
     
-    // Add UCS (User Coordinate System) display at origin (0,0,0)
+    // Add UCS (User Coordinate System) display at origin (0,0,0) using ResourceManager
     const ucsHelper = new THREE.AxesHelper(2);
     ucsHelperRef.current = ucsHelper;
     ucsHelper.position.set(0, 0, 0);
     scene.add(ucsHelper);
 
-    // Add single horizontal grid helper for reference
+    // Add single horizontal grid helper for reference using ResourceManager
     const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
     gridHelperRef.current = gridHelper;
     gridHelper.position.set(0, 0, 0);
     scene.add(gridHelper);
 
-    // Handle resize
-    const handleResize = () => {
-      if (!mountRef.current || !camera || !renderer || !labelRenderer) return;
-
-      camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-      labelRenderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    };
-
     window.addEventListener('resize', handleResize);
 
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-      labelRenderer.render(scene, camera);
+    // Optimized animation loop with frame rate monitoring
+    let lastTime = 0;
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+
+    const animate = (currentTime: number) => {
+      animationIdRef.current = requestAnimationFrame(animate);
+      
+      // Throttle to target FPS for better performance on slower devices
+      if (currentTime - lastTime >= frameInterval) {
+        controls.update();
+        renderer.render(scene, camera);
+        labelRenderer.render(scene, camera);
+        
+        // Reset render info for next frame
+        renderer.info.reset();
+        
+        lastTime = currentTime;
+      }
     };
-    animate();
+    animate(0);
 
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
+      
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
+      }
+      
       if (mountRef.current) {
         if (renderer.domElement.parentNode) {
           mountRef.current.removeChild(renderer.domElement);
@@ -131,8 +163,11 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
       }
       controls.dispose();
       renderer.dispose();
+      
+      // Clean up resources
+      resourceManagerRef.current.disposeAll();
     };
-  }, []);
+  }, [handleResize]);
 
   return {
     sceneRef,
@@ -140,6 +175,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     rendererRef,
     labelRendererRef,
     controlsRef,
-    gridHelperRef
+    gridHelperRef,
+    performanceMetrics: metrics
   };
 };
