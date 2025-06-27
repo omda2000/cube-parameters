@@ -25,8 +25,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      {/* Positioned at middle of screen vertically, same size as top toolbar */}
-      <div className="fixed right-1 top-1/2 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50">
+      {/* Positioned at top 1/3 of screen vertically, with more spacing from right edge */}
+      <div className="fixed right-3 top-1/3 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
