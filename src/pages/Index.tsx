@@ -216,7 +216,7 @@ const Index = () => {
           />
         </div>
 
-        {/* Aid Tools Bar - positioned at 1/3 screen with restored size */}
+        {/* Aid Tools Bar - positioned at 1/3 screen */}
         <div className="fixed left-1/3 top-4 z-40">
           <AidToolsBar
             onToolSelect={handleToolSelect}
@@ -224,7 +224,7 @@ const Index = () => {
           />
         </div>
 
-        {/* Control Panel Tabs (Icon Bar) */}
+        {/* Control Panel Tabs - now positioned at middle of screen vertically */}
         <ControlPanelTabs
           activeTab={activeControlTab}
           onTabChange={handleTabChange}
@@ -248,7 +248,7 @@ const Index = () => {
           onClose={() => setShowMeasurePanel(false)}
         />
 
-        {/* Enhanced Bottom Floating Bar with view controls */}
+        {/* Enhanced Bottom Floating Bar with new expandable controls */}
         <BottomFloatingBar
           objectCount={modelState.loadedModels.length + 1}
           gridEnabled={true}
