@@ -1,4 +1,3 @@
-
 export interface LoadedModel {
   id: string;
   name: string;
@@ -25,6 +24,9 @@ export interface EnvironmentSettings {
   groundColor: string;
   skyColor: string;
   showGround: boolean;
+  preset?: string;
+  background?: 'gradient' | 'solid' | 'transparent';
+  cameraFov?: number;
 }
 
 export interface BoxDimensions {

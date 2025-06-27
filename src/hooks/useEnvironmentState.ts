@@ -6,6 +6,9 @@ interface EnvironmentSettings {
   groundColor: string;
   skyColor: string;
   showGround: boolean;
+  preset?: string;
+  background?: 'gradient' | 'solid' | 'transparent';
+  cameraFov?: number;
 }
 
 export const useEnvironmentState = () => {
@@ -13,7 +16,10 @@ export const useEnvironmentState = () => {
     showGrid: true,
     groundColor: '#4a5568',
     skyColor: '#1a202c',
-    showGround: true
+    showGround: true,
+    preset: 'studio',
+    background: 'gradient',
+    cameraFov: 75
   });
 
   return {
