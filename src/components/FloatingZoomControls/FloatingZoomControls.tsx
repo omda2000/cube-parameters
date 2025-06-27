@@ -3,6 +3,7 @@ import React from 'react';
 import { ZoomIn, ZoomOut, Maximize, Focus, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSelectionContext } from '../../contexts/SelectionContext';
+import ShadeTypeSelector, { type ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface FloatingZoomControlsProps {
   onZoomAll: () => void;
@@ -10,6 +11,8 @@ interface FloatingZoomControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetView: () => void;
+  shadeType: ShadeType;
+  onShadeTypeChange: (type: ShadeType) => void;
 }
 
 const FloatingZoomControls = ({
@@ -17,7 +20,9 @@ const FloatingZoomControls = ({
   onZoomToSelected,
   onZoomIn,
   onZoomOut,
-  onResetView
+  onResetView,
+  shadeType,
+  onShadeTypeChange
 }: FloatingZoomControlsProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -74,6 +79,17 @@ const FloatingZoomControls = ({
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
+
+        {/* Separator */}
+        <div className="h-px bg-slate-600/50 my-1" />
+        
+        {/* Shade Type Controls */}
+        <div className="flex justify-center">
+          <ShadeTypeSelector
+            currentShadeType={shadeType}
+            onShadeTypeChange={onShadeTypeChange}
+          />
+        </div>
       </div>
     </div>
   );

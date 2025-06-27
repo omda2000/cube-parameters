@@ -10,6 +10,7 @@ import { useMeasurements } from '../hooks/useMeasurements';
 import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewerContainer';
 import FloatingPanel from '../components/FloatingPanel/FloatingPanel';
 import FloatingZoomControls from '../components/FloatingZoomControls/FloatingZoomControls';
+import ControlPanelTabs from '../components/ControlPanelTabs/ControlPanelTabs';
 import AidToolsBar from '../components/AidToolsBar/AidToolsBar';
 import MeasureToolsPanel from '../components/MeasureToolsPanel/MeasureToolsPanel';
 import SettingsPanel from '../components/SettingsPanel/SettingsPanel';
@@ -22,6 +23,7 @@ const Index = () => {
   const [showControlPanel, setShowControlPanel] = useState(true);
   const [showMeasurePanel, setShowMeasurePanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [activeControlTab, setActiveControlTab] = useState('scene');
   const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
   const [settings, setSettings] = useState({
     gridSize: 10,
@@ -192,8 +194,7 @@ const Index = () => {
     onModelRemove: handleModelRemove,
     onPrimitiveSelect: handlePrimitiveSelect,
     scene: scene,
-    shadeType: shadeType,
-    onShadeTypeChange: setShadeType,
+    activeTab: activeControlTab,
     ...lightingState,
     ...modelState,
     ...environmentState
@@ -229,14 +230,24 @@ const Index = () => {
           activeTool={activeTool}
         />
 
-        {/* Floating zoom controls */}
+        {/* Floating zoom controls with shade controls */}
         <FloatingZoomControls
           onZoomAll={handleZoomAll}
           onZoomToSelected={handleZoomToSelected}
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           onResetView={handleResetView}
+          shadeType={shadeType}
+          onShadeTypeChange={setShadeType}
         />
+
+        {/* External Control Panel Tabs */}
+        {showControlPanel && (
+          <ControlPanelTabs
+            activeTab={activeControlTab}
+            onTabChange={setActiveControlTab}
+          />
+        )}
 
         {/* Measure Tools Panel */}
         <MeasureToolsPanel
@@ -255,11 +266,11 @@ const Index = () => {
           onSettingsChange={setSettings}
         />
 
-        {/* Floating control panel */}
+        {/* Floating control panel (no title) */}
         {showControlPanel && (
           <FloatingPanel
-            title="Controls"
-            defaultPosition={{ x: Math.max(20, window.innerWidth - 400), y: 20 }}
+            title=""
+            defaultPosition={{ x: Math.max(20, window.innerWidth - 450), y: 20 }}
             defaultSize={{ width: 400, height: 600 }}
             onClose={() => setShowControlPanel(false)}
             collapsible={true}

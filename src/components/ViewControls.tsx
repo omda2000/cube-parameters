@@ -3,7 +3,6 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Eye, Grid3X3, Mountain, TreePine } from "lucide-react";
 import ZoomControls from "./ZoomControls";
-import ShadeTypeSelector, { type ShadeType } from "./ShadeTypeSelector/ShadeTypeSelector";
 
 interface EnvironmentSettings {
   showGrid: boolean;
@@ -15,8 +14,6 @@ interface EnvironmentSettings {
 interface ViewControlsProps {
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
-  shadeType: ShadeType;
-  onShadeTypeChange: (type: ShadeType) => void;
   onZoomAll?: () => void;
   onZoomToSelected?: () => void;
   onZoomIn?: () => void;
@@ -27,8 +24,6 @@ interface ViewControlsProps {
 const ViewControls = ({ 
   environment, 
   setEnvironment,
-  shadeType,
-  onShadeTypeChange,
   onZoomAll,
   onZoomToSelected,
   onZoomIn,
@@ -47,22 +42,6 @@ const ViewControls = ({
           onResetView={onResetView}
         />
       )}
-      
-      {/* Shade Type Section */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Eye className="h-4 w-4 text-blue-400" />
-          Rendering
-        </h2>
-        
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Shade Type</label>
-          <ShadeTypeSelector
-            currentShadeType={shadeType}
-            onShadeTypeChange={onShadeTypeChange}
-          />
-        </div>
-      </div>
       
       {/* Environment Controls Section */}
       <div className="space-y-3">

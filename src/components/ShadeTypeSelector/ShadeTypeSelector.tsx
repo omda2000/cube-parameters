@@ -20,7 +20,7 @@ const shadeTypes: Array<{ type: ShadeType; label: string; icon: React.ReactNode 
 ];
 
 const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSelectorProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isLongPressing, setIsLongPressing] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout>();
   const currentShade = shadeTypes.find(shade => shade.type === currentShadeType) || shadeTypes[0];
@@ -28,9 +28,9 @@ const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSel
   const startLongPress = () => {
     setIsLongPressing(true);
     longPressTimer.current = setTimeout(() => {
-      setIsOpen(true);
+      setIsExpanded(true);
       setIsLongPressing(false);
-    }, 500); // 500ms long press
+    }, 500);
   };
 
   const endLongPress = () => {
@@ -42,7 +42,7 @@ const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSel
 
   const handleShadeTypeSelect = (type: ShadeType) => {
     onShadeTypeChange(type);
-    setIsOpen(false);
+    setIsExpanded(false);
   };
 
   useEffect(() => {
@@ -53,47 +53,61 @@ const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSel
     };
   }, []);
 
+  useEffect(() => {
+    if (isExpanded) {
+      const handleClickOutside = () => setIsExpanded(false);
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isExpanded]);
+
+  if (isExpanded) {
+    return (
+      <TooltipProvider>
+        <div className="flex gap-1 bg-slate-700/50 rounded-lg p-1" onClick={(e) => e.stopPropagation()}>
+          {shadeTypes.map((shade) => (
+            <Tooltip key={shade.type}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={currentShadeType === shade.type ? "default" : "ghost"}
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => handleShadeTypeSelect(shade.type)}
+                >
+                  {shade.icon}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{shade.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      </TooltipProvider>
+    );
+  }
+
   return (
     <TooltipProvider>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-slate-700/50 border-slate-600 hover:bg-slate-600/50"
-                onMouseDown={startLongPress}
-                onMouseUp={endLongPress}
-                onMouseLeave={endLongPress}
-                onTouchStart={startLongPress}
-                onTouchEnd={endLongPress}
-              >
-                {currentShade.icon}
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Shade Type: {currentShade.label} (Long press for options)</p>
-          </TooltipContent>
-        </Tooltip>
-        <PopoverContent className="w-48 p-2 bg-slate-800 border-slate-700" side="top">
-          <div className="space-y-1">
-            {shadeTypes.map((shade) => (
-              <Button
-                key={shade.type}
-                variant={currentShadeType === shade.type ? "default" : "ghost"}
-                size="sm"
-                className="w-full justify-start text-left"
-                onClick={() => handleShadeTypeSelect(shade.type)}
-              >
-                {shade.icon}
-                <span className="ml-2">{shade.label}</span>
-              </Button>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700/50"
+            onMouseDown={startLongPress}
+            onMouseUp={endLongPress}
+            onMouseLeave={endLongPress}
+            onTouchStart={startLongPress}
+            onTouchEnd={endLongPress}
+          >
+            {currentShade.icon}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Shade: {currentShade.label} (Long press for options)</p>
+        </TooltipContent>
+      </Tooltip>
     </TooltipProvider>
   );
 };
