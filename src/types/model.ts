@@ -1,4 +1,3 @@
-
 export interface LoadedModel {
   id: string;
   name: string;
@@ -28,7 +27,6 @@ export interface EnvironmentSettings {
   preset?: string;
   background?: 'gradient' | 'solid' | 'transparent';
   cameraFov?: number;
-  cameraType?: 'perspective' | 'orthographic';
 }
 
 export interface BoxDimensions {

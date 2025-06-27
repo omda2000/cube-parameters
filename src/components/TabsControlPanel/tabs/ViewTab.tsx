@@ -23,36 +23,6 @@ const ViewTab = ({ environment, setEnvironment }: ViewTabProps) => {
           <span className="text-xs font-medium text-slate-300">View</span>
         </div>
 
-        {/* Camera Type Toggle */}
-        <div className="space-y-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Camera className="h-3 w-3 text-slate-400" />
-                    <Label className="text-xs text-slate-300">Orthographic</Label>
-                  </div>
-                  <Switch
-                    checked={environment.cameraType === 'orthographic'}
-                    onCheckedChange={(checked) => 
-                      setEnvironment({ 
-                        ...environment, 
-                        cameraType: checked ? 'orthographic' : 'perspective' 
-                      })
-                    }
-                  />
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle Camera Type: {environment.cameraType === 'orthographic' ? 'Orthographic' : 'Perspective'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <Separator className="bg-slate-600" />
-
         {/* Grid controls */}
         <div className="space-y-2">
           <Tooltip>

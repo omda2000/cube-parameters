@@ -16,8 +16,6 @@ import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import BottomFloatingBar from '../components/BottomFloatingBar/BottomFloatingBar';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
-import VerticalZoomSlider from '../components/VerticalZoomSlider/VerticalZoomSlider';
-import { useRealtimeTracking } from '../hooks/useRealtimeTracking';
 
 const Index = () => {
   const [scene, setScene] = useState<THREE.Scene | null>(null);
@@ -193,30 +191,6 @@ const Index = () => {
     ...modelState,
     ...environmentState
   };
-  
-  const [snapToVertex, setSnapToVertex] = useState(false);
-  const [sceneRef, setSceneRef] = useState<React.RefObject<THREE.Scene | null>>({ current: null });
-  const [cameraRef, setCameraRef] = useState<React.RefObject<THREE.PerspectiveCamera | null>>({ current: null });
-  const [rendererRef, setRendererRef] = useState<React.RefObject<THREE.WebGLRenderer | null>>({ current: null });
-
-  // Add realtime tracking
-  const { mousePosition: realtimeMousePosition, zoomLevel: realtimeZoomLevel } = useRealtimeTracking({
-    sceneRef,
-    cameraRef,
-    rendererRef
-  });
-
-  const handleZoomChange = (level: number) => {
-    const zoomControls = (window as any).__zoomControls;
-    if (zoomControls && zoomControls.setZoom) {
-      zoomControls.setZoom(level);
-    }
-  };
-
-  const handleSnapToVertexChange = (enabled: boolean) => {
-    setSnapToVertex(enabled);
-    // Add snap to vertex logic here
-  };
 
   return (
     <SelectionProvider>
@@ -235,10 +209,7 @@ const Index = () => {
             currentModel={modelState.currentModel}
             onFileUpload={handleFileUpload}
             onModelsChange={handleModelsChange}
-            onSceneReady={(scene) => {
-              setScene(scene);
-              setSceneRef({ current: scene });
-            }}
+            onSceneReady={setScene}
             activeTool={activeTool}
             onPointCreate={handlePointCreate}
             onMeasureCreate={handleMeasureCreate}
@@ -253,19 +224,11 @@ const Index = () => {
           />
         </div>
 
-        {/* Control Panel Tabs - repositioned to prevent collision */}
+        {/* Control Panel Tabs - now positioned at middle of screen vertically */}
         <ControlPanelTabs
           activeTab={activeControlTab}
           onTabChange={handleTabChange}
           isPanelOpen={showControlPanel}
-        />
-
-        {/* Vertical Zoom Slider */}
-        <VerticalZoomSlider
-          zoomLevel={realtimeZoomLevel}
-          onZoomChange={handleZoomChange}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
         />
 
         {/* Fixed Control Panel */}
@@ -285,21 +248,21 @@ const Index = () => {
           onClose={() => setShowMeasurePanel(false)}
         />
 
-        {/* Enhanced Bottom Floating Bar with snap to vertex */}
+        {/* Enhanced Bottom Floating Bar with new expandable controls */}
         <BottomFloatingBar
           objectCount={modelState.loadedModels.length + 1}
           gridEnabled={true}
           gridSpacing="1m"
           units="m"
-          cursorPosition={realtimeMousePosition}
-          zoomLevel={realtimeZoomLevel}
+          cursorPosition={{ x: 0, y: 0 }}
+          zoomLevel={100}
           onZoomAll={handleZoomAll}
           onZoomToSelected={handleZoomToSelected}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
           onResetView={handleResetView}
           shadeType={shadeType}
           onShadeTypeChange={setShadeType}
-          snapToVertex={snapToVertex}
-          onSnapToVertexChange={handleSnapToVertexChange}
         />
       </div>
     </SelectionProvider>

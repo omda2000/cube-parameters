@@ -9,7 +9,6 @@ interface EnvironmentSettings {
   preset?: string;
   background?: 'gradient' | 'solid' | 'transparent';
   cameraFov?: number;
-  cameraType?: 'perspective' | 'orthographic';
 }
 
 export const useEnvironmentState = () => {
@@ -20,8 +19,7 @@ export const useEnvironmentState = () => {
     showGround: true,
     preset: 'studio',
     background: 'gradient',
-    cameraFov: 75,
-    cameraType: 'perspective'
+    cameraFov: 75
   });
 
   return {
