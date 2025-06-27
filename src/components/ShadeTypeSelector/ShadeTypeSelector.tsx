@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Box, Grid3X3, EyeOff, Layers } from 'lucide-react';
 
@@ -20,73 +21,93 @@ const shadeTypes: Array<{ type: ShadeType; label: string; icon: React.ReactNode 
 
 const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSelectorProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLongPressing, setIsLongPressing] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout>();
   const currentShade = shadeTypes.find(shade => shade.type === currentShadeType) || shadeTypes[0];
+
+  const startLongPress = () => {
+    setIsLongPressing(true);
+    longPressTimer.current = setTimeout(() => {
+      setIsExpanded(true);
+      setIsLongPressing(false);
+    }, 500);
+  };
+
+  const endLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+    setIsLongPressing(false);
+  };
 
   const handleShadeTypeSelect = (type: ShadeType) => {
     onShadeTypeChange(type);
     setIsExpanded(false);
   };
 
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-  };
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isExpanded) {
-      const handleClickOutside = (event: MouseEvent) => {
-        const target = event.target as Element;
-        if (!target.closest('.shade-selector-container')) {
-          setIsExpanded(false);
-        }
-      };
+      const handleClickOutside = () => setIsExpanded(false);
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [isExpanded]);
 
+  if (isExpanded) {
+    return (
+      <TooltipProvider>
+        <div className="flex gap-1 bg-slate-700/50 rounded-lg p-1" onClick={(e) => e.stopPropagation()}>
+          {shadeTypes.map((shade) => (
+            <Tooltip key={shade.type}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={currentShadeType === shade.type ? "default" : "ghost"}
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => handleShadeTypeSelect(shade.type)}
+                >
+                  {shade.icon}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{shade.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      </TooltipProvider>
+    );
+  }
+
   return (
     <TooltipProvider>
-      <div className="shade-selector-container relative">
-        {/* Floating expanded options */}
-        {isExpanded && (
-          <div className="absolute left-12 top-0 flex gap-1 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-1 z-50">
-            {shadeTypes.map((shade) => (
-              <Tooltip key={shade.type}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={currentShadeType === shade.type ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => handleShadeTypeSelect(shade.type)}
-                  >
-                    {shade.icon}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{shade.label}</p>
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </div>
-        )}
-
-        {/* Main shade button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700/50"
-              onClick={toggleExpanded}
-            >
-              {currentShade.icon}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Shade: {currentShade.label}</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-700/50"
+            onMouseDown={startLongPress}
+            onMouseUp={endLongPress}
+            onMouseLeave={endLongPress}
+            onTouchStart={startLongPress}
+            onTouchEnd={endLongPress}
+          >
+            {currentShade.icon}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Shade: {currentShade.label} (Long press for options)</p>
+        </TooltipContent>
+      </Tooltip>
     </TooltipProvider>
   );
 };

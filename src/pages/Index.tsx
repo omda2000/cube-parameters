@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SelectionProvider } from '../contexts/SelectionContext';
@@ -18,15 +17,13 @@ import SettingsPanel from '../components/SettingsPanel/SettingsPanel';
 import TabsControlPanel from '../components/TabsControlPanel/TabsControlPanel';
 import type { LoadedModel } from '../types/model';
 import * as THREE from 'three';
-import AppHeader from '../components/AppHeader/AppHeader';
-import FixedControlPanel from '../components/FixedControlPanel/FixedControlPanel';
 
 const Index = () => {
   const [scene, setScene] = useState<THREE.Scene | null>(null);
-  const [showControlPanel, setShowControlPanel] = useState(false);
+  const [showControlPanel, setShowControlPanel] = useState(true);
   const [showMeasurePanel, setShowMeasurePanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [activeControlTab, setActiveControlTab] = useState('');
+  const [activeControlTab, setActiveControlTab] = useState('scene');
   const [activeTool, setActiveTool] = useState<'select' | 'point' | 'measure' | 'move'>('select');
   const [settings, setSettings] = useState({
     gridSize: 10,
@@ -180,18 +177,6 @@ const Index = () => {
     setShowSettingsPanel(!showSettingsPanel);
   };
 
-  const handleTabChange = (tab: string) => {
-    if (tab === '') {
-      // Empty string means close panel
-      setShowControlPanel(false);
-      setActiveControlTab('');
-    } else {
-      // Open panel with selected tab
-      setShowControlPanel(true);
-      setActiveControlTab(tab);
-    }
-  };
-
   useKeyboardShortcuts({
     onToggleControlPanel: toggleControlPanel,
     onZoomAll: handleZoomAll,
@@ -218,18 +203,8 @@ const Index = () => {
   return (
     <SelectionProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
-        {/* Top Header */}
-        <AppHeader
-          isMobile={false}
-          mobileSheetOpen={false}
-          setMobileSheetOpen={() => {}}
-          onSettingsClick={toggleSettingsPanel}
-        >
-          <div></div>
-        </AppHeader>
-
-        {/* Full-screen canvas with top padding */}
-        <div className="absolute inset-0 pt-20">
+        {/* Full-screen canvas */}
+        <div className="absolute inset-0">
           <ModelViewerContainer
             dimensions={modelState.dimensions}
             boxColor={modelState.boxColor}
@@ -267,18 +242,12 @@ const Index = () => {
         />
 
         {/* External Control Panel Tabs */}
-        <ControlPanelTabs
-          activeTab={activeControlTab}
-          onTabChange={handleTabChange}
-          panelVisible={showControlPanel}
-        />
-
-        {/* Fixed Control Panel */}
-        <FixedControlPanel
-          visible={showControlPanel}
-          activeTab={activeControlTab}
-          {...controlsPanelProps}
-        />
+        {showControlPanel && (
+          <ControlPanelTabs
+            activeTab={activeControlTab}
+            onTabChange={setActiveControlTab}
+          />
+        )}
 
         {/* Measure Tools Panel */}
         <MeasureToolsPanel
@@ -296,6 +265,44 @@ const Index = () => {
           settings={settings}
           onSettingsChange={setSettings}
         />
+
+        {/* Floating control panel (no title) */}
+        {showControlPanel && (
+          <FloatingPanel
+            title=""
+            defaultPosition={{ x: Math.max(20, window.innerWidth - 450), y: 20 }}
+            defaultSize={{ width: 400, height: 600 }}
+            onClose={() => setShowControlPanel(false)}
+            collapsible={true}
+          >
+            <TabsControlPanel {...controlsPanelProps} />
+          </FloatingPanel>
+        )}
+
+        {/* Panel toggle button (when panel is closed) */}
+        {!showControlPanel && (
+          <button
+            onClick={toggleControlPanel}
+            className="fixed top-4 right-4 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 text-slate-300 hover:text-white hover:bg-slate-700/50 z-40"
+            title="Show Controls (Tab)"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+            </svg>
+          </button>
+        )}
+
+        {/* Settings toggle button */}
+        <button
+          onClick={toggleSettingsPanel}
+          className="fixed top-4 right-16 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 text-slate-300 hover:text-white hover:bg-slate-700/50 z-40"
+          title="Settings"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
 
         {/* Keyboard shortcuts help */}
         <div className="fixed bottom-4 left-4 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 text-xs text-slate-400 z-40">
