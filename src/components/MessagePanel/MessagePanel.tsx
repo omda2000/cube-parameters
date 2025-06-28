@@ -1,28 +1,13 @@
+
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Trash2, CircleCheck, CircleX, Info, AlertTriangle, X } from 'lucide-react';
+import { useMessages } from '@/contexts/MessageContext';
 
-interface Message {
-  id: string;
-  title?: string;
-  description?: string;
-  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info';
-  timestamp: Date;
-}
+const MessagePanel = () => {
+  const { messages, removeMessage, clearAllMessages } = useMessages();
 
-interface MessagePanelProps {
-  messages?: Message[];
-  onClearAll?: () => void;
-  onRemoveMessage?: (id: string) => void;
-}
-
-const MessagePanel = ({ 
-  messages = [], 
-  onClearAll = () => {}, 
-  onRemoveMessage = () => {} 
-}: MessagePanelProps) => {
   const getIcon = (variant?: string) => {
     switch (variant) {
       case 'success':
@@ -61,7 +46,7 @@ const MessagePanel = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClearAll}
+            onClick={clearAllMessages}
             className="h-6 px-2 text-xs text-gray-600 hover:text-red-600"
           >
             <Trash2 className="h-3 w-3 mr-1" />
@@ -104,7 +89,7 @@ const MessagePanel = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemoveMessage(message.id)}
+                    onClick={() => removeMessage(message.id)}
                     className="h-4 w-4 p-0 text-gray-400 hover:text-red-600 flex-shrink-0"
                   >
                     <X className="h-3 w-3" />
