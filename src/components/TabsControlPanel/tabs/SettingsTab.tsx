@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -6,7 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useUnits } from '@/contexts/UnitsContext';
 
 const SettingsTab = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { unit, setUnit } = useUnits();
 
   return (
@@ -19,7 +20,7 @@ const SettingsTab = () => {
           <Label className="text-xs text-slate-300">Dark Theme</Label>
           <Switch
             checked={theme === 'dark'}
-            onCheckedChange={toggleTheme}
+            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
           />
         </div>
 

@@ -4,6 +4,7 @@ import { Ruler, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useUnits } from '@/contexts/UnitsContext';
 
 interface MeasureData {
   id: string;
@@ -28,6 +29,8 @@ const MeasureToolsPanel = ({
   visible,
   onClose
 }: MeasureToolsPanelProps) => {
+  const { formatValue, convertValue } = useUnits();
+
   if (!visible) return null;
 
   return (
@@ -80,13 +83,13 @@ const MeasureToolsPanel = ({
                 </Button>
               </div>
               <div className="text-sm text-white font-mono">
-                {measurement.distance.toFixed(3)} units
+                {formatValue(convertValue(measurement.distance, 'meters'))}
               </div>
               <div className="text-xs text-slate-400 mt-1">
                 Start: ({measurement.startPoint.x.toFixed(2)}, {measurement.startPoint.y.toFixed(2)}, {measurement.startPoint.z.toFixed(2)})
               </div>
               <div className="text-xs text-slate-400">
-                End: ({measurement.endPoint.x.toFixed(2)}, {measurement.endPoint.y.toFixed(2)}, {measurement.endPoint.z.toFixed(2)})
+                End: ({measurement.endPoint.x.toFixed(2)}, {measurement.endPoint.y.toFixed(2)},  {measurement.endPoint.z.toFixed(2)})
               </div>
             </div>
           ))
