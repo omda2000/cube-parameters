@@ -5,10 +5,10 @@ import type { LoadedModel } from '../types/model';
 export const useModelsExposure = (
   loadedModels: LoadedModel[],
   currentModel: LoadedModel | null,
-  onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void,
   loadFBXModel: (file: File) => Promise<void>,
   switchToModel: (modelId: string) => void,
-  removeModel: (modelId: string) => void
+  removeModel: (modelId: string) => void,
+  onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void
 ) => {
   // Expose models to parent component
   useEffect(() => {
