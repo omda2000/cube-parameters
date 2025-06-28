@@ -1,24 +1,28 @@
 
 import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/contexts/NotificationContext';
 import type { LoadedModel } from '../types/model';
 
 export const useFileHandlers = (
   modelState: any
 ) => {
   const { toast } = useToast();
+  const { addMessage } = useNotifications();
 
   const handleFileUpload = async (file: File) => {
     try {
-      toast({
-        title: "Loading model...",
+      addMessage({
+        type: 'info',
+        title: 'Loading model...',
         description: `Processing ${file.name}`,
       });
 
       const fbxUploadHandler = (window as any).__fbxUploadHandler;
       if (fbxUploadHandler) {
         await fbxUploadHandler(file);
-        toast({
-          title: "Model loaded successfully",
+        addMessage({
+          type: 'success',
+          title: 'Model loaded successfully',
           description: `${file.name} is now ready`,
         });
       } else {
@@ -27,10 +31,10 @@ export const useFileHandlers = (
       
     } catch (error) {
       console.error('Upload failed:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to load model. Please check the file format.",
-        variant: "destructive",
+      addMessage({
+        type: 'error',
+        title: 'Upload failed',
+        description: 'Failed to load model. Please check the file format.',
       });
     }
   };
@@ -47,8 +51,9 @@ export const useFileHandlers = (
       if (fbxSwitchHandler) {
         fbxSwitchHandler(modelId);
       }
-      toast({
-        title: "Model selected",
+      addMessage({
+        type: 'success',
+        title: 'Model selected',
         description: `Now viewing ${model.name}`,
       });
     }
@@ -61,8 +66,9 @@ export const useFileHandlers = (
       if (fbxRemoveHandler) {
         fbxRemoveHandler(modelId);
       }
-      toast({
-        title: "Model removed",
+      addMessage({
+        type: 'warning',
+        title: 'Model removed',
         description: `${model.name} has been removed`,
       });
     }
@@ -71,9 +77,10 @@ export const useFileHandlers = (
   const handlePrimitiveSelect = (type: string) => {
     if (type === 'box') {
       modelState.setCurrentModel(null);
-      toast({
-        title: "Primitive selected",
-        description: "Now showing box primitive",
+      addMessage({
+        type: 'info',
+        title: 'Primitive selected',
+        description: 'Now showing box primitive',
       });
     }
   };

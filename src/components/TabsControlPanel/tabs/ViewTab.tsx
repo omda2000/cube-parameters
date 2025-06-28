@@ -26,7 +26,15 @@ const ViewTab = ({
   const { addMessage } = useNotifications();
 
   const handleBackgroundChange = (value: string) => {
-    setEnvironment({ ...environment, background: value as any });
+    const newEnvironment = { ...environment, background: value as any };
+    setEnvironment(newEnvironment);
+    
+    // Update the actual 3D scene background
+    const updateSceneBackground = (window as any).__updateSceneBackground;
+    if (updateSceneBackground) {
+      updateSceneBackground(value);
+    }
+    
     addMessage({
       type: 'info',
       title: 'Background Changed',
@@ -35,7 +43,15 @@ const ViewTab = ({
   };
 
   const handleGridToggle = (checked: boolean) => {
-    setEnvironment({ ...environment, showGrid: checked });
+    const newEnvironment = { ...environment, showGrid: checked };
+    setEnvironment(newEnvironment);
+    
+    // Update the actual 3D scene grid
+    const updateSceneGrid = (window as any).__updateSceneGrid;
+    if (updateSceneGrid) {
+      updateSceneGrid(checked);
+    }
+    
     addMessage({
       type: 'info',
       title: 'Grid Toggle',
@@ -44,7 +60,15 @@ const ViewTab = ({
   };
 
   const handleFovChange = (value: number[]) => {
-    setEnvironment({ ...environment, cameraFov: value[0] });
+    const newEnvironment = { ...environment, cameraFov: value[0] };
+    setEnvironment(newEnvironment);
+    
+    // Update the actual 3D camera FOV
+    const updateCameraFov = (window as any).__updateCameraFov;
+    if (updateCameraFov) {
+      updateCameraFov(value[0]);
+    }
+    
     addMessage({
       type: 'info',
       title: 'FOV Changed',
@@ -113,7 +137,7 @@ const ViewTab = ({
                   <SelectTrigger className="h-6 text-xs bg-white border-slate-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border-slate-200 z-60">
                     <SelectItem value="gradient">Gradient</SelectItem>
                     <SelectItem value="solid">Solid</SelectItem>
                     <SelectItem value="transparent">Transparent</SelectItem>
