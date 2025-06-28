@@ -53,8 +53,8 @@ const PropertiesTab = () => {
     return (
       <TooltipProvider>
         <div className="p-2 text-center">
-          <Settings className="h-6 w-6 mx-auto mb-1 opacity-50 text-gray-400" />
-          <p className="text-xs text-gray-600">No Selection</p>
+          <Settings className="h-6 w-6 mx-auto mb-1 opacity-50 text-slate-400" />
+          <p className="text-xs text-slate-400">No Selection</p>
         </div>
       </TooltipProvider>
     );
@@ -65,8 +65,8 @@ const PropertiesTab = () => {
       <div className="space-y-2 p-1">
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
-          <Settings className="h-4 w-4 text-gray-600" />
-          <span className="text-xs font-medium text-gray-800">Properties</span>
+          <Settings className="h-4 w-4 text-slate-400" />
+          <span className="text-xs font-medium text-slate-300">Properties</span>
         </div>
 
         {/* Object name - compact */}
@@ -74,12 +74,12 @@ const PropertiesTab = () => {
           <Input
             value={selectedObject.name}
             onChange={(e) => handlePropertyChange('name', e.target.value)}
-            className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+            className="h-6 text-xs"
             placeholder="Object name"
           />
         </div>
 
-        <Separator className="bg-gray-200" />
+        <Separator className="bg-slate-600" />
 
         {/* Transform controls with icons */}
         <div className="space-y-2">
@@ -88,8 +88,8 @@ const PropertiesTab = () => {
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <Move3D className="h-3 w-3 text-gray-600" />
-                  <Label className="text-xs text-gray-700">Position</Label>
+                  <Move3D className="h-3 w-3 text-slate-400" />
+                  <Label className="text-xs text-slate-300">Position</Label>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   <Input
@@ -97,7 +97,7 @@ const PropertiesTab = () => {
                     step="0.1"
                     value={selectedObject.object.position.x.toFixed(2)}
                     onChange={(e) => handleTransformChange('x', 'position', parseFloat(e.target.value))}
-                    className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                    className="h-6 text-xs"
                     placeholder="X"
                   />
                   <Input
@@ -105,7 +105,7 @@ const PropertiesTab = () => {
                     step="0.1"
                     value={selectedObject.object.position.y.toFixed(2)}
                     onChange={(e) => handleTransformChange('y', 'position', parseFloat(e.target.value))}
-                    className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                    className="h-6 text-xs"
                     placeholder="Y"
                   />
                   <Input
@@ -113,7 +113,7 @@ const PropertiesTab = () => {
                     step="0.1"
                     value={selectedObject.object.position.z.toFixed(2)}
                     onChange={(e) => handleTransformChange('z', 'position', parseFloat(e.target.value))}
-                    className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                    className="h-6 text-xs"
                     placeholder="Z"
                   />
                 </div>
@@ -130,8 +130,8 @@ const PropertiesTab = () => {
               <TooltipTrigger asChild>
                 <div>
                   <div className="flex items-center gap-1 mb-1">
-                    <RotateCw className="h-3 w-3 text-gray-600" />
-                    <Label className="text-xs text-gray-700">Rotation</Label>
+                    <RotateCw className="h-3 w-3 text-slate-400" />
+                    <Label className="text-xs text-slate-300">Rotation</Label>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
                     <Input
@@ -139,7 +139,7 @@ const PropertiesTab = () => {
                       step="1"
                       value={(selectedObject.object.rotation.x * 180 / Math.PI).toFixed(1)}
                       onChange={(e) => handleTransformChange('x', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                      className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                      className="h-6 text-xs"
                       placeholder="X°"
                     />
                     <Input
@@ -147,7 +147,7 @@ const PropertiesTab = () => {
                       step="1"
                       value={(selectedObject.object.rotation.y * 180 / Math.PI).toFixed(1)}
                       onChange={(e) => handleTransformChange('y', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                      className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                      className="h-6 text-xs"
                       placeholder="Y°"
                     />
                     <Input
@@ -155,7 +155,7 @@ const PropertiesTab = () => {
                       step="1"
                       value={(selectedObject.object.rotation.z * 180 / Math.PI).toFixed(1)}
                       onChange={(e) => handleTransformChange('z', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                      className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                      className="h-6 text-xs"
                       placeholder="Z°"
                     />
                   </div>
@@ -173,8 +173,8 @@ const PropertiesTab = () => {
               <TooltipTrigger asChild>
                 <div>
                   <div className="flex items-center gap-1 mb-1">
-                    <Scale className="h-3 w-3 text-gray-600" />
-                    <Label className="text-xs text-gray-700">Scale</Label>
+                    <Scale className="h-3 w-3 text-slate-400" />
+                    <Label className="text-xs text-slate-300">Scale</Label>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
                     <Input
@@ -182,7 +182,7 @@ const PropertiesTab = () => {
                       step="0.1"
                       value={selectedObject.object.scale.x.toFixed(2)}
                       onChange={(e) => handleTransformChange('x', 'scale', parseFloat(e.target.value))}
-                      className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                      className="h-6 text-xs"
                       placeholder="X"
                     />
                     <Input
@@ -190,7 +190,7 @@ const PropertiesTab = () => {
                       step="0.1"
                       value={selectedObject.object.scale.y.toFixed(2)}
                       onChange={(e) => handleTransformChange('y', 'scale', parseFloat(e.target.value))}
-                      className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                      className="h-6 text-xs"
                       placeholder="Y"
                     />
                     <Input
@@ -198,7 +198,7 @@ const PropertiesTab = () => {
                       step="0.1"
                       value={selectedObject.object.scale.z.toFixed(2)}
                       onChange={(e) => handleTransformChange('z', 'scale', parseFloat(e.target.value))}
-                      className="h-6 text-xs bg-white border-gray-300 text-gray-800"
+                      className="h-6 text-xs"
                       placeholder="Z"
                     />
                   </div>
