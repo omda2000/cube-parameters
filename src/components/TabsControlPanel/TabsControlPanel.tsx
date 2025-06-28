@@ -1,11 +1,9 @@
-
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
 import MaterialsTab from './tabs/MaterialsTab';
 import ViewTab from './tabs/ViewTab';
 import SettingsTab from './tabs/SettingsTab';
-import MessagePanel from '../MessagePanel/MessagePanel';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -127,8 +125,6 @@ const TabsControlPanel = ({
             onCameraToggle={onCameraToggle}
           />
         );
-      case 'messages':
-        return <MessagePanel />;
       case 'settings':
         return <SettingsTab />;
       default:

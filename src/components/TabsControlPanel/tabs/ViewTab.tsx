@@ -24,11 +24,11 @@ const ViewTab = ({
 }: ViewTabProps) => {
   return (
     <TooltipProvider>
-      <div className="space-y-4 p-4">
+      <div className="space-y-2 p-1">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <Eye className="h-4 w-4 text-gray-600" />
-          <span className="text-sm font-medium text-gray-800">View Settings</span>
+        <div className="flex items-center gap-1 mb-2">
+          <Eye className="h-4 w-4 text-slate-400" />
+          <span className="text-xs font-medium text-slate-300">View</span>
         </div>
 
         {/* Camera Type Toggle */}
@@ -38,19 +38,19 @@ const ViewTab = ({
               isOrthographic={isOrthographic}
               onToggle={onCameraToggle}
             />
-            <Separator className="bg-gray-200" />
+            <Separator className="bg-slate-600" />
           </>
         )}
 
         {/* Grid controls */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Grid3X3 className="h-4 w-4 text-gray-600" />
-                    <Label className="text-sm text-gray-700">Grid</Label>
+                  <div className="flex items-center gap-1">
+                    <Grid3X3 className="h-3 w-3 text-slate-400" />
+                    <Label className="text-xs text-slate-300">Grid</Label>
                   </div>
                   <Switch
                     checked={environment.showGrid}
@@ -65,22 +65,22 @@ const ViewTab = ({
           </Tooltip>
         </div>
 
-        <Separator className="bg-gray-200" />
+        <Separator className="bg-slate-600" />
 
         {/* Background controls */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Monitor className="h-4 w-4 text-gray-600" />
-                  <Label className="text-sm text-gray-700">Background</Label>
+                <div className="flex items-center gap-1 mb-1">
+                  <Monitor className="h-3 w-3 text-slate-400" />
+                  <Label className="text-xs text-slate-300">Background</Label>
                 </div>
                 <Select 
                   value={environment.background} 
                   onValueChange={(value) => setEnvironment({ ...environment, background: value as any })}
                 >
-                  <SelectTrigger className="h-8 text-sm">
+                  <SelectTrigger className="h-6 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -97,16 +97,16 @@ const ViewTab = ({
           </Tooltip>
         </div>
 
-        <Separator className="bg-gray-200" />
+        <Separator className="bg-slate-600" />
 
         {/* Camera controls */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Camera className="h-4 w-4 text-gray-600" />
-                  <Label className="text-sm text-gray-700">Field of View</Label>
+                <div className="flex items-center gap-1 mb-1">
+                  <Camera className="h-3 w-3 text-slate-400" />
+                  <Label className="text-xs text-slate-300">FOV</Label>
                 </div>
                 <Slider
                   value={[environment.cameraFov || 75]}
@@ -114,9 +114,9 @@ const ViewTab = ({
                   min={30}
                   max={120}
                   step={5}
-                  className="h-6"
+                  className="h-4"
                 />
-                <div className="text-xs text-gray-500 mt-1">{environment.cameraFov || 75}°</div>
+                <div className="text-xs text-slate-400 mt-1">{environment.cameraFov || 75}°</div>
               </div>
             </TooltipTrigger>
             <TooltipContent>

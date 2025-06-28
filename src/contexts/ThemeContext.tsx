@@ -22,27 +22,19 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem('theme');
-    return (stored as Theme) || 'light'; // Changed default to 'light'
+    return (stored as Theme) || 'dark';
   });
 
   useEffect(() => {
-    console.log('Theme changed to:', theme);
     localStorage.setItem('theme', theme);
     
-    // Apply theme to document with force refresh
+    // Apply theme to document
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {
-      root.classList.add('light');
+      root.classList.remove('dark');
     }
-    
-    // Force a style recalculation
-    document.body.style.display = 'none';
-    document.body.offsetHeight; // Trigger reflow
-    document.body.style.display = '';
   }, [theme]);
 
   const toggleTheme = () => {
