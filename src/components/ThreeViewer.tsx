@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, memo, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
@@ -61,6 +62,7 @@ const ThreeViewer = memo(({
   const {
     sceneRef,
     cameraRef,
+    perspectiveCameraRef,
     rendererRef,
     labelRendererRef,
     controlsRef,
@@ -179,15 +181,15 @@ const ThreeViewer = memo(({
     handleMeasureCreate
   );
 
-  // Zoom controls hook
+  // Zoom controls hook - use perspective camera ref for compatibility
   const { zoomAll, zoomToSelected, resetView } = useZoomControls(
     sceneRef,
-    cameraRef,
+    perspectiveCameraRef,
     controlsRef,
     selectedObject
   );
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts - use perspective camera ref for compatibility
   useViewerKeyboardShortcuts({
     onClearSelection: clearSelection,
     onZoomAll: zoomAll,
