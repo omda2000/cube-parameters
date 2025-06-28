@@ -111,14 +111,14 @@ const ThreeViewer = memo(({
     removeModel
   } = useFBXLoader(sceneRef.current);
 
-  // Expose models and FBX handlers
+  // Expose models and FBX handlers - fix parameter order
   useModelsExposure(
     loadedModels,
     currentModel,
-    onModelsChange,
     loadFBXModel,
     switchToModel,
-    removeModel
+    removeModel,
+    onModelsChange
   );
 
   // Tool handlers
