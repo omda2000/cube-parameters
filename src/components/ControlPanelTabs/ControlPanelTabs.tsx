@@ -17,6 +17,7 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
     { id: 'lighting', label: 'Lighting & Environment', icon: Globe },
     { id: 'materials', label: 'Materials', icon: Palette },
     { id: 'environment', label: 'View Settings', icon: Eye },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const handleTabClick = (tabId: string) => {
@@ -25,8 +26,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      {/* Fixed positioning to prevent collision - moved from right-4 to right-6 */}
-      <div className="fixed right-6 top-1/4 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50 shadow-lg">
+      {/* Fixed positioning - moved from right-6 to right-8 to prevent collision */}
+      <div className="fixed right-8 top-1/4 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50 shadow-lg">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
