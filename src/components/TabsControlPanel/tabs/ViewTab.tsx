@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import CameraTypeToggle from '../../CameraTypeToggle/CameraTypeToggle';
+import { useNotifications } from '@/contexts/NotificationContext';
 import type { EnvironmentSettings } from '../../../types/model';
 
 interface ViewTabProps {
@@ -22,13 +23,42 @@ const ViewTab = ({
   isOrthographic = false,
   onCameraToggle
 }: ViewTabProps) => {
+  const { addMessage } = useNotifications();
+
+  const handleBackgroundChange = (value: string) => {
+    setEnvironment({ ...environment, background: value as any });
+    addMessage({
+      type: 'info',
+      title: 'Background Changed',
+      description: `Background set to ${value}`,
+    });
+  };
+
+  const handleGridToggle = (checked: boolean) => {
+    setEnvironment({ ...environment, showGrid: checked });
+    addMessage({
+      type: 'info',
+      title: 'Grid Toggle',
+      description: `Grid ${checked ? 'enabled' : 'disabled'}`,
+    });
+  };
+
+  const handleFovChange = (value: number[]) => {
+    setEnvironment({ ...environment, cameraFov: value[0] });
+    addMessage({
+      type: 'info',
+      title: 'FOV Changed',
+      description: `Field of view set to ${value[0]}°`,
+    });
+  };
+
   return (
     <TooltipProvider>
       <div className="space-y-2 p-1">
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
-          <Eye className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-300">View</span>
+          <Eye className="h-4 w-4 text-slate-600" />
+          <span className="text-xs font-medium text-slate-900">View</span>
         </div>
 
         {/* Camera Type Toggle */}
@@ -38,7 +68,7 @@ const ViewTab = ({
               isOrthographic={isOrthographic}
               onToggle={onCameraToggle}
             />
-            <Separator className="bg-slate-600" />
+            <Separator className="bg-slate-200" />
           </>
         )}
 
@@ -49,12 +79,12 @@ const ViewTab = ({
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
-                    <Grid3X3 className="h-3 w-3 text-slate-400" />
-                    <Label className="text-xs text-slate-300">Grid</Label>
+                    <Grid3X3 className="h-3 w-3 text-slate-600" />
+                    <Label className="text-xs text-slate-900">Grid</Label>
                   </div>
                   <Switch
                     checked={environment.showGrid}
-                    onCheckedChange={(checked) => setEnvironment({ ...environment, showGrid: checked })}
+                    onCheckedChange={handleGridToggle}
                   />
                 </div>
               </div>
@@ -65,7 +95,7 @@ const ViewTab = ({
           </Tooltip>
         </div>
 
-        <Separator className="bg-slate-600" />
+        <Separator className="bg-slate-200" />
 
         {/* Background controls */}
         <div className="space-y-2">
@@ -73,14 +103,14 @@ const ViewTab = ({
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <Monitor className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-300">Background</Label>
+                  <Monitor className="h-3 w-3 text-slate-600" />
+                  <Label className="text-xs text-slate-900">Background</Label>
                 </div>
                 <Select 
                   value={environment.background} 
-                  onValueChange={(value) => setEnvironment({ ...environment, background: value as any })}
+                  onValueChange={handleBackgroundChange}
                 >
-                  <SelectTrigger className="h-6 text-xs">
+                  <SelectTrigger className="h-6 text-xs bg-white border-slate-200">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -97,7 +127,7 @@ const ViewTab = ({
           </Tooltip>
         </div>
 
-        <Separator className="bg-slate-600" />
+        <Separator className="bg-slate-200" />
 
         {/* Camera controls */}
         <div className="space-y-2">
@@ -105,18 +135,18 @@ const ViewTab = ({
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <Camera className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-300">FOV</Label>
+                  <Camera className="h-3 w-3 text-slate-600" />
+                  <Label className="text-xs text-slate-900">FOV</Label>
                 </div>
                 <Slider
                   value={[environment.cameraFov || 75]}
-                  onValueChange={([value]) => setEnvironment({ ...environment, cameraFov: value })}
+                  onValueChange={handleFovChange}
                   min={30}
                   max={120}
                   step={5}
                   className="h-4"
                 />
-                <div className="text-xs text-slate-400 mt-1">{environment.cameraFov || 75}°</div>
+                <div className="text-xs text-slate-600 mt-1">{environment.cameraFov || 75}°</div>
               </div>
             </TooltipTrigger>
             <TooltipContent>

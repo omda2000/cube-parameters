@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sun, Lightbulb, Settings } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface SunlightSettings {
   intensity: number;
@@ -48,7 +48,7 @@ const LightingControls = ({
   environment,
   setEnvironment
 }: LightingControlsProps) => {
-  const { toast } = useToast();
+  const { addMessage } = useNotifications();
 
   const setTimeOfDay = (preset: string) => {
     const presets = {
@@ -111,51 +111,55 @@ const LightingControls = ({
         skyColor: settings.skyColor
       });
       
-      toast({
-        title: "Lighting preset applied",
+      addMessage({
+        type: 'success',
+        title: 'Lighting Preset Applied',
         description: `Changed to ${preset} lighting with matching sky`,
       });
     }
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold flex items-center gap-2">
-        <Sun className="h-5 w-5 text-yellow-400" />
+    <div 
+      className="fixed right-16 bg-white/95 backdrop-blur-sm border border-slate-200 rounded shadow-lg z-30 p-4 w-64 max-h-96 overflow-y-auto"
+      style={{ top: '480px' }}
+    >
+      <h2 className="text-lg font-semibold flex items-center gap-2 text-slate-900 mb-4">
+        <Sun className="h-5 w-5 text-yellow-500" />
         Lighting Controls
       </h2>
       
       {/* Time of Day Presets */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Time of Day Presets</label>
+      <div className="space-y-2 mb-4">
+        <label className="text-sm font-medium text-slate-900">Time of Day Presets</label>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('dawn')}>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('dawn')} className="text-xs">
             🌅 Dawn
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('noon')}>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('noon')} className="text-xs">
             ☀️ Noon
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('sunset')}>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('sunset')} className="text-xs">
             🌇 Sunset
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('night')}>
+          <Button variant="outline" size="sm" onClick={() => setTimeOfDay('night')} className="text-xs">
             🌙 Night
           </Button>
         </div>
       </div>
 
       {/* Sun Light Controls */}
-      <div className="space-y-4 border-t border-slate-700/50 pt-4">
-        <h3 className="text-lg font-medium flex items-center gap-2">
-          <Sun className="h-4 w-4 text-yellow-400" />
+      <div className="space-y-3 border-t border-slate-200 pt-3">
+        <h3 className="text-sm font-medium flex items-center gap-2 text-slate-900">
+          <Sun className="h-4 w-4 text-yellow-500" />
           Sun Light
         </h3>
         
-        <div className="space-y-3">
-          <div className="space-y-2">
+        <div className="space-y-2">
+          <div className="space-y-1">
             <div className="flex justify-between">
-              <label className="text-sm font-medium">Intensity</label>
-              <span className="text-sm text-indigo-300">{sunlight.intensity.toFixed(1)}</span>
+              <label className="text-xs font-medium text-slate-700">Intensity</label>
+              <span className="text-xs text-indigo-600">{sunlight.intensity.toFixed(1)}</span>
             </div>
             <Slider
               value={[sunlight.intensity]}
@@ -163,13 +167,14 @@ const LightingControls = ({
               min={0}
               max={2}
               step={0.1}
+              className="h-2"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="flex justify-between">
-              <label className="text-sm font-medium">Azimuth</label>
-              <span className="text-sm text-indigo-300">{sunlight.azimuth}°</span>
+              <label className="text-xs font-medium text-slate-700">Azimuth</label>
+              <span className="text-xs text-indigo-600">{sunlight.azimuth}°</span>
             </div>
             <Slider
               value={[sunlight.azimuth]}
@@ -177,13 +182,14 @@ const LightingControls = ({
               min={0}
               max={360}
               step={1}
+              className="h-2"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="flex justify-between">
-              <label className="text-sm font-medium">Elevation</label>
-              <span className="text-sm text-indigo-300">{sunlight.elevation}°</span>
+              <label className="text-xs font-medium text-slate-700">Elevation</label>
+              <span className="text-xs text-indigo-600">{sunlight.elevation}°</span>
             </div>
             <Slider
               value={[sunlight.elevation]}
@@ -191,29 +197,12 @@ const LightingControls = ({
               min={-30}
               max={90}
               step={1}
+              className="h-2"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Sun Color</label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                value={sunlight.color}
-                onChange={(e) => setSunlight({ ...sunlight, color: e.target.value })}
-                className="w-16 h-10 p-1"
-              />
-              <Input
-                type="text"
-                value={sunlight.color}
-                onChange={(e) => setSunlight({ ...sunlight, color: e.target.value })}
-                className="flex-1"
-              />
-            </div>
-          </div>
-
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Cast Shadows</label>
+            <label className="text-xs font-medium text-slate-700">Cast Shadows</label>
             <Switch
               checked={sunlight.castShadow}
               onCheckedChange={(checked) => setSunlight({ ...sunlight, castShadow: checked })}
@@ -222,56 +211,14 @@ const LightingControls = ({
         </div>
       </div>
 
-      {/* Ambient Light Controls */}
-      <div className="space-y-4 border-t border-slate-700/50 pt-4">
-        <h3 className="text-lg font-medium flex items-center gap-2">
-          <Lightbulb className="h-4 w-4 text-blue-400" />
-          Ambient Light
-        </h3>
-        
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <label className="text-sm font-medium">Intensity</label>
-              <span className="text-sm text-indigo-300">{ambientLight.intensity.toFixed(1)}</span>
-            </div>
-            <Slider
-              value={[ambientLight.intensity]}
-              onValueChange={([value]) => setAmbientLight({ ...ambientLight, intensity: value })}
-              min={0}
-              max={1}
-              step={0.1}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ambient Color</label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                value={ambientLight.color}
-                onChange={(e) => setAmbientLight({ ...ambientLight, color: e.target.value })}
-                className="w-16 h-10 p-1"
-              />
-              <Input
-                type="text"
-                value={ambientLight.color}
-                onChange={(e) => setAmbientLight({ ...ambientLight, color: e.target.value })}
-                className="flex-1"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Shadow Quality */}
-      <div className="space-y-2 border-t border-slate-700/50 pt-4">
-        <label className="text-sm font-medium flex items-center gap-2">
-          <Settings className="h-4 w-4 text-gray-400" />
+      <div className="space-y-2 border-t border-slate-200 pt-3 mt-3">
+        <label className="text-xs font-medium flex items-center gap-2 text-slate-900">
+          <Settings className="h-3 w-3 text-slate-600" />
           Shadow Quality
         </label>
         <Select value={shadowQuality} onValueChange={(value: 'low' | 'medium' | 'high') => setShadowQuality(value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-7 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
