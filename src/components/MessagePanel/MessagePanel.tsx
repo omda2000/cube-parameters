@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, CircleCheck, CircleX, Info, AlertTriangle } from 'lucide-react';
+import { Trash2, CircleCheck, CircleX, Info, AlertTriangle, X } from 'lucide-react';
 
 interface Message {
   id: string;
