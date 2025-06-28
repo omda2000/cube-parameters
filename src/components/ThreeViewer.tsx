@@ -169,10 +169,10 @@ const ThreeViewer = memo(({
   // Use selection effects hook for visual feedback
   useSelectionEffects(selectedObject);
 
-  // Mouse interaction and hover effects
+  // Mouse interaction and hover effects - use perspective camera for compatibility
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
     rendererRef.current,
-    cameraRef.current,
+    perspectiveCameraRef.current,
     currentModel ? currentModel.object : boxRef.current,
     sceneRef.current,
     handleObjectSelect,

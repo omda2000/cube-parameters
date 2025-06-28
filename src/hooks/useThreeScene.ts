@@ -226,6 +226,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   return {
     sceneRef,
     cameraRef: activeCameraRef,
+    perspectiveCameraRef,
     rendererRef,
     labelRendererRef,
     controlsRef,
