@@ -11,6 +11,15 @@ interface CameraTypeToggleProps {
 }
 
 const CameraTypeToggle = ({ isOrthographic, onToggle }: CameraTypeToggleProps) => {
+  const handleToggle = (checked: boolean) => {
+    onToggle(checked);
+    // Call the global camera switch function
+    const switchCamera = (window as any).__switchCameraMode;
+    if (switchCamera) {
+      switchCamera(checked);
+    }
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -18,12 +27,12 @@ const CameraTypeToggle = ({ isOrthographic, onToggle }: CameraTypeToggleProps) =
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <Camera className="h-3 w-3 text-slate-400" />
-                <Label className="text-xs text-slate-300">Orthographic</Label>
+                <Camera className="h-3 w-3 text-slate-300" />
+                <Label className="text-xs text-slate-200">Orthographic</Label>
               </div>
               <Switch
                 checked={isOrthographic}
-                onCheckedChange={onToggle}
+                onCheckedChange={handleToggle}
               />
             </div>
           </div>

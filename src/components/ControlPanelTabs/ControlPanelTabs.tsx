@@ -26,8 +26,7 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      {/* Adjusted positioning - moved from right-8 to right-6 and top-4 for consistency */}
-      <div className="fixed right-6 top-4 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg p-2 z-50 shadow-lg">
+      <div className="fixed right-6 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-600 rounded-lg p-2 z-50 shadow-lg">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
@@ -42,8 +41,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     onClick={() => handleTabClick(tab.id)}
                     className={`h-8 w-8 p-0 transition-all duration-150 hover:scale-105 ${
                       isActive
-                        ? 'bg-indigo-600 text-white shadow-md'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />

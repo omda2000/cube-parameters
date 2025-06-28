@@ -22,7 +22,7 @@ const FixedControlPanel = ({
 
   return (
     <div
-      className="fixed right-24 top-4 bg-white/95 backdrop-blur-sm border border-slate-200 rounded shadow-2xl z-40"
+      className="fixed right-24 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-600 rounded shadow-2xl z-40"
       style={{
         width: 240,
         height: 460,
@@ -31,14 +31,14 @@ const FixedControlPanel = ({
     >
       {/* Header */}
       {title && (
-        <div className="flex items-center justify-between p-1 border-b border-slate-200">
-          <h3 className="text-xs font-medium text-slate-900">{title}</h3>
+        <div className="flex items-center justify-between p-1 border-b border-slate-700">
+          <h3 className="text-xs font-medium text-slate-100">{title}</h3>
           {onClose && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-4 w-4 p-0 text-slate-500 hover:text-slate-700"
+              className="h-4 w-4 p-0 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
             >
               <X className="h-2 w-2" />
             </Button>

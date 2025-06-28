@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, memo, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
@@ -66,8 +65,18 @@ const ThreeViewer = memo(({
     labelRendererRef,
     controlsRef,
     gridHelperRef,
-    performanceMetrics
+    performanceMetrics,
+    isOrthographic,
+    switchCamera
   } = useThreeScene(mountRef);
+
+  // Expose camera switching globally
+  useEffect(() => {
+    (window as any).__switchCameraMode = switchCamera;
+    return () => {
+      delete (window as any).__switchCameraMode;
+    };
+  }, [switchCamera]);
 
   // Expose scene to parent components
   useEffect(() => {

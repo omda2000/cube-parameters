@@ -1,5 +1,5 @@
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -8,7 +8,10 @@ import { useThreePerformance } from './useThreePerformance';
 
 export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const perspectiveCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const orthographicCameraRef = useRef<THREE.OrthographicCamera | null>(null);
+  const activeCameraRef = useRef<THREE.Camera | null>(null);
+  const [isOrthographic, setIsOrthographic] = useState(false);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const labelRendererRef = useRef<CSS2DRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
@@ -19,17 +22,62 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
 
   const { metrics } = useThreePerformance(rendererRef.current);
 
+  const switchCamera = useCallback((orthographic: boolean) => {
+    if (!mountRef.current || !controlsRef.current) return;
+
+    const controls = controlsRef.current;
+    const currentPosition = controls.object.position.clone();
+    const currentTarget = controls.target.clone();
+
+    if (orthographic && orthographicCameraRef.current) {
+      // Switch to orthographic
+      const orthoCamera = orthographicCameraRef.current;
+      orthoCamera.position.copy(currentPosition);
+      orthoCamera.lookAt(currentTarget);
+      
+      controls.object = orthoCamera;
+      activeCameraRef.current = orthoCamera;
+      setIsOrthographic(true);
+    } else if (!orthographic && perspectiveCameraRef.current) {
+      // Switch to perspective
+      const perspCamera = perspectiveCameraRef.current;
+      perspCamera.position.copy(currentPosition);
+      perspCamera.lookAt(currentTarget);
+      
+      controls.object = perspCamera;
+      activeCameraRef.current = perspCamera;
+      setIsOrthographic(false);
+    }
+
+    controls.target.copy(currentTarget);
+    controls.update();
+  }, [mountRef]);
+
   const handleResize = useCallback(() => {
-    if (!mountRef.current || !cameraRef.current || !rendererRef.current || !labelRendererRef.current) return;
+    if (!mountRef.current || !rendererRef.current || !labelRendererRef.current) return;
 
-    const camera = cameraRef.current;
-    const renderer = rendererRef.current;
-    const labelRenderer = labelRendererRef.current;
+    const width = mountRef.current.clientWidth;
+    const height = mountRef.current.clientHeight;
+    const aspect = width / height;
 
-    camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    labelRenderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    // Update perspective camera
+    if (perspectiveCameraRef.current) {
+      perspectiveCameraRef.current.aspect = aspect;
+      perspectiveCameraRef.current.updateProjectionMatrix();
+    }
+
+    // Update orthographic camera
+    if (orthographicCameraRef.current) {
+      const frustumSize = 10;
+      orthographicCameraRef.current.left = -frustumSize * aspect / 2;
+      orthographicCameraRef.current.right = frustumSize * aspect / 2;
+      orthographicCameraRef.current.top = frustumSize / 2;
+      orthographicCameraRef.current.bottom = -frustumSize / 2;
+      orthographicCameraRef.current.updateProjectionMatrix();
+    }
+
+    rendererRef.current.setSize(width, height);
+    labelRendererRef.current.setSize(width, height);
   }, [mountRef]);
 
   useEffect(() => {
@@ -39,51 +87,61 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.01,
-      2000
+    const width = mountRef.current.clientWidth;
+    const height = mountRef.current.clientHeight;
+    const aspect = width / height;
+
+    // Perspective Camera setup
+    const perspectiveCamera = new THREE.PerspectiveCamera(60, aspect, 0.01, 2000);
+    perspectiveCameraRef.current = perspectiveCamera;
+    perspectiveCamera.position.set(5, 5, 5);
+    perspectiveCamera.lookAt(0, 0, 0);
+
+    // Orthographic Camera setup
+    const frustumSize = 10;
+    const orthographicCamera = new THREE.OrthographicCamera(
+      -frustumSize * aspect / 2, frustumSize * aspect / 2,
+      frustumSize / 2, -frustumSize / 2,
+      0.01, 2000
     );
-    cameraRef.current = camera;
-    camera.position.set(5, 5, 5);
-    camera.lookAt(0, 0, 0);
+    orthographicCameraRef.current = orthographicCamera;
+    orthographicCamera.position.set(5, 5, 5);
+    orthographicCamera.lookAt(0, 0, 0);
+
+    // Set initial active camera
+    activeCameraRef.current = perspectiveCamera;
 
     // Renderer setup with better quality and performance optimizations
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       alpha: true,
       logarithmicDepthBuffer: true,
-      powerPreference: "high-performance" // Request high-performance GPU
+      powerPreference: "high-performance"
     });
     rendererRef.current = renderer;
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
-    
-    // Performance optimizations
-    renderer.info.autoReset = false; // Manual reset for better performance tracking
+    renderer.info.autoReset = false;
     
     mountRef.current.appendChild(renderer.domElement);
 
     // Label renderer setup
     const labelRenderer = new CSS2DRenderer();
     labelRendererRef.current = labelRenderer;
-    labelRenderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    labelRenderer.setSize(width, height);
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0';
     labelRenderer.domElement.style.pointerEvents = 'none';
     mountRef.current.appendChild(labelRenderer.domElement);
 
-    // Enhanced OrbitControls for Revit-style navigation
-    const controls = new OrbitControls(camera, renderer.domElement);
+    // Enhanced OrbitControls
+    const controls = new OrbitControls(perspectiveCamera, renderer.domElement);
     controlsRef.current = controls;
     
-    // Revit-style navigation settings
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
@@ -91,39 +149,38 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     controls.maxDistance = 1000;
     controls.maxPolarAngle = Math.PI;
     
-    // Mouse button configuration (Revit-style)
     controls.mouseButtons = {
       LEFT: THREE.MOUSE.ROTATE,
       MIDDLE: THREE.MOUSE.DOLLY,
       RIGHT: THREE.MOUSE.PAN
     };
     
-    // Touch controls
     controls.touches = {
       ONE: THREE.TOUCH.ROTATE,
       TWO: THREE.TOUCH.DOLLY_PAN
     };
 
-    // Smooth rotation and zoom
     controls.rotateSpeed = 0.5;
     controls.zoomSpeed = 0.8;
     controls.panSpeed = 0.8;
     
-    // Add UCS (User Coordinate System) display at origin (0,0,0) using ResourceManager
+    // Add UCS and grid helpers
     const ucsHelper = new THREE.AxesHelper(2);
     ucsHelperRef.current = ucsHelper;
     ucsHelper.position.set(0, 0, 0);
     scene.add(ucsHelper);
 
-    // Add single horizontal grid helper for reference using ResourceManager
     const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
     gridHelperRef.current = gridHelper;
     gridHelper.position.set(0, 0, 0);
     scene.add(gridHelper);
 
+    // Expose camera switching globally
+    (window as any).__switchCamera = switchCamera;
+
     window.addEventListener('resize', handleResize);
 
-    // Optimized animation loop with frame rate monitoring
+    // Animation loop
     let lastTime = 0;
     const targetFPS = 60;
     const frameInterval = 1000 / targetFPS;
@@ -131,21 +188,18 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     const animate = (currentTime: number) => {
       animationIdRef.current = requestAnimationFrame(animate);
       
-      // Throttle to target FPS for better performance on slower devices
       if (currentTime - lastTime >= frameInterval) {
         controls.update();
-        renderer.render(scene, camera);
-        labelRenderer.render(scene, camera);
-        
-        // Reset render info for next frame
+        if (activeCameraRef.current) {
+          renderer.render(scene, activeCameraRef.current);
+          labelRenderer.render(scene, activeCameraRef.current);
+        }
         renderer.info.reset();
-        
         lastTime = currentTime;
       }
     };
     animate(0);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       
@@ -163,19 +217,21 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
       }
       controls.dispose();
       renderer.dispose();
-      
-      // Clean up resources
       resourceManagerRef.current.disposeAll();
+      
+      delete (window as any).__switchCamera;
     };
-  }, [handleResize]);
+  }, [handleResize, switchCamera]);
 
   return {
     sceneRef,
-    cameraRef,
+    cameraRef: activeCameraRef,
     rendererRef,
     labelRendererRef,
     controlsRef,
     gridHelperRef,
-    performanceMetrics: metrics
+    performanceMetrics: metrics,
+    isOrthographic,
+    switchCamera
   };
 };
