@@ -20,7 +20,10 @@ const SettingsTab = () => {
           <Label className="text-xs text-slate-300">Dark Theme</Label>
           <Switch
             checked={theme === 'dark'}
-            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            onCheckedChange={(checked) => {
+              console.log('Theme toggle clicked:', checked);
+              setTheme(checked ? 'dark' : 'light');
+            }}
           />
         </div>
 

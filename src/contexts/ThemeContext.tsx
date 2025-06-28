@@ -26,15 +26,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
+    console.log('Theme changed to:', theme);
     localStorage.setItem('theme', theme);
     
-    // Apply theme to document
+    // Apply theme to document with force refresh
     const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {
-      root.classList.remove('dark');
+      root.classList.add('light');
     }
+    
+    // Force a style recalculation
+    document.body.style.display = 'none';
+    document.body.offsetHeight; // Trigger reflow
+    document.body.style.display = '';
   }, [theme]);
 
   const toggleTheme = () => {

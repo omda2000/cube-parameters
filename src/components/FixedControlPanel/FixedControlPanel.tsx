@@ -22,7 +22,7 @@ const FixedControlPanel = ({
 
   return (
     <div
-      className="fixed right-20 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded shadow-2xl z-40"
+      className="fixed right-32 top-4 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded shadow-2xl z-40"
       style={{
         width: 240,
         height: 460,
