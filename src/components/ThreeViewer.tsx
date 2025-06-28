@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, memo, useMemo } from 'react';
+import React, { useRef, useEffect, memo } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
@@ -7,10 +7,13 @@ import { useMouseInteraction } from '../hooks/useMouseInteraction';
 import { useLighting } from '../hooks/useLighting';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useFBXLoader } from '../hooks/useFBXLoader';
-import { useSelectionContext } from '../contexts/SelectionContext';
 import { useSelectionEffects } from '../hooks/useSelectionEffects';
 import { useZoomControls } from '../hooks/useZoomControls';
 import { useViewerKeyboardShortcuts } from '../hooks/useViewerKeyboardShortcuts';
+import { useObjectSelection } from '../hooks/useObjectSelection';
+import { useCameraExposure } from '../hooks/useCameraExposure';
+import { useModelsExposure } from '../hooks/useModelsExposure';
+import { useToolHandlersViewer } from '../hooks/useToolHandlersViewer';
 import ObjectDataOverlay from './ObjectDataOverlay';
 import SelectionOverlay from './SelectionOverlay/SelectionOverlay';
 import type { 
@@ -19,8 +22,7 @@ import type {
   EnvironmentSettings, 
   LoadedModel,
   BoxDimensions,
-  ShadowQuality,
-  SceneObject
+  ShadowQuality
 } from '../types/model';
 
 interface ThreeViewerProps {
@@ -57,7 +59,9 @@ const ThreeViewer = memo(({
   onMeasureCreate
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const { selectObject, selectedObject, clearSelection } = useSelectionContext();
+
+  // Custom hooks for organized functionality
+  const { selectedObject, clearSelection, handleObjectSelect } = useObjectSelection();
 
   const {
     sceneRef,
@@ -72,13 +76,8 @@ const ThreeViewer = memo(({
     switchCamera
   } = useThreeScene(mountRef);
 
-  // Expose camera switching globally
-  useEffect(() => {
-    (window as any).__switchCameraMode = switchCamera;
-    return () => {
-      delete (window as any).__switchCameraMode;
-    };
-  }, [switchCamera]);
+  // Expose camera switching and other global handlers
+  useCameraExposure(switchCamera);
 
   // Expose scene to parent components
   useEffect(() => {
@@ -112,59 +111,21 @@ const ThreeViewer = memo(({
     removeModel
   } = useFBXLoader(sceneRef.current);
 
-  // Expose models to parent component
-  useEffect(() => {
-    if (onModelsChange) {
-      onModelsChange(loadedModels, currentModel);
-    }
-  }, [loadedModels, currentModel, onModelsChange]);
+  // Expose models and FBX handlers
+  useModelsExposure(
+    loadedModels,
+    currentModel,
+    onModelsChange,
+    loadFBXModel,
+    switchToModel,
+    removeModel
+  );
 
-  // Expose FBX handlers globally for parent components to access
-  useEffect(() => {
-    (window as any).__fbxUploadHandler = loadFBXModel;
-    (window as any).__fbxSwitchHandler = switchToModel;
-    (window as any).__fbxRemoveHandler = removeModel;
-
-    return () => {
-      delete (window as any).__fbxUploadHandler;
-      delete (window as any).__fbxSwitchHandler;
-      delete (window as any).__fbxRemoveHandler;
-    };
-  }, [loadFBXModel, switchToModel, removeModel]);
-
-  // Memoize object selection handler to prevent recreating on each render
-  const handleObjectSelect = useMemo(() => (object: THREE.Object3D | null) => {
-    if (object) {
-      const sceneObject: SceneObject = {
-        id: object.userData.isPrimitive ? `primitive_${object.uuid}` : 
-            object.userData.isPoint ? `point_${object.uuid}` : `object_${object.uuid}`,
-        name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
-        type: object.userData.isPrimitive ? 'primitive' : 
-              object.userData.isPoint ? 'point' : 'mesh',
-        object: object,
-        children: [],
-        visible: object.visible,
-        selected: true
-      };
-      selectObject(sceneObject);
-    } else {
-      clearSelection();
-    }
-  }, [selectObject, clearSelection]);
-
-  // Memoize point creation handler
-  const handlePointCreate = useMemo(() => (point: { x: number; y: number; z: number }) => {
-    if (onPointCreate) {
-      onPointCreate(point);
-    }
-  }, [onPointCreate]);
-
-  // Memoize measure creation handler
-  const handleMeasureCreate = useMemo(() => (start: THREE.Vector3, end: THREE.Vector3) => {
-    if (onMeasureCreate) {
-      onMeasureCreate(start, end);
-    }
-  }, [onMeasureCreate]);
+  // Tool handlers
+  const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
+    onPointCreate,
+    onMeasureCreate
+  );
 
   // Use selection effects hook for visual feedback
   useSelectionEffects(selectedObject);
