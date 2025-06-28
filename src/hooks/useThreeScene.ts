@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -37,6 +36,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
 
     // Scene setup
     const scene = new THREE.Scene();
+    // Set white background for light theme
+    scene.background = new THREE.Color(0xffffff);
     sceneRef.current = scene;
 
     // Camera setup
@@ -55,7 +56,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
       antialias: true,
       alpha: true,
       logarithmicDepthBuffer: true,
-      powerPreference: "high-performance" // Request high-performance GPU
+      powerPreference: "high-performance"
     });
     rendererRef.current = renderer;
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
@@ -64,9 +65,11 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
+    // Set white background for light theme
+    renderer.setClearColor(0xffffff, 1);
     
     // Performance optimizations
-    renderer.info.autoReset = false; // Manual reset for better performance tracking
+    renderer.info.autoReset = false;
     
     mountRef.current.appendChild(renderer.domElement);
 
@@ -109,14 +112,14 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     controls.zoomSpeed = 0.8;
     controls.panSpeed = 0.8;
     
-    // Add UCS (User Coordinate System) display at origin (0,0,0) using ResourceManager
+    // Add UCS (User Coordinate System) display at origin (0,0,0)
     const ucsHelper = new THREE.AxesHelper(2);
     ucsHelperRef.current = ucsHelper;
     ucsHelper.position.set(0, 0, 0);
     scene.add(ucsHelper);
 
-    // Add single horizontal grid helper for reference using ResourceManager
-    const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+    // Add grid helper with light theme colors
+    const gridHelper = new THREE.GridHelper(20, 20, 0xcccccc, 0xeeeeee);
     gridHelperRef.current = gridHelper;
     gridHelper.position.set(0, 0, 0);
     scene.add(gridHelper);
