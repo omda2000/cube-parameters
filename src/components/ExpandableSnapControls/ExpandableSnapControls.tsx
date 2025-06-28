@@ -46,10 +46,10 @@ const ExpandableSnapControls = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
+              className="h-6 px-2 text-gray-600 hover:text-gray-800 hover:bg-gray-200/50 flex items-center gap-1"
               onClick={handleToggle}
             >
-              <Magnet className={`h-3 w-3 ${snapToGrid ? 'text-green-400' : ''}`} />
+              <Magnet className={`h-3 w-3 ${snapToGrid ? 'text-green-600' : ''}`} />
               <ChevronUp className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </Button>
           </TooltipTrigger>
@@ -60,10 +60,10 @@ const ExpandableSnapControls = ({
 
         {/* Floating snap options - expands upward */}
         {isExpanded && (
-          <div className="absolute bottom-full right-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-2 z-50 shadow-lg">
+          <div className="absolute bottom-full right-0 mb-2 bg-white/95 backdrop-blur-sm border border-gray-300/50 rounded-md p-2 z-50 shadow-lg">
             <div className="space-y-2 min-w-[120px]">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-300">Snap to Grid</span>
+                <span className="text-xs text-gray-600">Snap to Grid</span>
                 <Button
                   variant={snapToGrid ? "default" : "outline"}
                   size="sm"
@@ -75,7 +75,7 @@ const ExpandableSnapControls = ({
               </div>
               
               <div className="space-y-1">
-                <span className="text-xs text-slate-300">Grid Size</span>
+                <span className="text-xs text-gray-600">Grid Size</span>
                 <div className="flex gap-1">
                   {[1, 5, 10].map((size) => (
                     <Button

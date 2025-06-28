@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Box, Globe, Palette, Eye, Settings } from 'lucide-react';
+import { Box, Globe, Palette, Eye, Settings, MessageSquare } from 'lucide-react';
 
 interface ControlPanelTabsProps {
   activeTab: string;
@@ -17,6 +17,7 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
     { id: 'lighting', label: 'Lighting & Environment', icon: Globe },
     { id: 'materials', label: 'Materials', icon: Palette },
     { id: 'environment', label: 'View Settings', icon: Eye },
+    { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -26,8 +27,8 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      {/* Fixed positioning - moved to right-12 to prevent collision */}
-      <div className="fixed right-12 top-1/4 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-50 shadow-lg">
+      {/* Fixed positioning - moved to right-4 (right edge) */}
+      <div className="fixed right-4 top-1/4 -translate-y-1/2 bg-white/95 backdrop-blur-sm border border-gray-300/50 rounded-lg p-2 z-50 shadow-lg">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
@@ -43,7 +44,7 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     className={`h-8 w-8 p-0 transition-all duration-150 hover:scale-105 ${
                       isActive
                         ? 'bg-indigo-600 text-white shadow-md'
-                        : 'text-slate-300 hover:bg-slate-600/60 hover:text-white'
+                        : 'text-gray-600 hover:bg-gray-200/60 hover:text-gray-800'
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />
