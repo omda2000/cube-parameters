@@ -1,22 +1,8 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { UIState, UIAction } from './types';
 
-interface UIState {
-  showControlPanel: boolean;
-  showMeasurePanel: boolean;
-  activeControlTab: string;
-  activeTool: 'select' | 'point' | 'measure' | 'move';
-  isOrthographic: boolean;
-}
-
-type UIAction = 
-  | { type: 'SET_SHOW_CONTROL_PANEL'; payload: boolean }
-  | { type: 'SET_SHOW_MEASURE_PANEL'; payload: boolean }
-  | { type: 'SET_ACTIVE_CONTROL_TAB'; payload: string }
-  | { type: 'SET_ACTIVE_TOOL'; payload: 'select' | 'point' | 'measure' | 'move' }
-  | { type: 'SET_IS_ORTHOGRAPHIC'; payload: boolean };
-
-const initialState: UIState = {
+const initialUIState: UIState = {
   showControlPanel: false,
   showMeasurePanel: false,
   activeControlTab: 'scene',
@@ -24,44 +10,42 @@ const initialState: UIState = {
   isOrthographic: false
 };
 
-const uiReducer = (state: UIState, action: UIAction): UIState => {
+const uiStateReducer = (state: UIState, action: UIAction): UIState => {
   switch (action.type) {
-    case 'SET_SHOW_CONTROL_PANEL':
+    case 'SET_CONTROL_PANEL':
       return { ...state, showControlPanel: action.payload };
-    case 'SET_SHOW_MEASURE_PANEL':
+    case 'SET_MEASURE_PANEL':
       return { ...state, showMeasurePanel: action.payload };
     case 'SET_ACTIVE_CONTROL_TAB':
       return { ...state, activeControlTab: action.payload };
     case 'SET_ACTIVE_TOOL':
       return { ...state, activeTool: action.payload };
-    case 'SET_IS_ORTHOGRAPHIC':
+    case 'SET_ORTHOGRAPHIC':
       return { ...state, isOrthographic: action.payload };
     default:
       return state;
   }
 };
 
-interface UIStateContextType {
+const UIStateContext = createContext<{
   state: UIState;
   dispatch: React.Dispatch<UIAction>;
-}
-
-const UIStateContext = createContext<UIStateContextType | undefined>(undefined);
-
-export const useUIStateContext = () => {
-  const context = useContext(UIStateContext);
-  if (context === undefined) {
-    throw new Error('useUIStateContext must be used within a UIStateProvider');
-  }
-  return context;
-};
+} | null>(null);
 
 export const UIStateProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(uiReducer, initialState);
+  const [state, dispatch] = useReducer(uiStateReducer, initialUIState);
 
   return (
     <UIStateContext.Provider value={{ state, dispatch }}>
       {children}
     </UIStateContext.Provider>
   );
+};
+
+export const useUIStateContext = () => {
+  const context = useContext(UIStateContext);
+  if (!context) {
+    throw new Error('useUIStateContext must be used within a UIStateProvider');
+  }
+  return context;
 };
