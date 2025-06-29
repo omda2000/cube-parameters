@@ -84,7 +84,7 @@ const ThreeViewer = memo(({
     if (sceneRef.current && onSceneReady) {
       onSceneReady(sceneRef.current);
     }
-  }, [sceneRef.current, onSceneReady]);
+  }, [onSceneReady]);
 
   const { boxRef } = useBoxMesh(
     sceneRef.current,
@@ -99,7 +99,7 @@ const ThreeViewer = memo(({
     if (boxRef.current) {
       boxRef.current.userData.isPrimitive = true;
     }
-  }, [boxRef.current]);
+  }, [boxRef]);
 
   const {
     loadedModels,

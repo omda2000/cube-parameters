@@ -1,5 +1,7 @@
 
-import ThreeViewer from './ThreeViewer';
+import React, { Suspense, lazy, memo } from 'react';
+
+const ThreeViewer = lazy(() => import('./ThreeViewer'));
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -31,10 +33,10 @@ interface BoxViewerProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
-const BoxViewer = ({ 
-  dimensions, 
-  boxColor, 
-  objectName, 
+const BoxViewer = memo(({
+  dimensions,
+  boxColor,
+  objectName,
   sunlight,
   ambientLight,
   shadowQuality,
@@ -50,23 +52,33 @@ const BoxViewer = ({
   onMeasureCreate
 }: BoxViewerProps) => {
   return (
-    <ThreeViewer
-      dimensions={dimensions}
-      boxColor={boxColor}
-      objectName={objectName}
-      sunlight={sunlight}
-      ambientLight={ambientLight}
-      shadowQuality={shadowQuality}
-      environment={environment}
-      onFileUpload={onFileUpload}
-      onModelsChange={onModelsChange}
-      showPrimitives={showPrimitives}
-      onSceneReady={onSceneReady}
-      activeTool={activeTool}
-      onPointCreate={onPointCreate}
-      onMeasureCreate={onMeasureCreate}
-    />
+    <Suspense
+      fallback={
+        <div className="w-full h-full flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <ThreeViewer
+        dimensions={dimensions}
+        boxColor={boxColor}
+        objectName={objectName}
+        sunlight={sunlight}
+        ambientLight={ambientLight}
+        shadowQuality={shadowQuality}
+        environment={environment}
+        onFileUpload={onFileUpload}
+        onModelsChange={onModelsChange}
+        showPrimitives={showPrimitives}
+        onSceneReady={onSceneReady}
+        activeTool={activeTool}
+        onPointCreate={onPointCreate}
+        onMeasureCreate={onMeasureCreate}
+      />
+    </Suspense>
   );
-};
+});
+
+BoxViewer.displayName = 'BoxViewer';
 
 export default BoxViewer;
