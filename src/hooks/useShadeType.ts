@@ -23,9 +23,15 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
 
         switch (type) {
           case 'shaded':
-            // Restore original material
+            // Restore original material and remove edge helpers
             if (mesh.userData.originalMaterial) {
               mesh.material = mesh.userData.originalMaterial;
+            }
+            if (mesh.userData.edgesHelper) {
+              mesh.remove(mesh.userData.edgesHelper);
+              mesh.userData.edgesHelper.geometry.dispose();
+              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
+              delete mesh.userData.edgesHelper;
             }
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
@@ -40,6 +46,16 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             break;
 
           case 'wireframe':
+            // Restore material and remove edge helpers
+            if (mesh.userData.originalMaterial) {
+              mesh.material = mesh.userData.originalMaterial;
+            }
+            if (mesh.userData.edgesHelper) {
+              mesh.remove(mesh.userData.edgesHelper);
+              mesh.userData.edgesHelper.geometry.dispose();
+              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
+              delete mesh.userData.edgesHelper;
+            }
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
               mesh.material.forEach(mat => {
@@ -53,6 +69,16 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             break;
 
           case 'hidden':
+            // Restore material and remove edge helpers then hide
+            if (mesh.userData.originalMaterial) {
+              mesh.material = mesh.userData.originalMaterial;
+            }
+            if (mesh.userData.edgesHelper) {
+              mesh.remove(mesh.userData.edgesHelper);
+              mesh.userData.edgesHelper.geometry.dispose();
+              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
+              delete mesh.userData.edgesHelper;
+            }
             mesh.visible = false;
             break;
 

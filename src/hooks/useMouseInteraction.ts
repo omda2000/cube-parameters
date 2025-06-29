@@ -1,6 +1,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MaterialManager } from './utils/materialManager';
 import { createRaycaster, getIntersectableObjects, invalidateIntersectableCache } from './utils/raycastUtils';
 import { useSelectTool } from './tools/useSelectTool';
@@ -25,12 +26,14 @@ export const useMouseInteraction = (
   scene: THREE.Scene | null,
   onObjectSelect?: (object: THREE.Object3D | null) => void,
   activeTool: 'select' | 'point' | 'measure' | 'move' = 'select',
+  controls?: OrbitControls | null,
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
   const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mousePositionRef = useRef({ x: 0, y: 0 });
   const materialManagerRef = useRef<MaterialManager | null>(null);
 
   // Initialize tools
@@ -86,13 +89,47 @@ export const useMouseInteraction = (
 
     materialManagerRef.current = new MaterialManager();
 
-    const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
+    const performRaycast = (x: number, y: number) => {
       const { raycaster, mouse, dispose } = createRaycaster();
       const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      mouse.x = ((x - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((y - rect.top) / rect.height) * 2 + 1;
 
-      setMousePosition({ x: event.clientX, y: event.clientY });
+      raycaster.setFromCamera(mouse, camera);
+      const intersectableObjects = getIntersectableObjects(scene);
+      const intersects = raycaster.intersectObjects(intersectableObjects, true);
+
+      if (intersects.length > 0) {
+        const newHoveredObject = intersects[0].object;
+
+        if (hoveredObject !== newHoveredObject) {
+          if (hoveredObject && materialManagerRef.current) {
+            materialManagerRef.current.setHoverEffect(hoveredObject, false);
+          }
+
+          if (materialManagerRef.current) {
+            materialManagerRef.current.setHoverEffect(newHoveredObject, true);
+          }
+          setHoveredObject(newHoveredObject);
+          setObjectData(extractObjectData(newHoveredObject));
+        }
+      } else {
+        if (hoveredObject && materialManagerRef.current) {
+          materialManagerRef.current.setHoverEffect(hoveredObject, false);
+          setHoveredObject(null);
+          setObjectData(null);
+        }
+      }
+
+      dispose();
+    };
+
+    const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
+      performRaycast(event.clientX, event.clientY);
+
+      const pos = { x: event.clientX, y: event.clientY };
+      setMousePosition(pos);
+      mousePositionRef.current = pos;
 
       // Update cursor based on active tool
       const cursors = {
@@ -110,35 +147,14 @@ export const useMouseInteraction = (
 
       // Handle hover effects for select tool
       if (activeTool === 'select') {
-        raycaster.setFromCamera(mouse, camera);
-        const intersectableObjects = getIntersectableObjects(scene);
-        const intersects = raycaster.intersectObjects(intersectableObjects, true);
-        
-        if (intersects.length > 0) {
-          const newHoveredObject = intersects[0].object;
-          
-          if (hoveredObject !== newHoveredObject) {
-            if (hoveredObject && materialManagerRef.current) {
-              materialManagerRef.current.setHoverEffect(hoveredObject, false);
-            }
-            
-            if (materialManagerRef.current) {
-              materialManagerRef.current.setHoverEffect(newHoveredObject, true);
-            }
-            setHoveredObject(newHoveredObject);
-            setObjectData(extractObjectData(newHoveredObject));
-          }
-        } else {
-          if (hoveredObject && materialManagerRef.current) {
-            materialManagerRef.current.setHoverEffect(hoveredObject, false);
-            setHoveredObject(null);
-            setObjectData(null);
-          }
-        }
+        performRaycast(event.clientX, event.clientY);
       }
-
-      dispose();
     });
+
+    const updateHover = () => {
+      if (activeTool !== 'select') return;
+      performRaycast(mousePositionRef.current.x, mousePositionRef.current.y);
+    };
 
     const handleClick = (event: MouseEvent) => {
       // Clear any existing hover effects before selection
@@ -179,12 +195,14 @@ export const useMouseInteraction = (
     renderer.domElement.addEventListener('click', handleClick);
     renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
     renderer.domElement.addEventListener('contextmenu', handleContextMenu);
+    controls?.addEventListener('change', updateHover);
 
     return () => {
       renderer.domElement.removeEventListener('mousemove', handleMouseMove);
       renderer.domElement.removeEventListener('click', handleClick);
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
+      controls?.removeEventListener('change', updateHover);
       
       if (hoveredObject && materialManagerRef.current) {
         materialManagerRef.current.setHoverEffect(hoveredObject, false);
@@ -196,7 +214,7 @@ export const useMouseInteraction = (
         materialManagerRef.current.dispose();
       }
     };
-  }, [renderer, camera, scene, hoveredObject, activeTool, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
+  }, [renderer, camera, scene, hoveredObject, activeTool, controls, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
 
   // Invalidate intersection cache when scene changes
   useEffect(() => {
