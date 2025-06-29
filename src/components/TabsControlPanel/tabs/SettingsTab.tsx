@@ -13,11 +13,11 @@ const SettingsTab = () => {
   return (
     <div className="p-3 space-y-4">
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-white mb-3">UI Settings</h3>
+        <h3 className="text-sm font-medium mb-3">UI Settings</h3>
         
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-slate-300">Dark Theme</Label>
+          <Label className="text-xs text-muted-foreground">Dark Theme</Label>
           <Switch
             checked={theme === 'dark'}
             onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
@@ -26,7 +26,7 @@ const SettingsTab = () => {
 
         {/* Units Selection */}
         <div className="space-y-2">
-          <Label className="text-xs text-slate-300">Measurement Units</Label>
+          <Label className="text-xs text-muted-foreground">Measurement Units</Label>
           <Select value={unit} onValueChange={(value) => setUnit(value as any)}>
             <SelectTrigger className="h-8 text-xs">
               <SelectValue />
