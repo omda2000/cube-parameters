@@ -10,6 +10,9 @@ export const useMeasurementSelection = () => {
     if (!(object instanceof THREE.Group)) return;
 
     if (selected) {
+      if ((object as any).userData.label) {
+        (object as any).userData.label.visible = true;
+      }
       const measurementOutline = createMeasurementSelectionEffect(object);
       if (measurementOutline) {
         measurementOutlineRef.current = measurementOutline;
@@ -29,6 +32,9 @@ export const useMeasurementSelection = () => {
           }
         });
         measurementOutlineRef.current = null;
+      }
+      if ((object as any).userData.label) {
+        (object as any).userData.label.visible = false;
       }
     }
   };
