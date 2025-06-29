@@ -5,6 +5,7 @@ import FixedControlPanel from '../FixedControlPanel/FixedControlPanel';
 import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
 import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
 import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
+import NotificationBell from '../NotificationBell/NotificationBell';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -62,6 +63,11 @@ const UIOverlay = ({
 }: UIOverlayProps) => {
   return (
     <>
+      {/* Notification bell icon at the top-right corner */}
+      <div className="fixed top-4 right-4 z-50">
+        <NotificationBell />
+      </div>
+
       {/* Aid Tools Bar - positioned at 1/3 screen */}
       <div className="fixed left-1/3 top-4 z-40">
         <AidToolsBar
