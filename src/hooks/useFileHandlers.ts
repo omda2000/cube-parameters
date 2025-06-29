@@ -3,21 +3,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
 import type { LoadedModel } from '../types/model';
 
-interface FileHandlersProps {
-  setLoadedModels: (models: LoadedModel[]) => void;
-  setCurrentModel: (model: LoadedModel | null) => void;
-  setUploading: (uploading: boolean) => void;
-  setUploadError: (error: string | null) => void;
-  loadedModels: LoadedModel[];
-}
-
-export const useFileHandlers = ({
-  setLoadedModels,
-  setCurrentModel,
-  setUploading,
-  setUploadError,
-  loadedModels
-}: FileHandlersProps) => {
+export const useFileHandlers = (
+  modelState: any
+) => {
   const { toast } = useToast();
   const { addMessage } = useNotifications();
 
@@ -52,12 +40,12 @@ export const useFileHandlers = ({
   };
 
   const handleModelsChange = (models: LoadedModel[], current: LoadedModel | null) => {
-    setLoadedModels(models);
-    setCurrentModel(current);
+    modelState.setLoadedModels(models);
+    modelState.setCurrentModel(current);
   };
 
   const handleModelSelect = (modelId: string) => {
-    const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
+    const model = modelState.loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
       const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
       if (fbxSwitchHandler) {
@@ -72,7 +60,7 @@ export const useFileHandlers = ({
   };
 
   const handleModelRemove = (modelId: string) => {
-    const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
+    const model = modelState.loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
       const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
       if (fbxRemoveHandler) {
@@ -88,7 +76,7 @@ export const useFileHandlers = ({
 
   const handlePrimitiveSelect = (type: string) => {
     if (type === 'box') {
-      setCurrentModel(null);
+      modelState.setCurrentModel(null);
       addMessage({
         type: 'info',
         title: 'Primitive selected',

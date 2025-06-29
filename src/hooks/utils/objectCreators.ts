@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
@@ -72,7 +73,8 @@ export const createMeasurementGroup = (start: THREE.Vector3, end: THREE.Vector3,
   measurementGroup.add(label);
   measurementGroup.userData.label = label;
 
-  // Store measurement data (using the already calculated distance)
+  // Store measurement data
+  const distance = start.distanceTo(end);
   measurementGroup.userData.measurementData = {
     startPoint: start,
     endPoint: end,
