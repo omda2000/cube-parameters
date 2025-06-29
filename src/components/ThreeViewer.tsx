@@ -138,6 +138,7 @@ const ThreeViewer = memo(({
     sceneRef.current,
     handleObjectSelect,
     activeTool,
+    controlsRef.current,
     handlePointCreate,
     handleMeasureCreate
   );
