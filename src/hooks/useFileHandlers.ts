@@ -3,9 +3,21 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
 import type { LoadedModel } from '../types/model';
 
-export const useFileHandlers = (
-  modelState: any
-) => {
+interface FileHandlersProps {
+  setLoadedModels: (models: LoadedModel[]) => void;
+  setCurrentModel: (model: LoadedModel | null) => void;
+  setUploading: (uploading: boolean) => void;
+  setUploadError: (error: string | null) => void;
+  loadedModels: LoadedModel[];
+}
+
+export const useFileHandlers = ({
+  setLoadedModels,
+  setCurrentModel,
+  setUploading,
+  setUploadError,
+  loadedModels
+}: FileHandlersProps) => {
   const { toast } = useToast();
   const { addMessage } = useNotifications();
 
@@ -40,12 +52,12 @@ export const useFileHandlers = (
   };
 
   const handleModelsChange = (models: LoadedModel[], current: LoadedModel | null) => {
-    modelState.setLoadedModels(models);
-    modelState.setCurrentModel(current);
+    setLoadedModels(models);
+    setCurrentModel(current);
   };
 
   const handleModelSelect = (modelId: string) => {
-    const model = modelState.loadedModels.find((m: LoadedModel) => m.id === modelId);
+    const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
       const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
       if (fbxSwitchHandler) {
@@ -60,7 +72,7 @@ export const useFileHandlers = (
   };
 
   const handleModelRemove = (modelId: string) => {
-    const model = modelState.loadedModels.find((m: LoadedModel) => m.id === modelId);
+    const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
       const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
       if (fbxRemoveHandler) {
@@ -76,7 +88,7 @@ export const useFileHandlers = (
 
   const handlePrimitiveSelect = (type: string) => {
     if (type === 'box') {
-      modelState.setCurrentModel(null);
+      setCurrentModel(null);
       addMessage({
         type: 'info',
         title: 'Primitive selected',
