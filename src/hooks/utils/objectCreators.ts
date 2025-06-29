@@ -1,5 +1,6 @@
 
 import * as THREE from 'three';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export const createPointMarker = (position: THREE.Vector3, scene: THREE.Scene) => {
   const geometry = new THREE.SphereGeometry(0.1, 16, 16);
@@ -40,10 +41,13 @@ export const createMeasurementGroup = (start: THREE.Vector3, end: THREE.Vector3,
   endPoint.position.copy(end);
   measurementGroup.add(endPoint);
 
+  // Calculate distance
+  const distance = start.distanceTo(end);
+
   // Create thick red dashed line (0.3mm equivalent)
   const points = [start, end];
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  const material = new THREE.LineDashedMaterial({ 
+  const material = new THREE.LineDashedMaterial({
     color: 0xff0000,
     linewidth: 5, // Thick line
     dashSize: 0.1,
@@ -52,6 +56,22 @@ export const createMeasurementGroup = (start: THREE.Vector3, end: THREE.Vector3,
   const line = new THREE.Line(geometry, material);
   line.computeLineDistances();
   measurementGroup.add(line);
+
+  // Create measurement label (hidden by default)
+  const labelDiv = document.createElement('div');
+  labelDiv.className = 'measurement-label';
+  labelDiv.textContent = `${distance.toFixed(2)}m`;
+  labelDiv.style.backgroundColor = 'rgba(0,0,0,0.6)';
+  labelDiv.style.color = 'white';
+  labelDiv.style.fontSize = '12px';
+  labelDiv.style.padding = '2px 4px';
+  labelDiv.style.borderRadius = '4px';
+  labelDiv.style.pointerEvents = 'none';
+  const label = new CSS2DObject(labelDiv);
+  label.position.copy(start.clone().add(end).multiplyScalar(0.5));
+  label.visible = false;
+  measurementGroup.add(label);
+  measurementGroup.userData.label = label;
 
   // Store measurement data
   const distance = start.distanceTo(end);

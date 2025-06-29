@@ -34,7 +34,7 @@ const MeasureToolsPanel = ({
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-4 z-40 w-80">
+    <div className="fixed bottom-28 left-4 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-4 z-40 w-80">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-white flex items-center gap-2">
           <Ruler className="h-4 w-4" />

@@ -5,9 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
+import { useUnits } from '../../../contexts/UnitsContext';
 
 const PropertiesTab = () => {
   const { selectedObject } = useSelectionContext();
+  const { formatValue, convertValue } = useUnits();
 
   const handlePropertyChange = (property: string, value: any) => {
     if (selectedObject) {
@@ -55,6 +57,29 @@ const PropertiesTab = () => {
         <div className="p-2 text-center">
           <Settings className="h-6 w-6 mx-auto mb-1 opacity-50 text-slate-400" />
           <p className="text-xs text-slate-400">No Selection</p>
+        </div>
+      </TooltipProvider>
+    );
+  }
+
+  if (selectedObject.type === 'measurement' && selectedObject.measurementData) {
+    const md = selectedObject.measurementData;
+    return (
+      <TooltipProvider>
+        <div className="space-y-2 p-1">
+          <div className="flex items-center gap-1 mb-2">
+            <Settings className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium text-slate-300">Measurement</span>
+          </div>
+          <div className="text-sm text-white">
+            {formatValue(convertValue(md.distance, 'meters'))}
+          </div>
+          <div className="text-xs text-slate-400">
+            Start: ({md.startPoint.x.toFixed(2)}, {md.startPoint.y.toFixed(2)}, {md.startPoint.z.toFixed(2)})
+          </div>
+          <div className="text-xs text-slate-400">
+            End: ({md.endPoint.x.toFixed(2)}, {md.endPoint.y.toFixed(2)}, {md.endPoint.z.toFixed(2)})
+          </div>
         </div>
       </TooltipProvider>
     );
