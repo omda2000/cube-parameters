@@ -46,7 +46,7 @@ const ExpandableSnapControls = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
+              className="h-6 px-2 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
               onClick={handleToggle}
             >
               <Magnet className={`h-3 w-3 ${snapToGrid ? 'text-green-400' : ''}`} />
@@ -73,7 +73,7 @@ const ExpandableSnapControls = ({
               </Button>
 
               <div className="space-y-1">
-                <span className="text-xs text-slate-300">Grid Size</span>
+                <span className="text-xs text-slate-700 dark:text-slate-300">Grid Size</span>
                 <div className="grid grid-cols-3 gap-1">
                   {[1, 5, 10].map((size) => (
                     <Button

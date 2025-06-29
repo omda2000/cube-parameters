@@ -42,7 +42,7 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     className={`h-8 w-8 p-0 transition-all duration-150 hover:scale-105 ${
                       isActive
                         ? 'bg-blue-600 text-white shadow-md'
-                        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-700 hover:text-white'
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />

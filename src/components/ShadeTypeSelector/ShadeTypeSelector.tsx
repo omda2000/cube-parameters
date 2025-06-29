@@ -54,7 +54,7 @@ const ShadeTypeSelector = ({ currentShadeType, onShadeTypeChange }: ShadeTypeSel
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-300 hover:text-white hover:bg-slate-700/50"
+              className="h-6 w-6 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-700/50"
               onClick={handleMainButtonClick}
             >
               {currentShade.icon}

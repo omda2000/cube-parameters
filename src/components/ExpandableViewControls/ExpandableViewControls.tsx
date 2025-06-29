@@ -58,7 +58,7 @@ const ExpandableViewControls = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
+              className="h-6 px-2 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
               onClick={handleToggle}
             >
               <Eye className="h-3 w-3" />
@@ -87,7 +87,7 @@ const ExpandableViewControls = ({
                           setIsExpanded(false);
                         }}
                         disabled={control.disabled}
-                        className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600/50 disabled:opacity-30"
+                        className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/50 disabled:opacity-30"
                       >
                         <IconComponent className="h-3.5 w-3.5" />
                       </Button>

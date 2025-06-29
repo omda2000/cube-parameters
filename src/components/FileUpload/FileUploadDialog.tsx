@@ -93,7 +93,7 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
             onDrop={handleDrop}
           >
             <Upload className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-            <p className="text-slate-300 mb-2">
+            <p className="text-slate-700 dark:text-slate-300 mb-2">
               Drag and drop your 3D model here, or click to browse
             </p>
             <p className="text-xs text-slate-500">
@@ -101,7 +101,7 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
             </p>
             <Button
               variant="outline"
-              className="mt-4 text-slate-300 border-slate-600"
+              className="mt-4 text-slate-700 dark:text-slate-300 border-slate-600"
               onClick={() => fileInputRef.current?.click()}
             >
               Browse Files
@@ -119,7 +119,7 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
             <div className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
               <div className="flex items-center gap-2">
                 <File className="h-4 w-4 text-green-400" />
-                <span className="text-sm text-slate-300">{selectedFile.name}</span>
+                <span className="text-sm text-slate-700 dark:text-slate-300">{selectedFile.name}</span>
                 <span className="text-xs text-slate-500">
                   ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
                 </span>
@@ -137,7 +137,7 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 text-slate-300 border-slate-600"
+              className="flex-1 text-slate-700 dark:text-slate-300 border-slate-600"
               onClick={() => setOpen(false)}
             >
               Cancel

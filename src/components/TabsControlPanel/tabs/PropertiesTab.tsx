@@ -69,7 +69,7 @@ const PropertiesTab = () => {
         <div className="space-y-2 p-1">
           <div className="flex items-center gap-1 mb-2">
             <Settings className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium text-slate-300">Measurement</span>
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Measurement</span>
           </div>
           <div className="text-sm text-white">
             {formatValue(convertValue(md.distance, 'meters'))}
@@ -91,7 +91,7 @@ const PropertiesTab = () => {
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
           <Settings className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-300">Properties</span>
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Properties</span>
         </div>
 
         {/* Object name - compact */}
@@ -114,7 +114,7 @@ const PropertiesTab = () => {
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Move3D className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-300">Position</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Position</Label>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   <Input
@@ -156,7 +156,7 @@ const PropertiesTab = () => {
                 <div>
                   <div className="flex items-center gap-1 mb-1">
                     <RotateCw className="h-3 w-3 text-slate-400" />
-                    <Label className="text-xs text-slate-300">Rotation</Label>
+                    <Label className="text-xs text-slate-700 dark:text-slate-300">Rotation</Label>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
                     <Input
@@ -199,7 +199,7 @@ const PropertiesTab = () => {
                 <div>
                   <div className="flex items-center gap-1 mb-1">
                     <Scale className="h-3 w-3 text-slate-400" />
-                    <Label className="text-xs text-slate-300">Scale</Label>
+                    <Label className="text-xs text-slate-700 dark:text-slate-300">Scale</Label>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
                     <Input

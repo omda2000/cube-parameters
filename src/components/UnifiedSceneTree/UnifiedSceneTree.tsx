@@ -99,7 +99,7 @@ const UnifiedSceneTree = ({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-2">
+      <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
         <Box className="h-4 w-4" />
         Scene Hierarchy
       </div>

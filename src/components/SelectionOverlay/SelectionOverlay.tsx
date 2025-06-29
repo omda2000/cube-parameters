@@ -16,7 +16,7 @@ const SelectionOverlay = ({ selectedObject }: SelectionOverlayProps) => {
         <span className="font-medium">Selected:</span>
         <span className="text-blue-300">{selectedObject.name}</span>
       </div>
-      <div className="text-xs text-gray-300 mt-1">
+      <div className="text-xs text-gray-700 dark:text-gray-300 mt-1">
         Press ESC to deselect • F to focus
       </div>
     </div>

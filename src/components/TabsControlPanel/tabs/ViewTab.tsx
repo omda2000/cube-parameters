@@ -90,7 +90,7 @@ const ViewTab = ({
       <div className="space-y-2 p-1">
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
-          <Eye className="h-4 w-4 text-slate-300" />
+          <Eye className="h-4 w-4 text-slate-700 dark:text-slate-300" />
           <span className="text-xs font-medium text-slate-100">View</span>
         </div>
 
@@ -108,7 +108,7 @@ const ViewTab = ({
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
-                    <Grid3X3 className="h-3 w-3 text-slate-300" />
+                    <Grid3X3 className="h-3 w-3 text-slate-700 dark:text-slate-300" />
                     <Label className="text-xs text-slate-100">Grid</Label>
                   </div>
                   <Switch
@@ -132,7 +132,7 @@ const ViewTab = ({
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <Monitor className="h-3 w-3 text-slate-300" />
+                  <Monitor className="h-3 w-3 text-slate-700 dark:text-slate-300" />
                   <Label className="text-xs text-slate-100">Background</Label>
                 </div>
                 <Select 
@@ -164,7 +164,7 @@ const ViewTab = ({
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <Camera className="h-3 w-3 text-slate-300" />
+                  <Camera className="h-3 w-3 text-slate-700 dark:text-slate-300" />
                   <Label className="text-xs text-slate-100">FOV</Label>
                 </div>
                 <Slider

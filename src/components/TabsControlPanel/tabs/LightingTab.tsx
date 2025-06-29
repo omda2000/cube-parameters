@@ -38,7 +38,7 @@ const LightingTab = ({
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
           <Sun className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-300">Lighting</span>
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Lighting</span>
         </div>
 
         {/* Sunlight controls */}
@@ -48,7 +48,7 @@ const LightingTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Sun className="h-3 w-3 text-yellow-400" />
-                  <Label className="text-xs text-slate-300">Sun</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Sun</Label>
                 </div>
                 <Slider
                   value={[sunlight.intensity]}
@@ -75,7 +75,7 @@ const LightingTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Lightbulb className="h-3 w-3 text-blue-400" />
-                  <Label className="text-xs text-slate-300">Ambient</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Ambient</Label>
                 </div>
                 <Slider
                   value={[ambientLight.intensity]}
@@ -102,7 +102,7 @@ const LightingTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Zap className="h-3 w-3 text-purple-400" />
-                  <Label className="text-xs text-slate-300">Shadows</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Shadows</Label>
                 </div>
                 <Select value={shadowQuality} onValueChange={setShadowQuality}>
                   <SelectTrigger className="h-6 text-xs">
@@ -131,7 +131,7 @@ const LightingTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Globe className="h-3 w-3 text-green-400" />
-                  <Label className="text-xs text-slate-300">Environment</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Environment</Label>
                 </div>
                 <Select value={environment.preset} onValueChange={(value) => setEnvironment({ ...environment, preset: value as any })}>
                   <SelectTrigger className="h-6 text-xs">

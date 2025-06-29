@@ -34,7 +34,7 @@ const VerticalZoomControls = ({
                 variant="ghost"
                 size="sm"
                 onClick={onZoomAll}
-                className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600/60"
+                className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
               >
                 <Maximize className="h-4 w-4" />
               </Button>
@@ -52,7 +52,7 @@ const VerticalZoomControls = ({
                 size="sm"
                 onClick={onZoomToSelected}
                 disabled={!selectedObject}
-                className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600/60 disabled:opacity-30"
+                className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 disabled:opacity-30"
               >
                 <Focus className="h-4 w-4" />
               </Button>
@@ -72,7 +72,7 @@ const VerticalZoomControls = ({
                 variant="ghost"
                 size="sm"
                 onClick={onZoomIn}
-                className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600/60"
+                className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
               >
                 <ZoomIn className="h-4 w-4" />
               </Button>
@@ -94,7 +94,7 @@ const VerticalZoomControls = ({
                 variant="ghost"
                 size="sm"
                 onClick={onZoomOut}
-                className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600/60"
+                className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
@@ -114,7 +114,7 @@ const VerticalZoomControls = ({
                 variant="ghost"
                 size="sm"
                 onClick={onResetView}
-                className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600/60"
+                className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
               >
                 <RotateCcw className="h-4 w-4" />
               </Button>

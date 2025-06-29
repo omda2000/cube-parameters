@@ -46,7 +46,7 @@ const SettingsPanel = ({ visible, onClose, settings, onSettingsChange }: Setting
 
       <div className="space-y-4">
         <div>
-          <Label className="text-sm font-medium text-slate-300">Grid Size</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Grid Size</Label>
           <Input
             type="number"
             min="1"
@@ -58,7 +58,7 @@ const SettingsPanel = ({ visible, onClose, settings, onSettingsChange }: Setting
         </div>
 
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium text-slate-300">Snap to Grid</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Snap to Grid</Label>
           <Switch
             checked={settings.snapToGrid}
             onCheckedChange={(checked) => handleSettingChange('snapToGrid', checked)}
@@ -66,7 +66,7 @@ const SettingsPanel = ({ visible, onClose, settings, onSettingsChange }: Setting
         </div>
 
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium text-slate-300">Show Axes</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Show Axes</Label>
           <Switch
             checked={settings.showAxes}
             onCheckedChange={(checked) => handleSettingChange('showAxes', checked)}
@@ -74,7 +74,7 @@ const SettingsPanel = ({ visible, onClose, settings, onSettingsChange }: Setting
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-slate-300">Render Quality</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Render Quality</Label>
           <Select value={settings.renderQuality} onValueChange={(value) => handleSettingChange('renderQuality', value)}>
             <SelectTrigger className="mt-1">
               <SelectValue />
@@ -88,7 +88,7 @@ const SettingsPanel = ({ visible, onClose, settings, onSettingsChange }: Setting
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-slate-300">Shadow Quality</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Shadow Quality</Label>
           <Select value={settings.shadowQuality} onValueChange={(value) => handleSettingChange('shadowQuality', value)}>
             <SelectTrigger className="mt-1">
               <SelectValue />
