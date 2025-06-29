@@ -2,7 +2,6 @@
 import React from 'react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useMeasurements } from '../hooks/useMeasurements';
-import { useAppState } from '../hooks/store/useAppState';
 import { useUIState } from '../hooks/store/useUIState';
 import { useToolHandlers } from '../hooks/useToolHandlers';
 import { useZoomHandlers } from '../hooks/useZoomHandlers';
