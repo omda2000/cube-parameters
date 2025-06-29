@@ -6,11 +6,11 @@ export const useUIState = () => {
   const { state, dispatch } = useUIStateContext();
 
   const setShowControlPanel = useCallback((show: boolean) => {
-    dispatch({ type: 'SET_CONTROL_PANEL', payload: show });
+    dispatch({ type: 'SET_SHOW_CONTROL_PANEL', payload: show });
   }, [dispatch]);
 
   const setShowMeasurePanel = useCallback((show: boolean) => {
-    dispatch({ type: 'SET_MEASURE_PANEL', payload: show });
+    dispatch({ type: 'SET_SHOW_MEASURE_PANEL', payload: show });
   }, [dispatch]);
 
   const setActiveControlTab = useCallback((tab: string) => {
@@ -22,7 +22,7 @@ export const useUIState = () => {
   }, [dispatch]);
 
   const setIsOrthographic = useCallback((orthographic: boolean) => {
-    dispatch({ type: 'SET_ORTHOGRAPHIC', payload: orthographic });
+    dispatch({ type: 'SET_IS_ORTHOGRAPHIC', payload: orthographic });
   }, [dispatch]);
 
   return {
