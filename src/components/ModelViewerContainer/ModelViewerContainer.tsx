@@ -1,4 +1,5 @@
 
+import React, { memo } from 'react';
 import BoxViewer from '../BoxViewer';
 import type { 
   LoadedModel, 
@@ -28,7 +29,7 @@ interface ModelViewerContainerProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
-const ModelViewerContainer = ({
+const ModelViewerContainer = memo(({
   dimensions,
   boxColor,
   objectName,
@@ -67,6 +68,8 @@ const ModelViewerContainer = ({
       />
     </div>
   );
-};
+});
+
+ModelViewerContainer.displayName = 'ModelViewerContainer';
 
 export default ModelViewerContainer;
