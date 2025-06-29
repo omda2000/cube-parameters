@@ -27,7 +27,7 @@ const CameraTypeToggle = ({ isOrthographic, onToggle }: CameraTypeToggleProps) =
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <Camera className="h-3 w-3 text-slate-300" />
+                <Camera className="h-3 w-3 text-slate-700 dark:text-slate-300" />
                 <Label className="text-xs text-slate-200">Orthographic</Label>
               </div>
               <Switch

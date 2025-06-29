@@ -100,7 +100,7 @@ const BoxControls = ({
           <div className="grid grid-cols-3 gap-2">
             <Button
               variant={transformMode === 'translate' ? 'default' : 'outline'}
-              className={`${transformMode === 'translate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+              className={`${transformMode === 'translate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
               onClick={() => setTransformMode('translate')}
             >
               <Move className="h-4 w-4 mr-1" />
@@ -108,7 +108,7 @@ const BoxControls = ({
             </Button>
             <Button
               variant={transformMode === 'rotate' ? 'default' : 'outline'}
-              className={`${transformMode === 'rotate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+              className={`${transformMode === 'rotate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
               onClick={() => setTransformMode('rotate')}
             >
               <RotateCw className="h-4 w-4 mr-1" />
@@ -116,7 +116,7 @@ const BoxControls = ({
             </Button>
             <Button
               variant={transformMode === 'scale' ? 'default' : 'outline'}
-              className={`${transformMode === 'scale' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+              className={`${transformMode === 'scale' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
               onClick={() => setTransformMode('scale')}
             >
               <Box className="h-4 w-4 mr-1" />
@@ -181,7 +181,7 @@ const BoxControls = ({
       <div className="flex flex-col gap-2 pt-2 border-t border-slate-700/70">
         <Button 
           variant={showShadow ? "default" : "outline"}
-          className={`w-full ${showShadow ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+          className={`w-full ${showShadow ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setShowShadow(!showShadow)}
         >
           {showShadow ? (
@@ -199,7 +199,7 @@ const BoxControls = ({
 
         <Button 
           variant={showEdges ? "default" : "outline"}
-          className={`w-full ${showEdges ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+          className={`w-full ${showEdges ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setShowEdges(!showEdges)}
         >
           {showEdges ? (

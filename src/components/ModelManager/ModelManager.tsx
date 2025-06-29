@@ -37,14 +37,14 @@ const ModelManager = ({
 
       <Tabs defaultValue="loaded" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-slate-700/50">
-          <TabsTrigger value="loaded" className="text-slate-300 data-[state=active]:bg-indigo-600">
+          <TabsTrigger value="loaded" className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-indigo-600">
             Models ({loadedModels.length})
           </TabsTrigger>
-          <TabsTrigger value="hierarchy" className="text-slate-300 data-[state=active]:bg-indigo-600">
+          <TabsTrigger value="hierarchy" className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-indigo-600">
             Tree
           </TabsTrigger>
           {showPrimitives && (
-            <TabsTrigger value="primitives" className="text-slate-300 data-[state=active]:bg-indigo-600">
+            <TabsTrigger value="primitives" className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-indigo-600">
               Primitives
             </TabsTrigger>
           )}
@@ -112,7 +112,7 @@ const ModelManager = ({
           <TabsContent value="primitives" className="space-y-2">
             <Button
               variant="outline"
-              className="w-full justify-start text-slate-300 border-slate-600 hover:bg-slate-700/50"
+              className="w-full justify-start text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50"
               onClick={() => onPrimitiveSelect?.('box')}
             >
               <Box className="h-4 w-4 mr-2" />

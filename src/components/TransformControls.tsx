@@ -18,7 +18,7 @@ const TransformControls = ({ transformMode, setTransformMode }: TransformControl
       <div className="grid grid-cols-1 gap-2">
         <Button
           variant={transformMode === 'translate' ? 'default' : 'outline'}
-          className={`${transformMode === 'translate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+          className={`${transformMode === 'translate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setTransformMode('translate')}
         >
           <Move className="h-4 w-4 mr-2" />
@@ -26,7 +26,7 @@ const TransformControls = ({ transformMode, setTransformMode }: TransformControl
         </Button>
         <Button
           variant={transformMode === 'rotate' ? 'default' : 'outline'}
-          className={`${transformMode === 'rotate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+          className={`${transformMode === 'rotate' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setTransformMode('rotate')}
         >
           <RotateCw className="h-4 w-4 mr-2" />
@@ -34,7 +34,7 @@ const TransformControls = ({ transformMode, setTransformMode }: TransformControl
         </Button>
         <Button
           variant={transformMode === 'scale' ? 'default' : 'outline'}
-          className={`${transformMode === 'scale' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
+          className={`${transformMode === 'scale' ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-slate-700 dark:text-slate-300 border-slate-600 hover:bg-slate-700/50'}`}
           onClick={() => setTransformMode('scale')}
         >
           <Box className="h-4 w-4 mr-2" />

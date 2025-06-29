@@ -94,7 +94,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
       <div className="space-y-4">
         {/* Basic Info */}
         <div>
-          <Label className="text-sm font-medium text-slate-300">Name</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</Label>
           <Input
             value={selectedObject.name}
             onChange={(e) => onPropertyChange('name', e.target.value)}
@@ -103,7 +103,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-slate-300">Type</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Type</Label>
           <Input
             value={selectedObject.type}
             readOnly
@@ -112,7 +112,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
         </div>
 
         <div>
-          <Label className="text-sm font-medium text-slate-300">UUID</Label>
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">UUID</Label>
           <Input
             value={selectedObject.object.uuid.slice(0, 8) + '...'}
             readOnly
@@ -127,7 +127,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
           <>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-sm font-medium text-slate-300">Vertices</Label>
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Vertices</Label>
                 <Input
                   value={meshInfo.vertices}
                   readOnly
@@ -135,7 +135,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
                 />
               </div>
               <div>
-                <Label className="text-sm font-medium text-slate-300">Faces</Label>
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Faces</Label>
                 <Input
                   value={meshInfo.faces}
                   readOnly
@@ -149,7 +149,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
 
         {/* Transform Properties */}
         <div>
-          <Label className="text-sm font-medium text-slate-300 mb-2 block">
+          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
             {selectedObject.type === 'point' ? 'Coordinates' : 'Position'}
           </Label>
           <div className="grid grid-cols-3 gap-2">
@@ -190,7 +190,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
         {selectedObject.type !== 'point' && (
           <>
             <div>
-              <Label className="text-sm font-medium text-slate-300 mb-2 block">Rotation (degrees)</Label>
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Rotation (degrees)</Label>
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <Label className="text-xs text-slate-400">X</Label>
@@ -226,7 +226,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-slate-300 mb-2 block">Scale</Label>
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Scale</Label>
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <Label className="text-xs text-slate-400">X</Label>

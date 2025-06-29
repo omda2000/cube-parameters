@@ -72,7 +72,7 @@ const MeasureToolsPanel = ({
           measurements.map((measurement) => (
             <div key={measurement.id} className="bg-slate-700/50 rounded p-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-slate-300">{measurement.label}</span>
+                <span className="text-xs text-slate-700 dark:text-slate-300">{measurement.label}</span>
                 <Button
                   variant="ghost"
                   size="sm"

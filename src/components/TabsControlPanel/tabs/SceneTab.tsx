@@ -70,15 +70,15 @@ const SceneTab = ({
             <div className="space-y-1 p-2 bg-slate-700/30 rounded border border-slate-600/30">
               <div className="flex items-center gap-2 text-xs">
                 <input type="checkbox" id="show-meshes" className="w-3 h-3" defaultChecked />
-                <label htmlFor="show-meshes" className="text-slate-300">Show Meshes</label>
+                <label htmlFor="show-meshes" className="text-slate-700 dark:text-slate-300">Show Meshes</label>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <input type="checkbox" id="show-lights" className="w-3 h-3" defaultChecked />
-                <label htmlFor="show-lights" className="text-slate-300">Show Lights</label>
+                <label htmlFor="show-lights" className="text-slate-700 dark:text-slate-300">Show Lights</label>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <input type="checkbox" id="show-cameras" className="w-3 h-3" />
-                <label htmlFor="show-cameras" className="text-slate-300">Show Cameras</label>
+                <label htmlFor="show-cameras" className="text-slate-700 dark:text-slate-300">Show Cameras</label>
               </div>
             </div>
           )}

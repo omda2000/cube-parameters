@@ -98,7 +98,7 @@ const NotificationBell = () => {
                         )}
                       </div>
                       {message.description && (
-                        <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                        <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 line-clamp-2">
                           {message.description}
                         </p>
                       )}

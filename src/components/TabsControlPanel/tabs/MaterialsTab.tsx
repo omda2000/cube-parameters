@@ -28,7 +28,7 @@ const MaterialsTab = ({
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
           <Palette className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-300">Materials</span>
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Materials</span>
         </div>
 
         {/* Object name */}
@@ -38,7 +38,7 @@ const MaterialsTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Tag className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-300">Name</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Name</Label>
                 </div>
                 <Input
                   value={objectName}
@@ -63,7 +63,7 @@ const MaterialsTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Palette className="h-3 w-3 text-pink-400" />
-                  <Label className="text-xs text-slate-300">Color</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Color</Label>
                 </div>
                 <div className="flex gap-1">
                   <input
@@ -96,7 +96,7 @@ const MaterialsTab = ({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Ruler className="h-3 w-3 text-cyan-400" />
-                  <Label className="text-xs text-slate-300">Dimensions</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Dimensions</Label>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   <Input

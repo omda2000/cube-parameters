@@ -54,7 +54,7 @@ const ExpandableShadeSelector = ({ currentShadeType, onShadeTypeChange }: Expand
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
+              className="h-6 px-2 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
               onClick={handleMainButtonClick}
             >
               {currentShade.icon}
