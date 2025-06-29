@@ -49,6 +49,17 @@ const Index = () => {
       {/* Full-screen canvas */}
       <div className="absolute inset-0">
         <ModelViewerContainer
+          dimensions={{ length: 2, width: 2, height: 2 }}
+          boxColor="#00ff00"
+          objectName="Box"
+          sunlight={{ intensity: 1, azimuth: 45, elevation: 45, color: '#ffffff', castShadow: true }}
+          ambientLight={{ intensity: 0.5, color: '#ffffff' }}
+          shadowQuality="medium"
+          environment={{ preset: 'sunset', showGrid: true, groundColor: '#ffffff', skyColor: '#87CEEB', showGround: true }}
+          loadedModels={[]}
+          currentModel={null}
+          onFileUpload={() => {}}
+          onModelsChange={() => {}}
           activeTool={activeTool}
           onPointCreate={handlePointCreate}
           onMeasureCreate={handleMeasureCreate}
@@ -73,7 +84,7 @@ const Index = () => {
         onZoomIn={() => {}}
         onZoomOut={() => {}}
         onResetView={handleResetView}
-        shadeType="solid"
+        shadeType="shaded"
         onShadeTypeChange={() => {}}
         modelCount={1}
         controlsPanelProps={{
@@ -92,14 +103,10 @@ const Index = () => {
           dimensions: { length: 2, width: 2, height: 2 },
           boxColor: '#00ff00',
           objectName: 'Box',
-          sunlight: { intensity: 1, color: '#ffffff', position: { x: 1, y: 1, z: 1 } },
+          sunlight: { intensity: 1, azimuth: 45, elevation: 45, color: '#ffffff', castShadow: true },
           ambientLight: { intensity: 0.5, color: '#ffffff' },
           shadowQuality: 'medium' as const,
-          environment: { preset: 'sunset', showGrid: true, backgroundColor: '#87CEEB' },
-          loadedModels: [],
-          currentModel: null,
-          isUploading: false,
-          uploadError: null,
+          environment: { preset: 'sunset', showGrid: true, groundColor: '#ffffff', skyColor: '#87CEEB', showGround: true },
           setDimensions: () => {},
           setBoxColor: () => {},
           setObjectName: () => {},
