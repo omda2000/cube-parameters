@@ -63,8 +63,8 @@ const UIOverlay = ({
 }: UIOverlayProps) => {
   return (
     <>
-      {/* Notification bell icon at the top-right corner */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Notification bell icon moved to the left to avoid clashes */}
+      <div className="fixed top-4 left-4 z-50">
         <NotificationBell />
       </div>
 

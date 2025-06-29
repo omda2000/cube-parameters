@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Grid3X3, Magnet, ChevronUp } from 'lucide-react';
+import { Magnet, ChevronUp } from 'lucide-react';
 
 interface ExpandableSnapControlsProps {
   snapToGrid: boolean;
@@ -58,32 +58,30 @@ const ExpandableSnapControls = ({
           </TooltipContent>
         </Tooltip>
 
-        {/* Floating snap options - expands upward */}
+        {/* Floating snap options - redesigned layout */}
         {isExpanded && (
-          <div className="absolute bottom-full right-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-2 z-50 shadow-lg">
-            <div className="space-y-2 min-w-[120px]">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-300">Snap to Grid</span>
-                <Button
-                  variant={snapToGrid ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onSnapToGridChange(!snapToGrid)}
-                  className="h-6 w-6 p-0"
-                >
-                  <Grid3X3 className="h-3 w-3" />
-                </Button>
-              </div>
-              
+          <div className="absolute bottom-full right-0 mb-2 w-36 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-2 z-50 shadow-lg">
+            <div className="space-y-2">
+              <Button
+                variant={snapToGrid ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onSnapToGridChange(!snapToGrid)}
+                className="w-full flex items-center gap-1 h-6"
+              >
+                <Magnet className="h-3 w-3" />
+                <span className="text-xs">{snapToGrid ? 'Snap On' : 'Snap Off'}</span>
+              </Button>
+
               <div className="space-y-1">
                 <span className="text-xs text-slate-300">Grid Size</span>
-                <div className="flex gap-1">
+                <div className="grid grid-cols-3 gap-1">
                   {[1, 5, 10].map((size) => (
                     <Button
                       key={size}
-                      variant={gridSize === size ? "default" : "outline"}
+                      variant={gridSize === size ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => onGridSizeChange(size)}
-                      className="h-6 px-2 text-xs"
+                      className="h-6 p-0 text-xs"
                     >
                       {size}
                     </Button>
