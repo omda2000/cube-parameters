@@ -31,13 +31,7 @@ const UIContainer = () => {
     handleModelSelect, 
     handleModelRemove, 
     handlePrimitiveSelect 
-  } = useFileHandlers({
-    setLoadedModels: sceneState.setLoadedModels,
-    setCurrentModel: sceneState.setCurrentModel,
-    setUploading: sceneState.setUploading,
-    setUploadError: sceneState.setUploadError,
-    loadedModels: sceneState.loadedModels
-  });
+  } = useFileHandlers();
 
   const { 
     handleZoomAll, 
@@ -47,13 +41,7 @@ const UIContainer = () => {
     handleResetView 
   } = useZoomHandlers();
 
-  const { handleTabChange, handleCameraToggle } = useControlHandlers(
-    uiState.activeControlTab,
-    uiState.showControlPanel,
-    uiState.setActiveControlTab,
-    uiState.setShowControlPanel,
-    uiState.setIsOrthographic
-  );
+  const { handleTabChange, handleCameraToggle } = useControlHandlers();
 
   const controlsPanelProps = {
     loadedModels: sceneState.loadedModels,

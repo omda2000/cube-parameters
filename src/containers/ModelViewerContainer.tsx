@@ -21,13 +21,7 @@ const ModelViewerContainerWrapper = ({
   const sceneState = useSceneState();
   const { activeTool } = useUIState();
 
-  const { handleFileUpload, handleModelsChange } = useFileHandlers({
-    setLoadedModels: sceneState.setLoadedModels,
-    setCurrentModel: sceneState.setCurrentModel,
-    setUploading: sceneState.setUploading,
-    setUploadError: sceneState.setUploadError,
-    loadedModels: sceneState.loadedModels
-  });
+  const { handleFileUpload, handleModelsChange } = useFileHandlers();
 
   return (
     <ModelViewerContainer
