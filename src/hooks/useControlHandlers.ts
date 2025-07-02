@@ -1,11 +1,15 @@
 
-export const useControlHandlers = (
-  activeControlTab: string,
-  showControlPanel: boolean,
-  setActiveControlTab: (tab: string) => void,
-  setShowControlPanel: (show: boolean) => void,
-  setIsOrthographic: (ortho: boolean) => void
-) => {
+import { useUIState } from '../store/useAppStore';
+
+export const useControlHandlers = () => {
+  const { 
+    activeControlTab, 
+    showControlPanel, 
+    setActiveControlTab, 
+    setShowControlPanel, 
+    setIsOrthographic 
+  } = useUIState();
+
   const handleTabChange = (tabId: string) => {
     if (activeControlTab === tabId && showControlPanel) {
       setShowControlPanel(false);

@@ -2,7 +2,7 @@
 import React from 'react';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useMeasurements } from '../../hooks/useMeasurements';
-import { useUIState } from '../../hooks/store/useUIState';
+import { useUIState } from '../../store/useAppStore';
 import { useToolHandlers } from '../../hooks/useToolHandlers';
 import { useZoomHandlers } from '../../hooks/useZoomHandlers';
 import ModelViewerContainerWrapper from '../../containers/ModelViewerContainer';

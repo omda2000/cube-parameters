@@ -1,25 +1,19 @@
 
 import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useSceneState } from '../store/useAppStore';
 import type { LoadedModel } from '../types/model';
 
-interface FileHandlersProps {
-  setLoadedModels: (models: LoadedModel[]) => void;
-  setCurrentModel: (model: LoadedModel | null) => void;
-  setUploading: (uploading: boolean) => void;
-  setUploadError: (error: string | null) => void;
-  loadedModels: LoadedModel[];
-}
-
-export const useFileHandlers = ({
-  setLoadedModels,
-  setCurrentModel,
-  setUploading,
-  setUploadError,
-  loadedModels
-}: FileHandlersProps) => {
+export const useFileHandlers = () => {
   const { toast } = useToast();
   const { addMessage } = useNotifications();
+  const { 
+    loadedModels, 
+    setLoadedModels, 
+    setCurrentModel, 
+    setUploading, 
+    setUploadError 
+  } = useSceneState();
 
   const handleFileUpload = async (file: File) => {
     try {
