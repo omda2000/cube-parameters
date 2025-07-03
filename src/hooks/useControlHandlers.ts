@@ -1,4 +1,5 @@
 
+import { useCallback } from 'react';
 import { useUIState } from '../store/useAppStore';
 
 export const useControlHandlers = () => {
@@ -10,16 +11,18 @@ export const useControlHandlers = () => {
     setIsOrthographic 
   } = useUIState();
 
-  const handleTabChange = (tabId: string) => {
+  const handleTabChange = useCallback((tabId: string) => {
+    console.log('handleTabChange called with:', tabId, 'current:', activeControlTab, 'panelOpen:', showControlPanel);
+    
     if (activeControlTab === tabId && showControlPanel) {
       setShowControlPanel(false);
     } else {
       setActiveControlTab(tabId);
       setShowControlPanel(true);
     }
-  };
+  }, [activeControlTab, showControlPanel, setActiveControlTab, setShowControlPanel]);
 
-  const handleCameraToggle = (orthographic: boolean) => {
+  const handleCameraToggle = useCallback((orthographic: boolean) => {
     setIsOrthographic(orthographic);
     
     // Try to access the camera controls from the window object
@@ -32,7 +35,7 @@ export const useControlHandlers = () => {
         detail: { orthographic } 
       }));
     }
-  };
+  }, [setIsOrthographic]);
 
   return {
     handleTabChange,
