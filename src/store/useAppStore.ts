@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { shallow } from 'zustand/shallow';
 import * as THREE from 'three';
 import type { 
   LoadedModel, 
@@ -128,48 +129,57 @@ export const useAppStore = create<AppStore>()(
   )
 );
 
-// Selector hooks for better performance
-export const useAppState = () => useAppStore((state) => ({
-  scene: state.scene,
-  isInitialized: state.isInitialized,
-  setScene: state.setScene,
-  setInitialized: state.setInitialized,
-}));
+// Fixed selector hooks using individual properties to prevent infinite loops
+export const useAppState = () => useAppStore(
+  (state) => ({
+    scene: state.scene,
+    isInitialized: state.isInitialized,
+    setScene: state.setScene,
+    setInitialized: state.setInitialized,
+  }),
+  shallow
+);
 
-export const useUIState = () => useAppStore((state) => ({
-  showControlPanel: state.showControlPanel,
-  showMeasurePanel: state.showMeasurePanel,
-  activeControlTab: state.activeControlTab,
-  activeTool: state.activeTool,
-  isOrthographic: state.isOrthographic,
-  setShowControlPanel: state.setShowControlPanel,
-  setShowMeasurePanel: state.setShowMeasurePanel,
-  setActiveControlTab: state.setActiveControlTab,
-  setActiveTool: state.setActiveTool,
-  setIsOrthographic: state.setIsOrthographic,
-}));
+export const useUIState = () => useAppStore(
+  (state) => ({
+    showControlPanel: state.showControlPanel,
+    showMeasurePanel: state.showMeasurePanel,
+    activeControlTab: state.activeControlTab,
+    activeTool: state.activeTool,
+    isOrthographic: state.isOrthographic,
+    setShowControlPanel: state.setShowControlPanel,
+    setShowMeasurePanel: state.setShowMeasurePanel,
+    setActiveControlTab: state.setActiveControlTab,
+    setActiveTool: state.setActiveTool,
+    setIsOrthographic: state.setIsOrthographic,
+  }),
+  shallow
+);
 
-export const useSceneState = () => useAppStore((state) => ({
-  loadedModels: state.loadedModels,
-  currentModel: state.currentModel,
-  dimensions: state.dimensions,
-  boxColor: state.boxColor,
-  objectName: state.objectName,
-  sunlight: state.sunlight,
-  ambientLight: state.ambientLight,
-  shadowQuality: state.shadowQuality,
-  environment: state.environment,
-  isUploading: state.isUploading,
-  uploadError: state.uploadError,
-  setLoadedModels: state.setLoadedModels,
-  setCurrentModel: state.setCurrentModel,
-  setDimensions: state.setDimensions,
-  setBoxColor: state.setBoxColor,
-  setObjectName: state.setObjectName,
-  setSunlight: state.setSunlight,
-  setAmbientLight: state.setAmbientLight,
-  setShadowQuality: state.setShadowQuality,
-  setEnvironment: state.setEnvironment,
-  setUploading: state.setUploading,
-  setUploadError: state.setUploadError,
-}));
+export const useSceneState = () => useAppStore(
+  (state) => ({
+    loadedModels: state.loadedModels,
+    currentModel: state.currentModel,
+    dimensions: state.dimensions,
+    boxColor: state.boxColor,
+    objectName: state.objectName,
+    sunlight: state.sunlight,
+    ambientLight: state.ambientLight,
+    shadowQuality: state.shadowQuality,
+    environment: state.environment,
+    isUploading: state.isUploading,
+    uploadError: state.uploadError,
+    setLoadedModels: state.setLoadedModels,
+    setCurrentModel: state.setCurrentModel,
+    setDimensions: state.setDimensions,
+    setBoxColor: state.setBoxColor,
+    setObjectName: state.setObjectName,
+    setSunlight: state.setSunlight,
+    setAmbientLight: state.setAmbientLight,
+    setShadowQuality: state.setShadowQuality,
+    setEnvironment: state.setEnvironment,
+    setUploading: state.setUploading,
+    setUploadError: state.setUploadError,
+  }),
+  shallow
+);
