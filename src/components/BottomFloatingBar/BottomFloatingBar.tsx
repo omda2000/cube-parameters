@@ -50,39 +50,39 @@ const BottomFloatingBar = ({
 
   return (
     <TooltipProvider>
-      <div className="fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-2 z-30">
-        <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
+      <div className="fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-4 py-2 z-30 shadow-lg">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           {/* Left section - Status and coordinate information */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
-              <span className="text-gray-400">Objects:</span>
-              <span className="text-white font-medium">{objectCount}</span>
+              <span>Objects:</span>
+              <span className="text-foreground font-medium">{objectCount}</span>
             </div>
             
-            <Separator orientation="vertical" className="h-4 bg-gray-600" />
+            <Separator orientation="vertical" className="h-4" />
             
             <div className="flex items-center gap-1">
-              <span className="text-gray-400">Grid:</span>
-              <span className="text-white font-medium">
+              <span>Grid:</span>
+              <span className="text-foreground font-medium">
                 {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
               </span>
             </div>
             
-            <Separator orientation="vertical" className="h-4 bg-gray-600" />
+            <Separator orientation="vertical" className="h-4" />
             
             <div className="flex items-center gap-1">
-              <span className="text-gray-400">Units:</span>
-              <span className="text-white font-medium">{units}</span>
+              <span>Units:</span>
+              <span className="text-foreground font-medium">{units}</span>
             </div>
 
-            <Separator orientation="vertical" className="h-4 bg-gray-600" />
+            <Separator orientation="vertical" className="h-4" />
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <span className="text-gray-400">X:</span>
-                <span className="text-white font-medium">{cursorPosition.x.toFixed(2)}</span>
-                <span className="text-gray-400 ml-2">Y:</span>
-                <span className="text-white font-medium">{cursorPosition.y.toFixed(2)}</span>
+                <span>X:</span>
+                <span className="text-foreground font-medium">{cursorPosition.x.toFixed(2)}</span>
+                <span className="ml-2">Y:</span>
+                <span className="text-foreground font-medium">{cursorPosition.y.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ const BottomFloatingBar = ({
               onShadeTypeChange={onShadeTypeChange}
             />
             
-            <Separator orientation="vertical" className="h-4 bg-gray-600" />
+            <Separator orientation="vertical" className="h-4" />
             
             <ExpandableSnapControls
               snapToGrid={snapToGrid}

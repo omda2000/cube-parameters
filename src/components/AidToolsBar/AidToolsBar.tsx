@@ -10,13 +10,17 @@ interface AidToolsBarProps {
 
 const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-lg p-2 z-40">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-40 shadow-lg">
       <div className="flex gap-1">
         <Button
           variant={activeTool === 'select' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('select')}
-          className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white"
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'select' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
           title="Select Tool"
         >
           <Target className="h-4 w-4" />
@@ -26,7 +30,11 @@ const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
           variant={activeTool === 'point' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('point')}
-          className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white"
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'point' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
           title="Point Tool - Click to add points"
         >
           <MapPin className="h-4 w-4" />
@@ -36,7 +44,11 @@ const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
           variant={activeTool === 'measure' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('measure')}
-          className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white"
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'measure' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
           title="Measure Tool"
         >
           <Ruler className="h-4 w-4" />
@@ -46,7 +58,11 @@ const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
           variant={activeTool === 'move' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onToolSelect('move')}
-          className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white"
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'move' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
           title="Move Tool"
         >
           <Move className="h-4 w-4" />

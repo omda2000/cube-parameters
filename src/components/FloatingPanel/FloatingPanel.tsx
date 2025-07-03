@@ -66,7 +66,7 @@ const FloatingPanel = ({
 
   return (
     <div
-      className="fixed bg-card/90 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-50 transition-all duration-200"
+      className="fixed bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-50 transition-all duration-200"
       style={{
         left: position.x,
         top: position.y,
@@ -81,7 +81,7 @@ const FloatingPanel = ({
         onMouseDown={handleMouseDown}
         onClick={handleTitleClick}
       >
-        <h3 className="text-sm font-medium flex items-center gap-2">
+        <h3 className="text-sm font-medium text-card-foreground flex items-center gap-2">
           {title}
           {collapsible && (
             <div className="text-muted-foreground">
@@ -98,7 +98,7 @@ const FloatingPanel = ({
                 e.stopPropagation();
                 onClose();
               }}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -108,7 +108,7 @@ const FloatingPanel = ({
 
       {/* Content */}
       {!isCollapsed && (
-        <div className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 60px)' }}>
+        <div className="p-4 overflow-y-auto bg-card text-card-foreground" style={{ maxHeight: 'calc(80vh - 60px)' }}>
           {children}
         </div>
       )}
