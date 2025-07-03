@@ -1,9 +1,8 @@
 
-import { Settings, Move3D, RotateCw, Scale, Ruler, Trash2 } from 'lucide-react';
+import { Settings, Move3D, RotateCw, Scale } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 import { useUnits } from '../../../contexts/UnitsContext';
@@ -52,20 +51,12 @@ const PropertiesTab = () => {
     }
   };
 
-  const handleDeleteMeasurement = () => {
-    if (selectedObject && selectedObject.type === 'measurement' && selectedObject.object.parent) {
-      selectedObject.object.parent.remove(selectedObject.object);
-      // Clear selection after deletion
-      // This would need to be connected to the selection context
-    }
-  };
-
   if (!selectedObject) {
     return (
       <TooltipProvider>
         <div className="p-2 text-center">
-          <Settings className="h-6 w-6 mx-auto mb-1 opacity-50 text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">No Selection</p>
+          <Settings className="h-6 w-6 mx-auto mb-1 opacity-50 text-slate-400" />
+          <p className="text-xs text-slate-400">No Selection</p>
         </div>
       </TooltipProvider>
     );
@@ -75,107 +66,19 @@ const PropertiesTab = () => {
     const md = selectedObject.measurementData;
     return (
       <TooltipProvider>
-        <div className="space-y-3 p-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1">
-              <Ruler className="h-4 w-4 text-blue-400" />
-              <span className="text-xs font-medium text-foreground">Measurement</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDeleteMeasurement}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              title="Delete Measurement"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+        <div className="space-y-2 p-1">
+          <div className="flex items-center gap-1 mb-2">
+            <Settings className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Measurement</span>
           </div>
-          
-          <div className="bg-muted/50 rounded p-2">
-            <div className="text-sm font-mono text-foreground mb-2">
-              Distance: {formatValue(convertValue(md.distance, 'meters'))}
-            </div>
-            
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <div>
-                Start: ({md.startPoint.x.toFixed(3)}, {md.startPoint.y.toFixed(3)}, {md.startPoint.z.toFixed(3)})
-              </div>
-              <div>
-                End: ({md.endPoint.x.toFixed(3)}, {md.endPoint.y.toFixed(3)}, {md.endPoint.z.toFixed(3)})
-              </div>
-            </div>
+          <div className="text-sm text-white">
+            {formatValue(convertValue(md.distance, 'meters'))}
           </div>
-
-          <Separator className="bg-border" />
-
-          {/* Position controls for measurement */}
-          <div className="space-y-2">
-            <div>
-              <div className="flex items-center gap-1 mb-1">
-                <Move3D className="h-3 w-3 text-muted-foreground" />
-                <Label className="text-xs text-foreground">Start Point</Label>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={md.startPoint.x.toFixed(3)}
-                  className="h-6 text-xs"
-                  placeholder="X"
-                  readOnly
-                />
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={md.startPoint.y.toFixed(3)}
-                  className="h-6 text-xs"
-                  placeholder="Y"
-                  readOnly
-                />
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={md.startPoint.z.toFixed(3)}
-                  className="h-6 text-xs"
-                  placeholder="Z"
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-1 mb-1">
-                <Move3D className="h-3 w-3 text-muted-foreground" />
-                <Label className="text-xs text-foreground">End Point</Label>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={md.endPoint.x.toFixed(3)}
-                  className="h-6 text-xs"
-                  placeholder="X"
-                  readOnly
-                />
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={md.endPoint.y.toFixed(3)}
-                  className="h-6 text-xs"
-                  placeholder="Y"
-                  readOnly
-                />
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={md.endPoint.z.toFixed(3)}
-                  className="h-6 text-xs"
-                  placeholder="Z"
-                  readOnly
-                />
-              </div>
-            </div>
+          <div className="text-xs text-slate-400">
+            Start: ({md.startPoint.x.toFixed(2)}, {md.startPoint.y.toFixed(2)}, {md.startPoint.z.toFixed(2)})
+          </div>
+          <div className="text-xs text-slate-400">
+            End: ({md.endPoint.x.toFixed(2)}, {md.endPoint.y.toFixed(2)}, {md.endPoint.z.toFixed(2)})
           </div>
         </div>
       </TooltipProvider>
@@ -187,8 +90,8 @@ const PropertiesTab = () => {
       <div className="space-y-2 p-1">
         {/* Header */}
         <div className="flex items-center gap-1 mb-2">
-          <Settings className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-medium text-foreground">Properties</span>
+          <Settings className="h-4 w-4 text-slate-400" />
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Properties</span>
         </div>
 
         {/* Object name - compact */}
@@ -201,7 +104,7 @@ const PropertiesTab = () => {
           />
         </div>
 
-        <Separator className="bg-border" />
+        <Separator className="bg-slate-600" />
 
         {/* Transform controls with icons */}
         <div className="space-y-2">
@@ -210,8 +113,8 @@ const PropertiesTab = () => {
             <TooltipTrigger asChild>
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <Move3D className="h-3 w-3 text-muted-foreground" />
-                  <Label className="text-xs text-foreground">Position</Label>
+                  <Move3D className="h-3 w-3 text-slate-400" />
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Position</Label>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   <Input
@@ -252,8 +155,8 @@ const PropertiesTab = () => {
               <TooltipTrigger asChild>
                 <div>
                   <div className="flex items-center gap-1 mb-1">
-                    <RotateCw className="h-3 w-3 text-muted-foreground" />
-                    <Label className="text-xs text-foreground">Rotation</Label>
+                    <RotateCw className="h-3 w-3 text-slate-400" />
+                    <Label className="text-xs text-slate-700 dark:text-slate-300">Rotation</Label>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
                     <Input
@@ -295,8 +198,8 @@ const PropertiesTab = () => {
               <TooltipTrigger asChild>
                 <div>
                   <div className="flex items-center gap-1 mb-1">
-                    <Scale className="h-3 w-3 text-muted-foreground" />
-                    <Label className="text-xs text-foreground">Scale</Label>
+                    <Scale className="h-3 w-3 text-slate-400" />
+                    <Label className="text-xs text-slate-700 dark:text-slate-300">Scale</Label>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
                     <Input

@@ -9,7 +9,7 @@ export const useMeasureTool = (
   camera: THREE.PerspectiveCamera | null,
   scene: THREE.Scene | null,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void,
-  onObjectSelect?: (object: THREE.Object3D | null, event?: MouseEvent) => void
+  onObjectSelect?: (object: THREE.Object3D | null) => void
 ) => {
   const measureStartPoint = useRef<THREE.Vector3 | null>(null);
   const previewLineRef = useRef<THREE.Line | null>(null);
@@ -21,11 +21,8 @@ export const useMeasureTool = (
     
     if (intersectionPoint) {
       if (!measureStartPoint.current) {
-        // First click - start measurement and show preview line immediately
+        // First click - start measurement
         measureStartPoint.current = intersectionPoint.clone();
-        
-        // Create initial preview line (0 length, will be updated on mouse move)
-        previewLineRef.current = updatePreviewLine(measureStartPoint.current, measureStartPoint.current, scene, previewLineRef.current);
       } else {
         // Second click - complete measurement
         const startPoint = measureStartPoint.current;
@@ -39,7 +36,7 @@ export const useMeasureTool = (
         }
         
         if (onObjectSelect) {
-          onObjectSelect(measurementGroup, event);
+          onObjectSelect(measurementGroup);
         }
         
         measureStartPoint.current = null;
