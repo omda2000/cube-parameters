@@ -1,3 +1,4 @@
+
 import React from 'react';
 import AidToolsBar from '../AidToolsBar/AidToolsBar';
 import ControlPanelTabs from '../ControlPanelTabs/ControlPanelTabs';
@@ -63,27 +64,25 @@ const UIOverlay = ({
 }: UIOverlayProps) => {
   return (
     <>
-      {/* Notification bell repositioned to avoid canvas messages */}
-      <div className="fixed top-4 right-20 z-50">
+      {/* Notification bell - top right corner */}
+      <div className="fixed top-4 right-4 z-50">
         <NotificationBell />
       </div>
 
-      {/* Aid Tools Bar - positioned at 1/3 screen */}
-      <div className="fixed left-1/3 top-4 z-40">
-        <AidToolsBar
-          onToolSelect={onToolSelect}
-          activeTool={activeTool}
-        />
-      </div>
+      {/* Aid Tools Bar - centered at top */}
+      <AidToolsBar
+        onToolSelect={onToolSelect}
+        activeTool={activeTool}
+      />
 
-      {/* Control Panel Tabs - repositioned to prevent collision */}
+      {/* Control Panel Tabs - left side */}
       <ControlPanelTabs
         activeTab={activeControlTab}
         onTabChange={onTabChange}
         isPanelOpen={showControlPanel}
       />
 
-      {/* Fixed Control Panel - adjusted position to prevent collision */}
+      {/* Fixed Control Panel - positioned next to tabs */}
       <FixedControlPanel
         isOpen={showControlPanel}
         onClose={onCloseControlPanel}
@@ -91,16 +90,18 @@ const UIOverlay = ({
         <TabsControlPanel {...controlsPanelProps} />
       </FixedControlPanel>
 
-      {/* Measure Tools Panel */}
-      <MeasureToolsPanel
-        measurements={measurements}
-        onClearAll={onClearAllMeasurements}
-        onRemoveMeasurement={onRemoveMeasurement}
-        visible={showMeasurePanel}
-        onClose={onCloseMeasurePanel}
-      />
+      {/* Measure Tools Panel - positioned on the right */}
+      <div className="fixed right-4 top-20">
+        <MeasureToolsPanel
+          measurements={measurements}
+          onClearAll={onClearAllMeasurements}
+          onRemoveMeasurement={onRemoveMeasurement}
+          visible={showMeasurePanel}
+          onClose={onCloseMeasurePanel}
+        />
+      </div>
 
-      {/* Enhanced Bottom Floating Bar with zoom and snap controls */}
+      {/* Bottom Floating Bar - stays at bottom */}
       <BottomFloatingBar
         objectCount={modelCount}
         gridEnabled={true}
