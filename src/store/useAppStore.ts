@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { shallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
 import type { 
   LoadedModel, 
@@ -129,19 +129,18 @@ export const useAppStore = create<AppStore>()(
   )
 );
 
-// Fixed selector hooks using individual properties to prevent infinite loops
+// Fixed selector hooks using useShallow to prevent infinite loops
 export const useAppState = () => useAppStore(
-  (state) => ({
+  useShallow((state) => ({
     scene: state.scene,
     isInitialized: state.isInitialized,
     setScene: state.setScene,
     setInitialized: state.setInitialized,
-  }),
-  shallow
+  }))
 );
 
 export const useUIState = () => useAppStore(
-  (state) => ({
+  useShallow((state) => ({
     showControlPanel: state.showControlPanel,
     showMeasurePanel: state.showMeasurePanel,
     activeControlTab: state.activeControlTab,
@@ -152,12 +151,11 @@ export const useUIState = () => useAppStore(
     setActiveControlTab: state.setActiveControlTab,
     setActiveTool: state.setActiveTool,
     setIsOrthographic: state.setIsOrthographic,
-  }),
-  shallow
+  }))
 );
 
 export const useSceneState = () => useAppStore(
-  (state) => ({
+  useShallow((state) => ({
     loadedModels: state.loadedModels,
     currentModel: state.currentModel,
     dimensions: state.dimensions,
@@ -180,6 +178,5 @@ export const useSceneState = () => useAppStore(
     setEnvironment: state.setEnvironment,
     setUploading: state.setUploading,
     setUploadError: state.setUploadError,
-  }),
-  shallow
+  }))
 );
