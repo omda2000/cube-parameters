@@ -26,7 +26,7 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
 
   return (
     <TooltipProvider>
-      <div className="fixed left-4 top-20 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-50 shadow-lg">
+      <div className="fixed left-4 top-16 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-50 shadow-lg">
         <div className="flex flex-col gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;

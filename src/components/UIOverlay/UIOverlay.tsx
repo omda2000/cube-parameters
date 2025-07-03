@@ -75,14 +75,14 @@ const UIOverlay = ({
         activeTool={activeTool}
       />
 
-      {/* Control Panel Tabs - left side */}
+      {/* Control Panel Tabs - left side, positioned to avoid overlap */}
       <ControlPanelTabs
         activeTab={activeControlTab}
         onTabChange={onTabChange}
         isPanelOpen={showControlPanel}
       />
 
-      {/* Fixed Control Panel - positioned next to tabs */}
+      {/* Fixed Control Panel - positioned next to tabs with proper spacing */}
       <FixedControlPanel
         isOpen={showControlPanel}
         onClose={onCloseControlPanel}
@@ -90,8 +90,8 @@ const UIOverlay = ({
         <TabsControlPanel {...controlsPanelProps} />
       </FixedControlPanel>
 
-      {/* Measure Tools Panel - positioned on the right */}
-      <div className="fixed right-4 top-20">
+      {/* Measure Tools Panel - positioned on the bottom left to avoid overlap */}
+      <div className="fixed left-4 bottom-28 z-40">
         <MeasureToolsPanel
           measurements={measurements}
           onClearAll={onClearAllMeasurements}
