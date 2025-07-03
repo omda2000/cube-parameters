@@ -4,18 +4,9 @@ import AidToolsBar from '../AidToolsBar/AidToolsBar';
 import ControlPanelTabs from '../ControlPanelTabs/ControlPanelTabs';
 import FixedControlPanel from '../FixedControlPanel/FixedControlPanel';
 import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
-import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
 import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
 import NotificationBell from '../NotificationBell/NotificationBell';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
-
-interface MeasureData {
-  id: string;
-  startPoint: { x: number; y: number; z: number };
-  endPoint: { x: number; y: number; z: number };
-  distance: number;
-  label: string;
-}
 
 interface UIOverlayProps {
   activeTool: 'select' | 'point' | 'measure' | 'move';
@@ -27,7 +18,7 @@ interface UIOverlayProps {
   controlsPanelProps: any;
   showMeasurePanel: boolean;
   onCloseMeasurePanel: () => void;
-  measurements: MeasureData[];
+  measurements: any[];
   onClearAllMeasurements: () => void;
   onRemoveMeasurement: (id: string) => void;
   onZoomAll: () => void;
@@ -48,11 +39,6 @@ const UIOverlay = ({
   onTabChange,
   onCloseControlPanel,
   controlsPanelProps,
-  showMeasurePanel,
-  onCloseMeasurePanel,
-  measurements,
-  onClearAllMeasurements,
-  onRemoveMeasurement,
   onZoomAll,
   onZoomToSelected,
   onZoomIn,
@@ -89,17 +75,6 @@ const UIOverlay = ({
       >
         <TabsControlPanel {...controlsPanelProps} />
       </FixedControlPanel>
-
-      {/* Measure Tools Panel - positioned on the bottom left to avoid overlap */}
-      <div className="fixed left-4 bottom-28 z-40">
-        <MeasureToolsPanel
-          measurements={measurements}
-          onClearAll={onClearAllMeasurements}
-          onRemoveMeasurement={onRemoveMeasurement}
-          visible={showMeasurePanel}
-          onClose={onCloseMeasurePanel}
-        />
-      </div>
 
       {/* Bottom Floating Bar - stays at bottom */}
       <BottomFloatingBar

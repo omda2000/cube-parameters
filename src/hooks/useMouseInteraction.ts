@@ -24,7 +24,7 @@ export const useMouseInteraction = (
   camera: THREE.PerspectiveCamera | null,
   targetObject: THREE.Mesh | THREE.Group | null,
   scene: THREE.Scene | null,
-  onObjectSelect?: (object: THREE.Object3D | null) => void,
+  onObjectSelect?: (object: THREE.Object3D | null, addToSelection?: boolean) => void,
   activeTool: 'select' | 'point' | 'measure' | 'move' = 'select',
   controls?: OrbitControls | null,
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
@@ -36,10 +36,18 @@ export const useMouseInteraction = (
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const materialManagerRef = useRef<MaterialManager | null>(null);
 
-  // Initialize tools
-  const selectTool = useSelectTool(renderer, camera, scene, onObjectSelect);
-  const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
-  const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
+  // Enhanced object select handler that supports Ctrl+click
+  const enhancedObjectSelect = useCallback((object: THREE.Object3D | null, event?: MouseEvent) => {
+    if (onObjectSelect) {
+      const addToSelection = event?.ctrlKey || event?.metaKey || false;
+      onObjectSelect(object, addToSelection);
+    }
+  }, [onObjectSelect]);
+
+  // Initialize tools with enhanced selection
+  const selectTool = useSelectTool(renderer, camera, scene, enhancedObjectSelect);
+  const pointTool = usePointTool(renderer, camera, scene, onPointCreate, enhancedObjectSelect);
+  const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, enhancedObjectSelect);
 
   // Memoize object data extraction to avoid recalculation
   const extractObjectData = useCallback((object: THREE.Object3D): ObjectData => {
@@ -214,7 +222,7 @@ export const useMouseInteraction = (
         materialManagerRef.current.dispose();
       }
     };
-  }, [renderer, camera, scene, hoveredObject, activeTool, controls, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
+  }, [renderer, camera, scene, hoveredObject, activeTool, controls, selectTool, pointTool, measureTool, enhancedObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
 
   // Invalidate intersection cache when scene changes
   useEffect(() => {

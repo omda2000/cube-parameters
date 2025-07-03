@@ -7,7 +7,7 @@ export const useSelectTool = (
   renderer: THREE.WebGLRenderer | null,
   camera: THREE.PerspectiveCamera | null,
   scene: THREE.Scene | null,
-  onObjectSelect?: (object: THREE.Object3D | null) => void
+  onObjectSelect?: (object: THREE.Object3D | null, event?: MouseEvent) => void
 ) => {
   const handleClick = useCallback((event: MouseEvent) => {
     if (!renderer || !camera || !scene || event.button !== 0) return;
@@ -29,9 +29,10 @@ export const useSelectTool = (
         targetObject = targetObject.parent;
       }
       
-      onObjectSelect(targetObject);
-    } else if (onObjectSelect) {
-      onObjectSelect(null);
+      onObjectSelect(targetObject, event);
+    } else if (onObjectSelect && !event.ctrlKey && !event.metaKey) {
+      // Only clear selection if not holding Ctrl/Cmd
+      onObjectSelect(null, event);
     }
   }, [renderer, camera, scene, onObjectSelect]);
 
