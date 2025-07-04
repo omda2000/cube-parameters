@@ -114,6 +114,7 @@ const BottomFloatingBar = ({
               onSnapToGridChange={onSnapToGridChange}
               gridSize={gridSize}
               onGridSizeChange={onGridSizeChange}
+              unitSuffix={units}
             />
           </div>
         </div>

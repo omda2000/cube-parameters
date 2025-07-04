@@ -37,6 +37,10 @@ interface UIOverlayProps {
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
   modelCount: number;
+  gridSpacing: string;
+  units: string;
+  gridSize: number;
+  onGridSizeChange: (size: number) => void;
 }
 
 const UIOverlay = ({
@@ -59,7 +63,11 @@ const UIOverlay = ({
   onResetView,
   shadeType,
   onShadeTypeChange,
-  modelCount
+  modelCount,
+  gridSpacing,
+  units,
+  gridSize,
+  onGridSizeChange
 }: UIOverlayProps) => {
   return (
     <>
@@ -99,8 +107,8 @@ const UIOverlay = ({
       <BottomFloatingBar
         objectCount={modelCount}
         gridEnabled={true}
-        gridSpacing="1m"
-        units="m"
+        gridSpacing={gridSpacing}
+        units={units}
         cursorPosition={{ x: 0, y: 0 }}
         zoomLevel={100}
         shadeType={shadeType}
@@ -112,8 +120,8 @@ const UIOverlay = ({
         onResetView={onResetView}
         snapToGrid={false}
         onSnapToGridChange={() => {}}
-        gridSize={1}
-        onGridSizeChange={() => {}}
+        gridSize={gridSize}
+        onGridSizeChange={onGridSizeChange}
       />
     </>
   );
