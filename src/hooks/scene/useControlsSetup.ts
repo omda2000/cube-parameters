@@ -13,19 +13,13 @@ export const useControlsSetup = (
   useEffect(() => {
     if (!mountReady) return;
 
-    let attempts = 0;
-    const maxAttempts = 50; // ~5 seconds
+    let cancelled = false;
 
     const initControls = () => {
       const camera = cameraRef.current;
       const renderer = rendererRef.current;
       if (!camera || !renderer) {
-        if (attempts < maxAttempts) {
-          attempts += 1;
-          setTimeout(initControls, 100);
-        } else {
-          console.error('useControlsSetup: Failed to initialize controls');
-        }
+        if (!cancelled) setTimeout(initControls, 100);
         return;
       }
 
@@ -66,6 +60,7 @@ export const useControlsSetup = (
     initControls();
 
     return () => {
+      cancelled = true;
       if (controlsRef.current) {
         controlsRef.current.dispose();
         controlsRef.current = null;

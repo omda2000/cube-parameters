@@ -94,7 +94,7 @@ export const useThreeScene = (mountRef: RefObject<HTMLDivElement>) => {
     if (!mountReady) return;
 
     let attempts = 0;
-    const maxAttempts = 50; // ~5 seconds at 100ms interval
+    const maxAttempts = 100; // ~10 seconds at 100ms interval
 
     const interval = setInterval(() => {
       try {

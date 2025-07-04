@@ -14,9 +14,8 @@ export const useSceneResize = (
   useEffect(() => {
     if (!mountReady || !mountRef.current) return;
 
-    let attempts = 0;
-    const maxAttempts = 50;
     let handleResize: (() => void) | null = null;
+    let cancelled = false;
 
     const initResize = () => {
       const perspectiveCamera = perspectiveCameraRef.current;
@@ -24,10 +23,7 @@ export const useSceneResize = (
       const renderer = rendererRef.current;
       const labelRenderer = labelRendererRef.current;
       if (!perspectiveCamera || !orthographicCamera || !renderer || !labelRenderer) {
-        if (attempts < maxAttempts) {
-          attempts += 1;
-          setTimeout(initResize, 100);
-        }
+        if (!cancelled) setTimeout(initResize, 100);
         return;
       }
 
@@ -62,6 +58,7 @@ export const useSceneResize = (
     initResize();
 
     return () => {
+      cancelled = true;
       if (handleResize) {
         window.removeEventListener('resize', handleResize);
       }

@@ -17,9 +17,8 @@ export const useAnimationLoop = (
   useEffect(() => {
     if (!mountReady) return;
 
-    let attempts = 0;
-    const maxAttempts = 50;
     let cleanup: (() => void) | undefined;
+    let cancelled = false;
 
     const startLoop = () => {
       const scene = sceneRef.current;
@@ -29,12 +28,7 @@ export const useAnimationLoop = (
       const controls = controlsRef.current;
 
       if (!scene || !activeCamera || !renderer || !labelRenderer || !controls) {
-        if (attempts < maxAttempts) {
-          attempts += 1;
-          setTimeout(startLoop, 100);
-        } else {
-          console.error('useAnimationLoop: Failed to start animation loop');
-        }
+        if (!cancelled) setTimeout(startLoop, 100);
         return;
       }
 
@@ -67,6 +61,7 @@ export const useAnimationLoop = (
     startLoop();
 
     return () => {
+      cancelled = true;
       if (cleanup) cleanup();
     };
   }, [sceneRef, activeCameraRef, rendererRef, labelRendererRef, controlsRef, mountReady]);
