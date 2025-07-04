@@ -5,12 +5,18 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export const useControlsSetup = (
   camera: THREE.PerspectiveCamera | null,
-  renderer: THREE.WebGLRenderer | null
+  renderer: THREE.WebGLRenderer | null,
+  mountReady: boolean = false
 ) => {
   const controlsRef = useRef<OrbitControls | null>(null);
 
   useEffect(() => {
-    if (!camera || !renderer) return;
+    if (!camera || !renderer || !mountReady) {
+      console.log('useControlsSetup: Waiting for camera and renderer...');
+      return;
+    }
+
+    console.log('useControlsSetup: Initializing controls...');
 
     // Enhanced OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -38,10 +44,12 @@ export const useControlsSetup = (
     controls.zoomSpeed = 0.8;
     controls.panSpeed = 0.8;
 
+    console.log('useControlsSetup: Controls initialized successfully');
+
     return () => {
       controls.dispose();
     };
-  }, [camera, renderer]);
+  }, [camera, renderer, mountReady]);
 
   return {
     controlsRef

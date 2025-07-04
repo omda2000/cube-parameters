@@ -3,12 +3,17 @@ import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
-export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
+export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>, mountReady: boolean = false) => {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const labelRendererRef = useRef<CSS2DRenderer | null>(null);
 
   useEffect(() => {
-    if (!mountRef.current) return;
+    if (!mountRef.current || !mountReady) {
+      console.log('useRendererSetup: Waiting for mount element...');
+      return;
+    }
+
+    console.log('useRendererSetup: Initializing renderers...');
 
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
@@ -40,18 +45,18 @@ export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
     labelRenderer.domElement.style.pointerEvents = 'none';
     mountRef.current.appendChild(labelRenderer.domElement);
 
+    console.log('useRendererSetup: Renderers initialized successfully');
+
     return () => {
-      if (mountRef.current) {
-        if (renderer.domElement.parentNode) {
-          mountRef.current.removeChild(renderer.domElement);
-        }
-        if (labelRenderer.domElement.parentNode) {
-          mountRef.current.removeChild(labelRenderer.domElement);
-        }
+      if (mountRef.current && renderer.domElement.parentNode) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      if (mountRef.current && labelRenderer.domElement.parentNode) {
+        mountRef.current.removeChild(labelRenderer.domElement);
       }
       renderer.dispose();
     };
-  }, [mountRef]);
+  }, [mountRef, mountReady]);
 
   return {
     rendererRef,

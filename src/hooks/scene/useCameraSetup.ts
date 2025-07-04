@@ -2,7 +2,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 
-export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
+export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>, mountReady: boolean = false) => {
   const perspectiveCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const orthographicCameraRef = useRef<THREE.OrthographicCamera | null>(null);
   const activeCameraRef = useRef<THREE.Camera | null>(null);
@@ -40,8 +40,13 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
   }, [mountRef]);
 
   useEffect(() => {
-    if (!mountRef.current) return;
+    if (!mountRef.current || !mountReady) {
+      console.log('useCameraSetup: Waiting for mount element...');
+      return;
+    }
 
+    console.log('useCameraSetup: Initializing cameras...');
+    
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
     const aspect = width / height;
@@ -65,7 +70,9 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
 
     // Set initial active camera
     activeCameraRef.current = perspectiveCamera;
-  }, [mountRef]);
+    
+    console.log('useCameraSetup: Cameras initialized successfully');
+  }, [mountRef, mountReady]);
 
   return {
     perspectiveCameraRef,

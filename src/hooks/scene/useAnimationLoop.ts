@@ -9,12 +9,18 @@ export const useAnimationLoop = (
   activeCamera: THREE.Camera | null,
   renderer: THREE.WebGLRenderer | null,
   labelRenderer: CSS2DRenderer | null,
-  controls: OrbitControls | null
+  controls: OrbitControls | null,
+  mountReady: boolean = false
 ) => {
   const animationIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!scene || !activeCamera || !renderer || !labelRenderer || !controls) return;
+    if (!scene || !activeCamera || !renderer || !labelRenderer || !controls || !mountReady) {
+      console.log('useAnimationLoop: Waiting for all components to be ready...');
+      return;
+    }
+
+    console.log('useAnimationLoop: Starting animation loop...');
 
     // Animation loop
     let lastTime = 0;
@@ -39,7 +45,7 @@ export const useAnimationLoop = (
         cancelAnimationFrame(animationIdRef.current);
       }
     };
-  }, [scene, activeCamera, renderer, labelRenderer, controls]);
+  }, [scene, activeCamera, renderer, labelRenderer, controls, mountReady]);
 
   return {
     animationIdRef

@@ -12,11 +12,28 @@ import { useAnimationLoop } from './scene/useAnimationLoop';
 export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const [mountReady, setMountReady] = useState(false);
   const resourceManagerRef = useRef<ResourceManager>(ResourceManager.getInstance());
 
-  console.log('useThreeScene: Initializing with mountRef:', !!mountRef.current);
+  // Wait for mount element to be ready
+  useEffect(() => {
+    const checkMount = () => {
+      if (mountRef.current) {
+        console.log('useThreeScene: Mount element is ready');
+        setMountReady(true);
+      } else {
+        console.log('useThreeScene: Mount element not ready, retrying...');
+        // Retry after a short delay
+        setTimeout(checkMount, 100);
+      }
+    };
 
-  // Set up scene components with error handling
+    checkMount();
+  }, [mountRef]);
+
+  console.log('useThreeScene: Initializing with mountRef ready:', mountReady);
+
+  // Only initialize scene components when mount is ready
   const { sceneRef, ucsHelperRef, gridHelperRef } = useSceneSetup();
   
   const { 
@@ -25,13 +42,14 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     activeCameraRef, 
     isOrthographic, 
     switchCamera: baseSwitchCamera 
-  } = useCameraSetup(mountRef);
+  } = useCameraSetup(mountRef, mountReady);
   
-  const { rendererRef, labelRendererRef } = useRendererSetup(mountRef);
+  const { rendererRef, labelRendererRef } = useRendererSetup(mountRef, mountReady);
   
   const { controlsRef } = useControlsSetup(
     perspectiveCameraRef.current, 
-    rendererRef.current
+    rendererRef.current,
+    mountReady
   );
 
   // Enhanced switch camera with controls reference
@@ -54,7 +72,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     perspectiveCameraRef.current,
     orthographicCameraRef.current,
     rendererRef.current,
-    labelRendererRef.current
+    labelRendererRef.current,
+    mountReady
   );
 
   // Set up animation loop with error handling
@@ -63,7 +82,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     activeCameraRef.current,
     rendererRef.current,
     labelRendererRef.current,
-    controlsRef.current
+    controlsRef.current,
+    mountReady
   );
 
   // Performance monitoring
@@ -71,6 +91,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
 
   // Check initialization status
   useEffect(() => {
+    if (!mountReady) return;
+
     try {
       const hasScene = !!sceneRef.current;
       const hasCamera = !!activeCameraRef.current;
@@ -78,6 +100,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
       const hasControls = !!controlsRef.current;
       
       console.log('useThreeScene: Checking initialization status', {
+        mountReady,
         hasScene,
         hasCamera,
         hasRenderer,
@@ -95,7 +118,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
       console.error('Error checking initialization status:', error);
       setInitError('Failed to initialize Three.js scene');
     }
-  }, [sceneRef.current, activeCameraRef.current, rendererRef.current, controlsRef.current]);
+  }, [mountReady, sceneRef.current, activeCameraRef.current, rendererRef.current, controlsRef.current]);
 
   return {
     sceneRef,
