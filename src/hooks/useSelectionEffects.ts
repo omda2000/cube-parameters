@@ -12,17 +12,17 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
   const { applyMeshSelection } = useMeshSelection();
   const selectionMaterials = new SelectionMaterials();
 
-  const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
+  const applySelectionEffects = (object: THREE.Object3D, selected: boolean, type?: string) => {
     const overlayMaterial = selectionMaterials.getOverlayMaterial();
 
     // Handle points
-    if (objectType === 'point') {
+    if (type === 'point') {
       applyPointSelection(object, selected);
       return;
     }
 
     // Handle measurements (groups)
-    if (objectType === 'measurement') {
+    if (type === 'measurement') {
       applyMeasurementSelection(object, selected);
       return;
     }
