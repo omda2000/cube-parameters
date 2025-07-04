@@ -7,23 +7,25 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+interface PanelSettings {
+  gridSize: number;
+  snapToGrid: boolean;
+  showAxes: boolean;
+  renderQuality: 'low' | 'medium' | 'high';
+  shadowQuality: 'low' | 'medium' | 'high';
+}
+
 interface SettingsPanelProps {
   visible: boolean;
   onClose: () => void;
-  settings: {
-    gridSize: number;
-    snapToGrid: boolean;
-    showAxes: boolean;
-    renderQuality: 'low' | 'medium' | 'high';
-    shadowQuality: 'low' | 'medium' | 'high';
-  };
-  onSettingsChange: (settings: any) => void;
+  settings: PanelSettings;
+  onSettingsChange: (settings: PanelSettings) => void;
 }
 
 const SettingsPanel = ({ visible, onClose, settings, onSettingsChange }: SettingsPanelProps) => {
   if (!visible) return null;
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (key: keyof PanelSettings, value: PanelSettings[keyof PanelSettings]) => {
     onSettingsChange({ ...settings, [key]: value });
   };
 

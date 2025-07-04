@@ -14,7 +14,7 @@ const CameraTypeToggle = ({ isOrthographic, onToggle }: CameraTypeToggleProps) =
   const handleToggle = (checked: boolean) => {
     onToggle(checked);
     // Call the global camera switch function
-    const switchCamera = (window as any).__switchCameraMode;
+    const switchCamera = window.__switchCameraMode;
     if (switchCamera) {
       switchCamera(checked);
     }
