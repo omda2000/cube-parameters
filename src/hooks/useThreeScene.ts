@@ -89,36 +89,41 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   // Performance monitoring
   const { metrics } = useThreePerformance(rendererRef);
 
-  // Check initialization status
+  // Check initialization status with polling to avoid stale refs
   useEffect(() => {
     if (!mountReady) return;
 
-    try {
-      const hasScene = !!sceneRef.current;
-      const hasCamera = !!activeCameraRef.current;
-      const hasRenderer = !!rendererRef.current;
-      const hasControls = !!controlsRef.current;
-      
-      console.log('useThreeScene: Checking initialization status', {
-        mountReady,
-        hasScene,
-        hasCamera,
-        hasRenderer,
-        hasControls
-      });
+    let attempts = 0;
+    const maxAttempts = 50; // ~5 seconds at 100ms interval
 
-      if (hasScene && hasCamera && hasRenderer && hasControls) {
-        setIsInitialized(true);
-        setInitError(null);
-        console.log('useThreeScene: Successfully initialized');
-      } else {
-        console.log('useThreeScene: Still initializing...');
+    const interval = setInterval(() => {
+      try {
+        const hasScene = !!sceneRef.current;
+        const hasCamera = !!activeCameraRef.current;
+        const hasRenderer = !!rendererRef.current;
+        const hasControls = !!controlsRef.current;
+
+        if (hasScene && hasCamera && hasRenderer && hasControls) {
+          setIsInitialized(true);
+          setInitError(null);
+          console.log('useThreeScene: Successfully initialized');
+          clearInterval(interval);
+        } else if (attempts >= maxAttempts) {
+          console.error('useThreeScene: Initialization timed out');
+          setInitError('Failed to initialize Three.js scene');
+          clearInterval(interval);
+        }
+
+        attempts += 1;
+      } catch (error) {
+        console.error('Error checking initialization status:', error);
+        setInitError('Failed to initialize Three.js scene');
+        clearInterval(interval);
       }
-    } catch (error) {
-      console.error('Error checking initialization status:', error);
-      setInitError('Failed to initialize Three.js scene');
-    }
-  }, [mountReady, sceneRef.current, activeCameraRef.current, rendererRef.current, controlsRef.current]);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [mountReady]);
 
   return {
     sceneRef,
