@@ -10,85 +10,69 @@ export const buildSceneObjects = (
 ): SceneObject[] => {
   if (!scene) return [];
 
-  const objects: SceneObject[] = [];
+  const loadedMap = new Map<THREE.Object3D, LoadedModel>();
+  loadedModels.forEach(model => loadedMap.set(model.object, model));
 
-  // Add loaded models
-  loadedModels.forEach(model => {
-    const modelObject: SceneObject = {
-      id: `model_${model.id}`,
-      name: model.name,
-      type: 'group',
-      object: model.object,
-      children: buildChildren(model.object, selectedObject),
-      visible: model.object.visible,
-      selected: selectedObject?.id === `model_${model.id}`
+  const buildObject = (object: THREE.Object3D): SceneObject | null => {
+    if (object.userData.isHelper) return null;
+
+    const isModel = loadedMap.has(object);
+
+    const type: SceneObject['type'] = object.userData.isPrimitive
+      ? 'primitive'
+      : object.userData.isPoint
+        ? 'point'
+        : object.userData.isMeasurementGroup
+          ? 'measurement'
+          : object instanceof THREE.Light
+            ? 'light'
+            : object instanceof THREE.Mesh
+              ? 'mesh'
+              : 'group';
+
+    if (type === 'primitive' && !showPrimitives) return null;
+
+    const id = isModel
+      ? `model_${loadedMap.get(object)!.id}`
+      : type === 'primitive'
+        ? `primitive_${object.uuid}`
+        : type === 'point'
+          ? `point_${object.uuid}`
+          : type === 'measurement'
+            ? `measurement_${object.uuid}`
+            : `object_${object.uuid}`;
+
+    const name = isModel
+      ? loadedMap.get(object)!.name
+      : object.name || (type === 'primitive' ? 'Box Primitive' : `${object.type}_${object.uuid.slice(0, 8)}`);
+
+    const children = object.children
+      .map(child => buildObject(child))
+      .filter(Boolean) as SceneObject[];
+
+    return {
+      id,
+      name,
+      type,
+      object,
+      children,
+      visible: object.visible,
+      selected: selectedObject?.id === id
     };
-    objects.push(modelObject);
+  };
+
+  const objects: SceneObject[] = [];
+  scene.children.forEach(child => {
+    const obj = buildObject(child);
+    if (obj) objects.push(obj);
   });
 
-  // Add primitives if showing
-  if (showPrimitives) {
-    scene.traverse((object) => {
-      if (object.userData.isPrimitive) {
-        const primitiveObject: SceneObject = {
-          id: `primitive_${object.uuid}`,
-          name: object.name || 'Box Primitive',
-          type: 'primitive',
-          object: object,
-          children: [],
-          visible: object.visible,
-          selected: selectedObject?.id === `primitive_${object.uuid}`
-        };
-        objects.push(primitiveObject);
-      }
-    });
-  }
-
-  // Add points
-  scene.traverse((object) => {
-    if (object.userData.isPoint) {
-      const pointObject: SceneObject = {
-        id: `point_${object.uuid}`,
-        name: object.name || `Point (${object.position.x.toFixed(2)}, ${object.position.y.toFixed(2)}, ${object.position.z.toFixed(2)})`,
-        type: 'point',
-        object: object,
-        children: [],
-        visible: object.visible,
-        selected: selectedObject?.id === `point_${object.uuid}`
-      };
-      objects.push(pointObject);
-    }
-  });
-
-  // Add measurement groups
-  scene.traverse((object) => {
-    if (object.userData.isMeasurementGroup && object instanceof THREE.Group) {
-      const measurementData = object.userData.measurementData;
-      const distance = measurementData ? measurementData.distance : 0;
-      
-      const measurementObject: SceneObject = {
-        id: `measurement_${object.uuid}`,
-        name: `Measurement (${distance.toFixed(3)} units)`,
-        type: 'measurement',
-        object: object,
-        children: [],
-        visible: object.visible,
-        selected: selectedObject?.id === `measurement_${object.uuid}`,
-        measurementData: measurementData ? {
-          startPoint: measurementData.startPoint,
-          endPoint: measurementData.endPoint,
-          distance: measurementData.distance
-        } : undefined
-      };
-      objects.push(measurementObject);
-    }
-  });
-
-  // Add environment objects
-  const groundObject = scene.children.find(child => 
-    child instanceof THREE.Mesh && child.geometry instanceof THREE.PlaneGeometry && child.userData.isHelper
+  const groundObject = scene.children.find(child =>
+    child instanceof THREE.Mesh &&
+    child.geometry instanceof THREE.PlaneGeometry &&
+    child.userData.isHelper
   );
-  
+
   if (groundObject) {
     objects.push({
       id: 'ground',
@@ -104,26 +88,13 @@ export const buildSceneObjects = (
   return objects;
 };
 
-const buildChildren = (object: THREE.Object3D, selectedObject: any): SceneObject[] => {
-  return object.children
-    .filter(child => !child.userData.isHelper)
-    .map(child => ({
-      id: `child_${child.uuid}`,
-      name: child.name || `${child.type}_${child.uuid.slice(0, 8)}`,
-      type: child instanceof THREE.Mesh ? 'mesh' : 'group',
-      object: child,
-      children: buildChildren(child, selectedObject),
-      visible: child.visible,
-      selected: selectedObject?.id === `child_${child.uuid}`
-    }));
-};
 
 export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
   return {
-    models: sceneObjects.filter(obj => obj.type === 'group'),
+    models: sceneObjects.filter(obj => obj.type === 'group' || obj.type === 'mesh'),
     primitives: sceneObjects.filter(obj => obj.type === 'primitive'),
     points: sceneObjects.filter(obj => obj.type === 'point'),
     measurements: sceneObjects.filter(obj => obj.type === 'measurement'),
-    environment: sceneObjects.filter(obj => obj.type === 'ground')
+    environment: sceneObjects.filter(obj => obj.type === 'ground' || obj.type === 'light')
   };
 };

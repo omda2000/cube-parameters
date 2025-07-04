@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Box } from 'lucide-react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../contexts/SelectionContext';
+import { useUIState } from '../../store/useAppStore';
 import type { LoadedModel, SceneObject } from '../../types/model';
 import SceneObjectGroup from './components/SceneObjectGroup';
 import { buildSceneObjects, groupSceneObjects } from './utils/sceneObjectBuilder';
@@ -23,12 +24,20 @@ const UnifiedSceneTree = ({
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const { selectedObject, selectObject } = useSelectionContext();
+  const { setActiveControlTab, setShowControlPanel } = useUIState();
 
   // Build unified scene tree
   useEffect(() => {
     const objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObject);
     setSceneObjects(objects);
-  }, [scene, loadedModels, showPrimitives, selectedObject]);
+  }, [
+    scene,
+    // Rebuild whenever the number of direct scene children changes
+    scene ? scene.children.length : 0,
+    loadedModels,
+    showPrimitives,
+    selectedObject
+  ]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
@@ -47,7 +56,13 @@ const UnifiedSceneTree = ({
 
   const handleObjectSelect = (sceneObject: SceneObject) => {
     const isCurrentlySelected = selectedObject?.id === sceneObject.id;
-    selectObject(isCurrentlySelected ? null : sceneObject);
+    if (isCurrentlySelected) {
+      selectObject(null);
+    } else {
+      selectObject(sceneObject);
+      setActiveControlTab('properties');
+      setShowControlPanel(true);
+    }
   };
 
   const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
