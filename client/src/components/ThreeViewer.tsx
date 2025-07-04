@@ -1,40 +1,16 @@
-
-import React, { useRef, useEffect, memo, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { useThreeScene } from '../hooks/useThreeScene';
-import { useBoxMesh } from '../hooks/useBoxMesh';
-import { useMouseInteraction } from '../hooks/useMouseInteraction';
-import { useLighting } from '../hooks/useLighting';
-import { useEnvironment } from '../hooks/useEnvironment';
-import { useFBXLoader } from '../hooks/useFBXLoader';
-import { useSelectionEffects } from '../hooks/useSelectionEffects';
-import { useZoomControls } from '../hooks/useZoomControls';
-import { useViewerKeyboardShortcuts } from '../hooks/useViewerKeyboardShortcuts';
-import { useObjectSelection } from '../hooks/useObjectSelection';
-import { useCameraExposure } from '../hooks/useCameraExposure';
-import { useModelsExposure } from '../hooks/useModelsExposure';
-import { useToolHandlersViewer } from '../hooks/useToolHandlersViewer';
-import ObjectDataOverlay from './ObjectDataOverlay';
-import SelectionOverlay from './SelectionOverlay/SelectionOverlay';
-import type { 
-  SunlightSettings, 
-  AmbientLightSettings, 
-  EnvironmentSettings, 
-  LoadedModel,
-  BoxDimensions,
-  ShadowQuality
-} from '../types/model';
 
 interface ThreeViewerProps {
-  dimensions: BoxDimensions;
+  dimensions: { length: number; width: number; height: number };
   boxColor: string;
   objectName: string;
-  sunlight: SunlightSettings;
-  ambientLight: AmbientLightSettings;
-  shadowQuality: ShadowQuality;
-  environment: EnvironmentSettings;
+  sunlight?: any;
+  ambientLight?: any;
+  shadowQuality?: 'low' | 'medium' | 'high';
+  environment?: any;
   onFileUpload?: (file: File) => void;
-  onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
+  onModelsChange?: (models: any[], current: any) => void;
   onSceneReady?: (scene: THREE.Scene) => void;
   showPrimitives?: boolean;
   activeTool?: 'select' | 'point' | 'measure' | 'move';
@@ -42,219 +18,175 @@ interface ThreeViewerProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
-const ThreeViewer = memo(({ 
-  dimensions, 
-  boxColor, 
-  objectName, 
-  sunlight,
-  ambientLight,
-  shadowQuality,
-  environment,
-  onFileUpload,
-  onModelsChange,
-  onSceneReady,
-  showPrimitives = true,
-  activeTool = 'select',
-  onPointCreate,
-  onMeasureCreate
-}: ThreeViewerProps) => {
+const ThreeViewer = (props: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [viewerError, setViewerError] = useState<string | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
 
-  console.log('ThreeViewer: Rendering with props', { 
-    dimensions, 
-    boxColor, 
-    objectName, 
-    activeTool 
-  });
+  useEffect(() => {
+    if (!mountRef.current) return;
 
-  // Custom hooks for organized functionality
-  const { selectedObject, clearSelection, handleObjectSelect } = useObjectSelection();
+    // Initialize Three.js scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
+    sceneRef.current = scene;
 
-  const {
-    sceneRef,
-    cameraRef,
-    perspectiveCameraRef,
-    rendererRef,
-    labelRendererRef,
-    controlsRef,
-    gridHelperRef,
-    performanceMetrics,
-    isOrthographic,
-    switchCamera,
-    isInitialized,
-    initError
-  } = useThreeScene(mountRef);
-
-  // Show loading state while initializing
-  if (!isInitialized && !initError) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Initializing 3D viewer...</p>
-        </div>
-      </div>
+    // Initialize camera
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      0.1,
+      1000
     );
-  }
+    camera.position.set(3, 3, 3);
+    camera.lookAt(0, 0, 0);
+    cameraRef.current = camera;
 
-  // Show error state if initialization failed
-  if (initError) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-red-900 text-white">
-        <div className="text-center">
-          <p className="text-xl mb-2">Failed to initialize 3D viewer</p>
-          <p className="text-sm text-red-200">{initError}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
-          >
-            Reload Page
-          </button>
-        </div>
-      </div>
+    // Initialize renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    rendererRef.current = renderer;
+
+    // Add renderer to DOM
+    mountRef.current.appendChild(renderer.domElement);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 10, 5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    scene.add(directionalLight);
+
+    // Add a basic ground
+    const groundGeometry = new THREE.PlaneGeometry(20, 20);
+    const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Add basic box
+    const geometry = new THREE.BoxGeometry(
+      props.dimensions.length,
+      props.dimensions.height,
+      props.dimensions.width
     );
-  }
+    const material = new THREE.MeshLambertMaterial({ color: props.boxColor });
+    const cube = new THREE.Mesh(geometry, material);
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+    scene.add(cube);
 
-  // Error boundary for viewer-specific errors
-  try {
-    // Expose camera switching and other global handlers
-    useCameraExposure(switchCamera);
+    // Basic orbit controls (simplified)
+    let mouseDown = false;
+    let mouseX = 0;
+    let mouseY = 0;
 
-    // Expose scene to parent components
-    useEffect(() => {
-      if (sceneRef.current && onSceneReady) {
-        console.log('ThreeViewer: Scene ready, calling onSceneReady');
-        onSceneReady(sceneRef.current);
+    const onMouseDown = (event: MouseEvent) => {
+      mouseDown = true;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    };
+
+    const onMouseUp = () => {
+      mouseDown = false;
+    };
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (!mouseDown) return;
+
+      const deltaX = event.clientX - mouseX;
+      const deltaY = event.clientY - mouseY;
+
+      camera.position.x = camera.position.x * Math.cos(deltaX * 0.01) - camera.position.z * Math.sin(deltaX * 0.01);
+      camera.position.z = camera.position.x * Math.sin(deltaX * 0.01) + camera.position.z * Math.cos(deltaX * 0.01);
+      camera.position.y += deltaY * 0.01;
+      camera.lookAt(0, 0, 0);
+
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    };
+
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mouseup', onMouseUp);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+
+    // Handle window resize
+    const handleResize = () => {
+      if (!mountRef.current || !camera || !renderer) return;
+      
+      camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Render loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Call onSceneReady callback
+    if (props.onSceneReady) {
+      props.onSceneReady(scene);
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      renderer.domElement.removeEventListener('mousedown', onMouseDown);
+      renderer.domElement.removeEventListener('mouseup', onMouseUp);
+      renderer.domElement.removeEventListener('mousemove', onMouseMove);
+      
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
       }
-    }, [onSceneReady, sceneRef.current]);
+      renderer.dispose();
+    };
+  }, []);
 
-    const { boxRef } = useBoxMesh(
-      sceneRef.current,
-      dimensions,
-      boxColor,
-      objectName,
-      true // Always show the primitive box
-    );
+  // Update box when props change
+  useEffect(() => {
+    if (!sceneRef.current) return;
 
-    // Mark box as primitive for scene tree
-    useEffect(() => {
-      if (boxRef.current) {
-        boxRef.current.userData.isPrimitive = true;
+    const cube = sceneRef.current.children.find(
+      (child) => child instanceof THREE.Mesh && child.geometry instanceof THREE.BoxGeometry
+    ) as THREE.Mesh;
+
+    if (cube) {
+      // Update geometry
+      cube.geometry.dispose();
+      cube.geometry = new THREE.BoxGeometry(
+        props.dimensions.length,
+        props.dimensions.height,
+        props.dimensions.width
+      );
+
+      // Update material color
+      if (cube.material instanceof THREE.MeshLambertMaterial) {
+        cube.material.color.setStyle(props.boxColor);
       }
-    }, [boxRef]);
+    }
+  }, [props.dimensions, props.boxColor]);
 
-    const {
-      loadedModels,
-      currentModel,
-      isLoading,
-      error,
-      loadFBXModel,
-      switchToModel,
-      removeModel
-    } = useFBXLoader(sceneRef.current);
-
-    // Expose models and FBX handlers - fix parameter order
-    useModelsExposure(
-      loadedModels,
-      currentModel,
-      loadFBXModel,
-      switchToModel,
-      removeModel,
-      onModelsChange
-    );
-
-    // Tool handlers
-    const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
-      onPointCreate,
-      onMeasureCreate
-    );
-
-    // Use selection effects hook for visual feedback
-    useSelectionEffects(selectedObject);
-
-    // Mouse interaction and hover effects - use perspective camera for compatibility
-    const { objectData, mousePosition, isHovering } = useMouseInteraction(
-      rendererRef.current,
-      perspectiveCameraRef.current,
-      currentModel ? currentModel.object : boxRef.current,
-      sceneRef.current,
-      handleObjectSelect,
-      activeTool,
-      controlsRef.current,
-      handlePointCreate,
-      handleMeasureCreate
-    );
-
-    // Zoom controls hook - use perspective camera ref for compatibility
-    const { zoomAll, zoomToSelected, resetView } = useZoomControls(
-      sceneRef,
-      perspectiveCameraRef,
-      controlsRef,
-      selectedObject
-    );
-
-    // Keyboard shortcuts - use perspective camera ref for compatibility
-    useViewerKeyboardShortcuts({
-      onClearSelection: clearSelection,
-      onZoomAll: zoomAll,
-      onZoomToSelected: zoomToSelected,
-      selectedObject
-    });
-
-    useLighting(
-      sceneRef.current,
-      sunlight,
-      ambientLight,
-      shadowQuality
-    );
-
-    useEnvironment(
-      sceneRef.current,
-      environment,
-      gridHelperRef.current
-    );
-
-    // Debug performance metrics in development
-    useEffect(() => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Performance Metrics:', performanceMetrics);
-      }
-    }, [performanceMetrics]);
-
-    return (
-      <div className="relative w-full h-full">
-        <div ref={mountRef} className="w-full h-full" />
-        <ObjectDataOverlay 
-          objectData={objectData}
-          mousePosition={mousePosition}
-          visible={isHovering}
-        />
-        <SelectionOverlay selectedObject={selectedObject} />
-      </div>
-    );
-
-  } catch (error) {
-    console.error('Error in ThreeViewer render:', error);
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-red-900 text-white">
-        <div className="text-center">
-          <p className="text-xl mb-2">3D Viewer Error</p>
-          <p className="text-sm text-red-200">
-            {error instanceof Error ? error.message : 'Unknown error occurred'}
-          </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
-          >
-            Reload Page
-          </button>
-        </div>
-      </div>
-    );
-  }
-});
-
-ThreeViewer.displayName = 'ThreeViewer';
+  return (
+    <div 
+      ref={mountRef} 
+      className="w-full h-full"
+      style={{ minHeight: '400px' }}
+    />
+  );
+};
 
 export default ThreeViewer;

@@ -1,12 +1,11 @@
-
 import * as THREE from 'three';
 
 export interface LoadedModel {
   id: string;
   name: string;
-  object: THREE.Group;
-  boundingBox: THREE.Box3;
-  size: number;
+  url: string;
+  mesh?: THREE.Object3D;
+  boundingBox?: THREE.Box3;
 }
 
 export interface SunlightSettings {
@@ -22,25 +21,12 @@ export interface AmbientLightSettings {
   color: string;
 }
 
-export type EnvironmentPreset =
-  | 'sunset'
-  | 'dawn'
-  | 'night'
-  | 'forest'
-  | 'apartment'
-  | 'studio'
-  | 'city'
-  | 'park'
-  | 'lobby';
-
 export interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
   showGround: boolean;
-  preset: EnvironmentPreset;
-  background?: 'gradient' | 'solid' | 'transparent';
-  cameraFov?: number;
+  preset: string;
 }
 
 export interface BoxDimensions {
@@ -49,21 +35,15 @@ export interface BoxDimensions {
   height: number;
 }
 
-export type TransformMode = 'translate' | 'rotate' | 'scale';
 export type ShadowQuality = 'low' | 'medium' | 'high';
 
 export interface SceneObject {
   id: string;
   name: string;
-  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point' | 'measurement';
-  object: THREE.Object3D;
-  children: SceneObject[];
+  type: 'primitive' | 'model' | 'mesh';
+  object3D: THREE.Object3D;
   visible: boolean;
-  selected: boolean;
-  parent?: SceneObject;
-  measurementData?: {
-    startPoint: THREE.Vector3;
-    endPoint: THREE.Vector3;
-    distance: number;
-  };
+  position: THREE.Vector3;
+  rotation: THREE.Euler;
+  scale: THREE.Vector3;
 }
