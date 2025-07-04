@@ -7,6 +7,7 @@ import { createRaycaster, getIntersectableObjects, invalidateIntersectableCache 
 import { useSelectTool } from './tools/useSelectTool';
 import { usePointTool } from './tools/usePointTool';
 import { useMeasureTool } from './tools/useMeasureTool';
+import { useMoveTool } from './tools/useMoveTool';
 
 interface ObjectData {
   name: string;
@@ -40,6 +41,7 @@ export const useMouseInteraction = (
   const selectTool = useSelectTool(renderer, camera, scene, onObjectSelect);
   const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
   const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
+  const moveTool = useMoveTool(renderer, camera, scene, controls || null, onObjectSelect);
 
   // Memoize object data extraction to avoid recalculation
   const extractObjectData = useCallback((object: THREE.Object3D): ObjectData => {
@@ -173,6 +175,9 @@ export const useMouseInteraction = (
         case 'measure':
           measureTool.handleClick(event);
           break;
+        case 'move':
+          moveTool.handleClick(event);
+          break;
       }
     };
 
@@ -183,6 +188,7 @@ export const useMouseInteraction = (
         setObjectData(null);
       }
       measureTool.cleanup();
+      moveTool.cleanup();
       renderer.domElement.style.cursor = 'default';
     };
 
@@ -209,12 +215,14 @@ export const useMouseInteraction = (
       }
       
       measureTool.cleanup();
+
+      moveTool.cleanup();
       
       if (materialManagerRef.current) {
         materialManagerRef.current.dispose();
       }
     };
-  }, [renderer, camera, scene, hoveredObject, activeTool, controls, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
+  }, [renderer, camera, scene, hoveredObject, activeTool, controls, selectTool, pointTool, measureTool, moveTool, onObjectSelect, onPointCreate, onMeasureCreate, extractObjectData, throttledMouseMove]);
 
   // Invalidate intersection cache when scene changes
   useEffect(() => {
