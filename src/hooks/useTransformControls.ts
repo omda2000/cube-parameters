@@ -46,12 +46,12 @@ export const useTransformControls = (
     });
     
     console.log('Adding transform controls to scene:', transformControls);
-    scene.add(transformControls);
+    scene.add(transformControls as any);
 
     return () => {
       if (transformControlsRef.current && scene) {
         console.log('Removing transform controls from scene');
-        scene.remove(transformControlsRef.current);
+        scene.remove(transformControlsRef.current as any);
         transformControlsRef.current.dispose();
         transformControlsRef.current = null;
       }

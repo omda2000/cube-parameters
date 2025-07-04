@@ -23,14 +23,14 @@ export const useMoveTool = (
     control.addEventListener('dragging-changed', (e) => {
       if (controls) controls.enabled = !e.value;
     });
-    scene.add(control);
+    scene.add(control as any);
     transformRef.current = control;
 
     return () => {
       if (transformRef.current) {
         transformRef.current.dispose();
         if (scene) {
-          scene.remove(transformRef.current);
+          scene.remove(transformRef.current as any);
         }
         transformRef.current = null;
       }
