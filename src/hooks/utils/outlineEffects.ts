@@ -23,6 +23,27 @@ export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | 
   return null;
 };
 
+export const createHoverOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
+  if (object instanceof THREE.Mesh) {
+    const edges = new THREE.EdgesGeometry(object.geometry);
+    const outlineMaterial = new THREE.LineBasicMaterial({
+      color: 0x0000ff,
+      linewidth: 5,
+      transparent: true,
+      opacity: 0.9
+    });
+    const outline = new THREE.LineSegments(edges, outlineMaterial);
+
+    outline.position.copy(object.position);
+    outline.rotation.copy(object.rotation);
+    outline.scale.copy(object.scale);
+    outline.userData.isHelper = true;
+
+    return outline;
+  }
+  return null;
+};
+
 export const createPointSelectionEffect = (pointObject: THREE.Object3D): THREE.Mesh | null => {
   if (pointObject instanceof THREE.Mesh) {
     const geometry = new THREE.SphereGeometry(0.12, 16, 16);

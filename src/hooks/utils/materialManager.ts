@@ -1,68 +1,73 @@
 
 import * as THREE from 'three';
-import { ResourceManager } from './ResourceManager';
+import { createHoverOutline } from './outlineEffects';
 
 export class MaterialManager {
-  private originalMaterials = new WeakMap<THREE.Object3D, THREE.Material | THREE.Material[]>();
-  private resourceManager = ResourceManager.getInstance();
-  private hoverMaterial: THREE.MeshStandardMaterial;
+  private hoverOutlines = new WeakMap<THREE.Object3D, THREE.LineSegments>();
 
-  constructor() {
-    this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
-      new THREE.MeshStandardMaterial({
-        color: 0xffaa00,
-        emissive: 0x442200,
-        emissiveIntensity: 0.4,
-        transparent: false
-      })
-    ) as THREE.MeshStandardMaterial;
-  }
+  constructor() {}
 
   setHoverEffect(object: THREE.Object3D, hover: boolean) {
-    if (object instanceof THREE.Mesh) {
-      if (hover) {
-        if (!this.originalMaterials.has(object)) {
-          this.originalMaterials.set(object, object.material);
+    const applyOutline = (mesh: THREE.Mesh) => {
+      if (!this.hoverOutlines.has(mesh)) {
+        const outline = createHoverOutline(mesh);
+        if (outline) {
+          this.hoverOutlines.set(mesh, outline);
+          mesh.parent?.add(outline);
         }
-        object.material = this.hoverMaterial;
-      } else {
-        this.clearHoverEffect(object);
       }
+    };
+
+    const removeOutline = (mesh: THREE.Mesh) => {
+      const outline = this.hoverOutlines.get(mesh);
+      if (outline) {
+        outline.parent?.remove(outline);
+        outline.geometry.dispose();
+        (outline.material as THREE.Material).dispose();
+        this.hoverOutlines.delete(mesh);
+      }
+    };
+
+    const processMesh = (mesh: THREE.Mesh) => {
+      if (hover) {
+        applyOutline(mesh);
+      } else {
+        removeOutline(mesh);
+      }
+    };
+
+    if (object instanceof THREE.Mesh) {
+      processMesh(object);
     }
 
-    // Batch process children to reduce function calls
-    const meshChildren = object.children.filter(child => 
-      child instanceof THREE.Mesh && !child.userData.isHelper
+    const meshChildren = object.children.filter(
+      child => child instanceof THREE.Mesh && !child.userData.isHelper
     ) as THREE.Mesh[];
 
     for (const child of meshChildren) {
-      if (hover) {
-        if (!this.originalMaterials.has(child)) {
-          this.originalMaterials.set(child, child.material);
-        }
-        child.material = this.hoverMaterial;
-      } else {
-        const originalMaterial = this.originalMaterials.get(child);
-        if (originalMaterial) {
-          child.material = originalMaterial;
-          this.originalMaterials.delete(child);
-        }
-      }
+      processMesh(child);
     }
   }
 
   clearHoverEffect(object: THREE.Object3D) {
     if (object instanceof THREE.Mesh) {
-      const originalMaterial = this.originalMaterials.get(object);
-      if (originalMaterial) {
-        object.material = originalMaterial;
-        this.originalMaterials.delete(object);
+      const outline = this.hoverOutlines.get(object);
+      if (outline) {
+        outline.parent?.remove(outline);
+        outline.geometry.dispose();
+        (outline.material as THREE.Material).dispose();
+        this.hoverOutlines.delete(object);
       }
     }
   }
 
   dispose() {
     // Don't dispose shared materials, let ResourceManager handle it
-    this.originalMaterials = new WeakMap();
+    this.hoverOutlines.forEach(outline => {
+      outline.parent?.remove(outline);
+      outline.geometry.dispose();
+      (outline.material as THREE.Material).dispose();
+    });
+    this.hoverOutlines = new WeakMap();
   }
 }
