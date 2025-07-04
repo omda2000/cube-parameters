@@ -94,9 +94,9 @@ export const useThreeScene = (mountRef: RefObject<HTMLDivElement>) => {
     if (!mountReady) return;
 
     let attempts = 0;
-    const maxAttempts = 50; // ~5 seconds at 100ms interval
+    const maxAttempts = 100; // allow up to ~10 seconds
 
-    const interval = setInterval(() => {
+    const checkReady = () => {
       try {
         const hasScene = !!sceneRef.current;
         const hasCamera = !!activeCameraRef.current;
@@ -107,22 +107,24 @@ export const useThreeScene = (mountRef: RefObject<HTMLDivElement>) => {
           setIsInitialized(true);
           setInitError(null);
           console.log('useThreeScene: Successfully initialized');
-          clearInterval(interval);
-        } else if (attempts >= maxAttempts) {
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
           console.error('useThreeScene: Initialization timed out');
           setInitError('Failed to initialize Three.js scene');
-          clearInterval(interval);
+          return;
         }
 
         attempts += 1;
+        requestAnimationFrame(checkReady);
       } catch (error) {
         console.error('Error checking initialization status:', error);
         setInitError('Failed to initialize Three.js scene');
-        clearInterval(interval);
       }
-    }, 100);
+    };
 
-    return () => clearInterval(interval);
+    checkReady();
   }, [mountReady]);
 
   return {
