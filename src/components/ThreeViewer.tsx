@@ -89,10 +89,13 @@ const ThreeViewer = memo(({
   // Show loading state while initializing
   if (!isInitialized && !initError) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Initializing 3D viewer...</p>
+      <div className="relative w-full h-full">
+        <div ref={mountRef} className="w-full h-full" />
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900 text-white z-10">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+            <p>Initializing 3D viewer...</p>
+          </div>
         </div>
       </div>
     );
@@ -101,16 +104,19 @@ const ThreeViewer = memo(({
   // Show error state if initialization failed
   if (initError) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-red-900 text-white">
-        <div className="text-center">
-          <p className="text-xl mb-2">Failed to initialize 3D viewer</p>
-          <p className="text-sm text-red-200">{initError}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
-          >
-            Reload Page
-          </button>
+      <div className="relative w-full h-full">
+        <div ref={mountRef} className="w-full h-full" />
+        <div className="absolute inset-0 flex items-center justify-center bg-red-900 text-white z-10">
+          <div className="text-center">
+            <p className="text-xl mb-2">Failed to initialize 3D viewer</p>
+            <p className="text-sm text-red-200">{initError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+            >
+              Reload Page
+            </button>
+          </div>
         </div>
       </div>
     );
