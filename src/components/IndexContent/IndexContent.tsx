@@ -36,7 +36,9 @@ const IndexContent = () => {
     <ErrorBoundary>
       {/* Full-screen canvas */}
       <div className="absolute inset-0">
-        <ErrorBoundary>
+
+        <ErrorBoundary fallback={<div className="w-full h-full bg-red-500 text-white flex items-center justify-center">Model Viewer Error</div>}>
+
           <ModelViewerContainerWrapper
             onPointCreate={handlePointCreate}
             onMeasureCreate={handleMeasureCreate}

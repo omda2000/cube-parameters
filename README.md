@@ -96,7 +96,7 @@ interface SelectionContext {
 1. **Select Tool** - Object selection and inspection
 2. **Point Tool** - Place 3D point markers
 3. **Measure Tool** - Distance measurement between points
-4. **Move Tool** - Object transformation (planned)
+4. **Move Tool** - Translate selected objects directly in the scene
 
 ### Tool Implementation
 Each tool modifies the behavior of `useMouseInteraction`:

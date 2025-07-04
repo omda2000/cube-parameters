@@ -18,7 +18,15 @@ const UIContainer = () => {
   const sceneState = useSceneState();
   const uiState = useUIState();
   const { unit } = useUnits();
-  const [gridSize, setGridSize] = useState(1);
+  const [settings, setSettings] = useState({
+    gridSize: 1,
+    snapToGrid: false,
+    showAxes: true,
+    renderQuality: 'medium' as const,
+    shadowQuality: 'medium' as const
+  });
+
+  const gridSize = settings.gridSize;
 
   const unitMap: Record<string, string> = {
     meters: 'm',
@@ -65,10 +73,14 @@ const UIContainer = () => {
   } = useZoomHandlers();
 
   const handleGridSizeChange = (size: number) => {
-    setGridSize(size);
+    setSettings((prev) => ({ ...prev, gridSize: size }));
   };
 
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
+
+  const handleSettingsChange = (newSettings: typeof settings) => {
+    setSettings(newSettings);
+  };
 
   const controlsPanelProps = {
     loadedModels: sceneState.loadedModels,
@@ -112,6 +124,10 @@ const UIContainer = () => {
       units={unitMap[unit]}
       gridSize={gridSize}
       onGridSizeChange={handleGridSizeChange}
+      showSettingsPanel={uiState.showSettingsPanel}
+      onShowSettingsPanel={uiState.setShowSettingsPanel}
+      settings={settings}
+      onSettingsChange={handleSettingsChange}
     />
   );
 };

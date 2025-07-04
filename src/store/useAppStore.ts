@@ -24,11 +24,13 @@ interface AppStateSlice {
 interface UIStateSlice {
   showControlPanel: boolean;
   showMeasurePanel: boolean;
+  showSettingsPanel: boolean;
   activeControlTab: string;
   activeTool: 'select' | 'point' | 'measure' | 'move';
   isOrthographic: boolean;
   setShowControlPanel: (show: boolean) => void;
   setShowMeasurePanel: (show: boolean) => void;
+  setShowSettingsPanel: (show: boolean) => void;
   setActiveControlTab: (tab: string) => void;
   setActiveTool: (tool: 'select' | 'point' | 'measure' | 'move') => void;
   setIsOrthographic: (orthographic: boolean) => void;
@@ -75,11 +77,13 @@ export const useAppStore = create<AppStore>()(
       // UI State
       showControlPanel: false,
       showMeasurePanel: false,
+      showSettingsPanel: false,
       activeControlTab: 'scene',
       activeTool: 'select',
       isOrthographic: false,
       setShowControlPanel: (showControlPanel) => set({ showControlPanel }, false, 'setShowControlPanel'),
       setShowMeasurePanel: (showMeasurePanel) => set({ showMeasurePanel }, false, 'setShowMeasurePanel'),
+      setShowSettingsPanel: (showSettingsPanel) => set({ showSettingsPanel }, false, 'setShowSettingsPanel'),
       setActiveControlTab: (activeControlTab) => set({ activeControlTab }, false, 'setActiveControlTab'),
       setActiveTool: (activeTool) => set({ activeTool }, false, 'setActiveTool'),
       setIsOrthographic: (isOrthographic) => set({ isOrthographic }, false, 'setIsOrthographic'),
@@ -143,11 +147,13 @@ export const useUIState = () => useAppStore(
   useShallow((state) => ({
     showControlPanel: state.showControlPanel,
     showMeasurePanel: state.showMeasurePanel,
+    showSettingsPanel: state.showSettingsPanel,
     activeControlTab: state.activeControlTab,
     activeTool: state.activeTool,
     isOrthographic: state.isOrthographic,
     setShowControlPanel: state.setShowControlPanel,
     setShowMeasurePanel: state.setShowMeasurePanel,
+    setShowSettingsPanel: state.setShowSettingsPanel,
     setActiveControlTab: state.setActiveControlTab,
     setActiveTool: state.setActiveTool,
     setIsOrthographic: state.setIsOrthographic,
