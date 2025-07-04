@@ -6,6 +6,8 @@ import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
 import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
 import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
 import NotificationBell from '../NotificationBell/NotificationBell';
+import SettingsPanel from '../SettingsPanel/SettingsPanel';
+import { Settings } from 'lucide-react';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -41,6 +43,16 @@ interface UIOverlayProps {
   units: string;
   gridSize: number;
   onGridSizeChange: (size: number) => void;
+  showSettingsPanel: boolean;
+  onShowSettingsPanel: (open: boolean) => void;
+  settings: {
+    gridSize: number;
+    snapToGrid: boolean;
+    showAxes: boolean;
+    renderQuality: 'low' | 'medium' | 'high';
+    shadowQuality: 'low' | 'medium' | 'high';
+  };
+  onSettingsChange: (settings: any) => void;
 }
 
 const UIOverlay = ({
@@ -67,14 +79,33 @@ const UIOverlay = ({
   gridSpacing,
   units,
   gridSize,
-  onGridSizeChange
+  onGridSizeChange,
+  showSettingsPanel,
+  onShowSettingsPanel,
+  settings,
+  onSettingsChange
 }: UIOverlayProps) => {
   return (
     <>
-      {/* Notification bell - top right corner */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Notification bell and settings button - top right corner */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
         <NotificationBell />
+        <button
+          onClick={() => onShowSettingsPanel(!showSettingsPanel)}
+          className="rounded-md p-1 text-white hover:text-slate-200 hover:bg-slate-700/50"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
       </div>
+
+      {showSettingsPanel && (
+        <SettingsPanel
+          visible={showSettingsPanel}
+          onClose={() => onShowSettingsPanel(false)}
+          settings={settings}
+          onSettingsChange={onSettingsChange}
+        />
+      )}
 
       {/* Aid Tools Bar - centered at top */}
       <AidToolsBar
