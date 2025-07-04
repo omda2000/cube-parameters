@@ -28,7 +28,14 @@ const UnifiedSceneTree = ({
   useEffect(() => {
     const objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObject);
     setSceneObjects(objects);
-  }, [scene, loadedModels, showPrimitives, selectedObject]);
+  }, [
+    scene,
+    // Rebuild whenever the number of direct scene children changes
+    scene ? scene.children.length : 0,
+    loadedModels,
+    showPrimitives,
+    selectedObject
+  ]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
