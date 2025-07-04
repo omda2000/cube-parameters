@@ -1,5 +1,5 @@
 
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useRef, useCallback, useState, useEffect, type RefObject } from 'react';
 import { ResourceManager } from './utils/ResourceManager';
 import { useThreePerformance } from './useThreePerformance';
 import { useSceneSetup } from './scene/useSceneSetup';
@@ -9,7 +9,7 @@ import { useControlsSetup } from './scene/useControlsSetup';
 import { useSceneResize } from './scene/useSceneResize';
 import { useAnimationLoop } from './scene/useAnimationLoop';
 
-export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
+export const useThreeScene = (mountRef: RefObject<HTMLDivElement>) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [mountReady, setMountReady] = useState(false);
@@ -47,8 +47,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const { rendererRef, labelRendererRef } = useRendererSetup(mountRef, mountReady);
   
   const { controlsRef } = useControlsSetup(
-    perspectiveCameraRef.current, 
-    rendererRef.current,
+    perspectiveCameraRef,
+    rendererRef,
     mountReady
   );
 
@@ -69,20 +69,20 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   // Set up resize handling with error handling
   useSceneResize(
     mountRef,
-    perspectiveCameraRef.current,
-    orthographicCameraRef.current,
-    rendererRef.current,
-    labelRendererRef.current,
+    perspectiveCameraRef,
+    orthographicCameraRef,
+    rendererRef,
+    labelRendererRef,
     mountReady
   );
 
   // Set up animation loop with error handling
   useAnimationLoop(
-    sceneRef.current,
-    activeCameraRef.current,
-    rendererRef.current,
-    labelRendererRef.current,
-    controlsRef.current,
+    sceneRef,
+    activeCameraRef,
+    rendererRef,
+    labelRendererRef,
+    controlsRef,
     mountReady
   );
 
