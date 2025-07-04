@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, memo } from 'react';
+import React, { useRef, useEffect, memo, useState } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
 import { useBoxMesh } from '../hooks/useBoxMesh';
@@ -59,6 +59,14 @@ const ThreeViewer = memo(({
   onMeasureCreate
 }: ThreeViewerProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [viewerError, setViewerError] = useState<string | null>(null);
+
+  console.log('ThreeViewer: Rendering with props', { 
+    dimensions, 
+    boxColor, 
+    objectName, 
+    activeTool 
+  });
 
   // Custom hooks for organized functionality
   const { selectedObject, clearSelection, handleObjectSelect } = useObjectSelection();
@@ -73,123 +81,178 @@ const ThreeViewer = memo(({
     gridHelperRef,
     performanceMetrics,
     isOrthographic,
-    switchCamera
+    switchCamera,
+    isInitialized,
+    initError
   } = useThreeScene(mountRef);
 
-  // Expose camera switching and other global handlers
-  useCameraExposure(switchCamera);
+  // Show loading state while initializing
+  if (!isInitialized && !initError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Initializing 3D viewer...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Expose scene to parent components
-  useEffect(() => {
-    if (sceneRef.current && onSceneReady) {
-      onSceneReady(sceneRef.current);
-    }
-  }, [onSceneReady]);
+  // Show error state if initialization failed
+  if (initError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-red-900 text-white">
+        <div className="text-center">
+          <p className="text-xl mb-2">Failed to initialize 3D viewer</p>
+          <p className="text-sm text-red-200">{initError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const { boxRef } = useBoxMesh(
-    sceneRef.current,
-    dimensions,
-    boxColor,
-    objectName,
-    true // Always show the primitive box
-  );
+  // Error boundary for viewer-specific errors
+  try {
+    // Expose camera switching and other global handlers
+    useCameraExposure(switchCamera);
 
-  // Mark box as primitive for scene tree
-  useEffect(() => {
-    if (boxRef.current) {
-      boxRef.current.userData.isPrimitive = true;
-    }
-  }, [boxRef]);
+    // Expose scene to parent components
+    useEffect(() => {
+      if (sceneRef.current && onSceneReady) {
+        console.log('ThreeViewer: Scene ready, calling onSceneReady');
+        onSceneReady(sceneRef.current);
+      }
+    }, [onSceneReady, sceneRef.current]);
 
-  const {
-    loadedModels,
-    currentModel,
-    isLoading,
-    error,
-    loadFBXModel,
-    switchToModel,
-    removeModel
-  } = useFBXLoader(sceneRef.current);
+    const { boxRef } = useBoxMesh(
+      sceneRef.current,
+      dimensions,
+      boxColor,
+      objectName,
+      true // Always show the primitive box
+    );
 
-  // Expose models and FBX handlers - fix parameter order
-  useModelsExposure(
-    loadedModels,
-    currentModel,
-    loadFBXModel,
-    switchToModel,
-    removeModel,
-    onModelsChange
-  );
+    // Mark box as primitive for scene tree
+    useEffect(() => {
+      if (boxRef.current) {
+        boxRef.current.userData.isPrimitive = true;
+      }
+    }, [boxRef]);
 
-  // Tool handlers
-  const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
-    onPointCreate,
-    onMeasureCreate
-  );
+    const {
+      loadedModels,
+      currentModel,
+      isLoading,
+      error,
+      loadFBXModel,
+      switchToModel,
+      removeModel
+    } = useFBXLoader(sceneRef.current);
 
-  // Use selection effects hook for visual feedback
-  useSelectionEffects(selectedObject);
+    // Expose models and FBX handlers - fix parameter order
+    useModelsExposure(
+      loadedModels,
+      currentModel,
+      loadFBXModel,
+      switchToModel,
+      removeModel,
+      onModelsChange
+    );
 
-  // Mouse interaction and hover effects - use perspective camera for compatibility
-  const { objectData, mousePosition, isHovering } = useMouseInteraction(
-    rendererRef.current,
-    perspectiveCameraRef.current,
-    currentModel ? currentModel.object : boxRef.current,
-    sceneRef.current,
-    handleObjectSelect,
-    activeTool,
-    controlsRef.current,
-    handlePointCreate,
-    handleMeasureCreate
-  );
+    // Tool handlers
+    const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
+      onPointCreate,
+      onMeasureCreate
+    );
 
-  // Zoom controls hook - use perspective camera ref for compatibility
-  const { zoomAll, zoomToSelected, resetView } = useZoomControls(
-    sceneRef,
-    perspectiveCameraRef,
-    controlsRef,
-    selectedObject
-  );
+    // Use selection effects hook for visual feedback
+    useSelectionEffects(selectedObject);
 
-  // Keyboard shortcuts - use perspective camera ref for compatibility
-  useViewerKeyboardShortcuts({
-    onClearSelection: clearSelection,
-    onZoomAll: zoomAll,
-    onZoomToSelected: zoomToSelected,
-    selectedObject
-  });
+    // Mouse interaction and hover effects - use perspective camera for compatibility
+    const { objectData, mousePosition, isHovering } = useMouseInteraction(
+      rendererRef.current,
+      perspectiveCameraRef.current,
+      currentModel ? currentModel.object : boxRef.current,
+      sceneRef.current,
+      handleObjectSelect,
+      activeTool,
+      controlsRef.current,
+      handlePointCreate,
+      handleMeasureCreate
+    );
 
-  useLighting(
-    sceneRef.current,
-    sunlight,
-    ambientLight,
-    shadowQuality
-  );
+    // Zoom controls hook - use perspective camera ref for compatibility
+    const { zoomAll, zoomToSelected, resetView } = useZoomControls(
+      sceneRef,
+      perspectiveCameraRef,
+      controlsRef,
+      selectedObject
+    );
 
-  useEnvironment(
-    sceneRef.current,
-    environment,
-    gridHelperRef.current
-  );
+    // Keyboard shortcuts - use perspective camera ref for compatibility
+    useViewerKeyboardShortcuts({
+      onClearSelection: clearSelection,
+      onZoomAll: zoomAll,
+      onZoomToSelected: zoomToSelected,
+      selectedObject
+    });
 
-  // Debug performance metrics in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Performance Metrics:', performanceMetrics);
-    }
-  }, [performanceMetrics]);
+    useLighting(
+      sceneRef.current,
+      sunlight,
+      ambientLight,
+      shadowQuality
+    );
 
-  return (
-    <div className="relative w-full h-full">
-      <div ref={mountRef} className="w-full h-full" />
-      <ObjectDataOverlay 
-        objectData={objectData}
-        mousePosition={mousePosition}
-        visible={isHovering}
-      />
-      <SelectionOverlay selectedObject={selectedObject} />
-    </div>
-  );
+    useEnvironment(
+      sceneRef.current,
+      environment,
+      gridHelperRef.current
+    );
+
+    // Debug performance metrics in development
+    useEffect(() => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Performance Metrics:', performanceMetrics);
+      }
+    }, [performanceMetrics]);
+
+    return (
+      <div className="relative w-full h-full">
+        <div ref={mountRef} className="w-full h-full" />
+        <ObjectDataOverlay 
+          objectData={objectData}
+          mousePosition={mousePosition}
+          visible={isHovering}
+        />
+        <SelectionOverlay selectedObject={selectedObject} />
+      </div>
+    );
+
+  } catch (error) {
+    console.error('Error in ThreeViewer render:', error);
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-red-900 text-white">
+        <div className="text-center">
+          <p className="text-xl mb-2">3D Viewer Error</p>
+          <p className="text-sm text-red-200">
+            {error instanceof Error ? error.message : 'Unknown error occurred'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 });
 
 ThreeViewer.displayName = 'ThreeViewer';
