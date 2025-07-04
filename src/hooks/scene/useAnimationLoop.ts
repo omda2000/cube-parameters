@@ -1,51 +1,75 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, type RefObject } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export const useAnimationLoop = (
-  scene: THREE.Scene | null,
-  activeCamera: THREE.Camera | null,
-  renderer: THREE.WebGLRenderer | null,
-  labelRenderer: CSS2DRenderer | null,
-  controls: OrbitControls | null,
+  sceneRef: RefObject<THREE.Scene | null>,
+  activeCameraRef: RefObject<THREE.Camera | null>,
+  rendererRef: RefObject<THREE.WebGLRenderer | null>,
+  labelRendererRef: RefObject<CSS2DRenderer | null>,
+  controlsRef: RefObject<OrbitControls | null>,
   mountReady: boolean = false
 ) => {
   const animationIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!scene || !activeCamera || !renderer || !labelRenderer || !controls || !mountReady) {
-      console.log('useAnimationLoop: Waiting for all components to be ready...');
-      return;
-    }
+    if (!mountReady) return;
 
-    console.log('useAnimationLoop: Starting animation loop...');
+    let attempts = 0;
+    const maxAttempts = 50;
+    let cleanup: (() => void) | undefined;
 
-    // Animation loop
-    let lastTime = 0;
-    const targetFPS = 60;
-    const frameInterval = 1000 / targetFPS;
+    const startLoop = () => {
+      const scene = sceneRef.current;
+      const activeCamera = activeCameraRef.current;
+      const renderer = rendererRef.current;
+      const labelRenderer = labelRendererRef.current;
+      const controls = controlsRef.current;
 
-    const animate = (currentTime: number) => {
-      animationIdRef.current = requestAnimationFrame(animate);
-      
-      if (currentTime - lastTime >= frameInterval) {
-        controls.update();
-        renderer.render(scene, activeCamera);
-        labelRenderer.render(scene, activeCamera);
-        renderer.info.reset();
-        lastTime = currentTime;
+      if (!scene || !activeCamera || !renderer || !labelRenderer || !controls) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          setTimeout(startLoop, 100);
+        } else {
+          console.error('useAnimationLoop: Failed to start animation loop');
+        }
+        return;
       }
+
+      console.log('useAnimationLoop: Starting animation loop...');
+
+      let lastTime = 0;
+      const targetFPS = 60;
+      const frameInterval = 1000 / targetFPS;
+
+      const animate = (currentTime: number) => {
+        animationIdRef.current = requestAnimationFrame(animate);
+
+        if (currentTime - lastTime >= frameInterval) {
+          controls.update();
+          renderer.render(scene, activeCamera);
+          labelRenderer.render(scene, activeCamera);
+          renderer.info.reset();
+          lastTime = currentTime;
+        }
+      };
+      animate(0);
+
+      cleanup = () => {
+        if (animationIdRef.current) {
+          cancelAnimationFrame(animationIdRef.current);
+        }
+      };
     };
-    animate(0);
+
+    startLoop();
 
     return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
+      if (cleanup) cleanup();
     };
-  }, [scene, activeCamera, renderer, labelRenderer, controls, mountReady]);
+  }, [sceneRef, activeCameraRef, rendererRef, labelRendererRef, controlsRef, mountReady]);
 
   return {
     animationIdRef

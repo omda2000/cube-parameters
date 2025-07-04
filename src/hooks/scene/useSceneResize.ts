@@ -1,52 +1,70 @@
 
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 import * as THREE from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export const useSceneResize = (
-  mountRef: React.RefObject<HTMLDivElement>,
-  perspectiveCamera: THREE.PerspectiveCamera | null,
-  orthographicCamera: THREE.OrthographicCamera | null,
-  renderer: THREE.WebGLRenderer | null,
-  labelRenderer: CSS2DRenderer | null,
+  mountRef: RefObject<HTMLDivElement>,
+  perspectiveCameraRef: RefObject<THREE.PerspectiveCamera | null>,
+  orthographicCameraRef: RefObject<THREE.OrthographicCamera | null>,
+  rendererRef: RefObject<THREE.WebGLRenderer | null>,
+  labelRendererRef: RefObject<CSS2DRenderer | null>,
   mountReady: boolean = false
 ) => {
   useEffect(() => {
-    if (!mountRef.current || !perspectiveCamera || !orthographicCamera || !renderer || !labelRenderer || !mountReady) {
-      return;
-    }
+    if (!mountReady || !mountRef.current) return;
 
-    const handleResize = () => {
-      if (!mountRef.current) return;
+    let attempts = 0;
+    const maxAttempts = 50;
+    let handleResize: (() => void) | null = null;
 
-      const width = mountRef.current.clientWidth;
-      const height = mountRef.current.clientHeight;
-      const aspect = width / height;
+    const initResize = () => {
+      const perspectiveCamera = perspectiveCameraRef.current;
+      const orthographicCamera = orthographicCameraRef.current;
+      const renderer = rendererRef.current;
+      const labelRenderer = labelRendererRef.current;
+      if (!perspectiveCamera || !orthographicCamera || !renderer || !labelRenderer) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          setTimeout(initResize, 100);
+        }
+        return;
+      }
 
-      // Update perspective camera
-      perspectiveCamera.aspect = aspect;
-      perspectiveCamera.updateProjectionMatrix();
+      handleResize = () => {
+        if (!mountRef.current) return;
 
-      // Update orthographic camera
-      const frustumSize = 10;
-      orthographicCamera.left = -frustumSize * aspect / 2;
-      orthographicCamera.right = frustumSize * aspect / 2;
-      orthographicCamera.top = frustumSize / 2;
-      orthographicCamera.bottom = -frustumSize / 2;
-      orthographicCamera.updateProjectionMatrix();
+        const width = mountRef.current.clientWidth;
+        const height = mountRef.current.clientHeight;
+        const aspect = width / height;
 
-      // Update renderers
-      renderer.setSize(width, height);
-      labelRenderer.setSize(width, height);
+        // Update perspective camera
+        perspectiveCamera.aspect = aspect;
+        perspectiveCamera.updateProjectionMatrix();
+
+        // Update orthographic camera
+        const frustumSize = 10;
+        orthographicCamera.left = -frustumSize * aspect / 2;
+        orthographicCamera.right = frustumSize * aspect / 2;
+        orthographicCamera.top = frustumSize / 2;
+        orthographicCamera.bottom = -frustumSize / 2;
+        orthographicCamera.updateProjectionMatrix();
+
+        // Update renderers
+        renderer.setSize(width, height);
+        labelRenderer.setSize(width, height);
+      };
+
+      window.addEventListener('resize', handleResize);
+      handleResize();
     };
 
-    window.addEventListener('resize', handleResize);
-    
-    // Initial resize
-    handleResize();
+    initResize();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      if (handleResize) {
+        window.removeEventListener('resize', handleResize);
+      }
     };
-  }, [mountRef, perspectiveCamera, orthographicCamera, renderer, labelRenderer, mountReady]);
+  }, [mountRef, perspectiveCameraRef, orthographicCameraRef, rendererRef, labelRendererRef, mountReady]);
 };
