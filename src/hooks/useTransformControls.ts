@@ -49,10 +49,11 @@ export const useTransformControls = (
     scene.add(transformControls);
 
     return () => {
-      if (transformControls && scene && transformControls.parent) {
+      if (transformControlsRef.current && scene) {
         console.log('Removing transform controls from scene');
-        scene.remove(transformControls);
-        transformControls.dispose();
+        scene.remove(transformControlsRef.current);
+        transformControlsRef.current.dispose();
+        transformControlsRef.current = null;
       }
     };
   }, [scene, camera, renderer, orbitControls]);

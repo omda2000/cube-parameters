@@ -27,11 +27,13 @@ export const useMoveTool = (
     transformRef.current = control;
 
     return () => {
-      control.dispose();
-      if (scene && control.parent) {
-        scene.remove(control);
+      if (transformRef.current) {
+        transformRef.current.dispose();
+        if (scene) {
+          scene.remove(transformRef.current);
+        }
+        transformRef.current = null;
       }
-      transformRef.current = null;
     };
   }, [renderer, camera, scene, controls]);
 
