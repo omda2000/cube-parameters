@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MapPin, Ruler, Target, Move } from 'lucide-react';
+import { MapPin, Ruler, Move, SquareDashedMousePointer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AidToolsBarProps {
@@ -23,7 +23,7 @@ const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
           }`}
           title="Select Tool"
         >
-          <Target className="h-4 w-4" />
+          <SquareDashedMousePointer className="h-4 w-4" />
         </Button>
         
         <Button

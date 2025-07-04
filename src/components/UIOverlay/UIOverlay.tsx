@@ -1,7 +1,6 @@
 
 import React from 'react';
 import AidToolsBar from '../AidToolsBar/AidToolsBar';
-import ControlPanelTabs from '../ControlPanelTabs/ControlPanelTabs';
 import FixedControlPanel from '../FixedControlPanel/FixedControlPanel';
 import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
 import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
@@ -75,19 +74,14 @@ const UIOverlay = ({
         activeTool={activeTool}
       />
 
-      {/* Control Panel Tabs - left side, positioned to avoid overlap */}
-      <ControlPanelTabs
-        activeTab={activeControlTab}
-        onTabChange={onTabChange}
-        isPanelOpen={showControlPanel}
-      />
-
-      {/* Fixed Control Panel - positioned next to tabs with proper spacing */}
+      {/* Control Panel with integrated tabs */}
       <FixedControlPanel
         isOpen={showControlPanel}
         onClose={onCloseControlPanel}
+        activeTab={activeControlTab}
+        onTabChange={onTabChange}
       >
-        <TabsControlPanel {...controlsPanelProps} />
+        <TabsControlPanel {...controlsPanelProps} activeTab={activeControlTab} />
       </FixedControlPanel>
 
       {/* Measure Tools Panel - positioned on the bottom left to avoid overlap */}
