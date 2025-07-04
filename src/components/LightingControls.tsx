@@ -6,26 +6,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sun, Lightbulb, Settings } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
-
-interface SunlightSettings {
-  intensity: number;
-  azimuth: number;
-  elevation: number;
-  color: string;
-  castShadow: boolean;
-}
-
-interface AmbientLightSettings {
-  intensity: number;
-  color: string;
-}
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showGround: boolean;
-}
+import type {
+  SunlightSettings,
+  AmbientLightSettings,
+  EnvironmentSettings,
+} from "@/types/model";
 
 interface LightingControlsProps {
   sunlight: SunlightSettings;

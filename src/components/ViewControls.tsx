@@ -3,13 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Eye, Grid3X3, Mountain, TreePine } from "lucide-react";
 import ZoomControls from "./ZoomControls";
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showGround: boolean;
-}
+import type { EnvironmentSettings } from "@/types/model";
 
 interface ViewControlsProps {
   environment: EnvironmentSettings;
