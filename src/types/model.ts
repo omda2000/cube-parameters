@@ -22,12 +22,23 @@ export interface AmbientLightSettings {
   color: string;
 }
 
+export type EnvironmentPreset =
+  | 'sunset'
+  | 'dawn'
+  | 'night'
+  | 'forest'
+  | 'apartment'
+  | 'studio'
+  | 'city'
+  | 'park'
+  | 'lobby';
+
 export interface EnvironmentSettings {
   showGrid: boolean;
   groundColor: string;
   skyColor: string;
   showGround: boolean;
-  preset?: string;
+  preset: EnvironmentPreset;
   background?: 'gradient' | 'solid' | 'transparent';
   cameraFov?: number;
 }

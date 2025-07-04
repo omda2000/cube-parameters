@@ -5,11 +5,12 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-import type { 
-  SunlightSettings, 
-  AmbientLightSettings, 
-  EnvironmentSettings 
-} from '../../../types/model';
+import type {
+  SunlightSettings,
+  AmbientLightSettings,
+  EnvironmentSettings,
+  EnvironmentPreset
+} from '@/types/model';
 
 interface LightingTabProps {
   sunlight: SunlightSettings;
@@ -133,7 +134,12 @@ const LightingTab = ({
                   <Globe className="h-3 w-3 text-green-400" />
                   <Label className="text-xs text-slate-700 dark:text-slate-300">Environment</Label>
                 </div>
-                <Select value={environment.preset} onValueChange={(value) => setEnvironment({ ...environment, preset: value as any })}>
+                <Select
+                  value={environment.preset}
+                  onValueChange={(value: EnvironmentPreset) =>
+                    setEnvironment({ ...environment, preset: value })
+                  }
+                >
                   <SelectTrigger className="h-6 text-xs">
                     <SelectValue />
                   </SelectTrigger>

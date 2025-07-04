@@ -1,13 +1,7 @@
 
 import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showGround: boolean;
-}
+import type { EnvironmentSettings } from '../types/model';
 
 export const useEnvironment = (
   scene: THREE.Scene | null,

@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Separator } from '@/components/ui/separator';
 import CameraTypeToggle from '../../CameraTypeToggle/CameraTypeToggle';
 import { useNotifications } from '@/contexts/NotificationContext';
-import type { EnvironmentSettings } from '../../../types/model';
+import type { EnvironmentSettings } from '@/types/model';
 
 interface ViewTabProps {
   environment: EnvironmentSettings;

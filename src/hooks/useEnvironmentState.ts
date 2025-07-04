@@ -1,15 +1,6 @@
 
 import { useState } from 'react';
-
-interface EnvironmentSettings {
-  showGrid: boolean;
-  groundColor: string;
-  skyColor: string;
-  showGround: boolean;
-  preset?: string;
-  background?: 'gradient' | 'solid' | 'transparent';
-  cameraFov?: number;
-}
+import type { EnvironmentSettings } from '../types/model';
 
 export const useEnvironmentState = () => {
   const [environment, setEnvironment] = useState<EnvironmentSettings>({
