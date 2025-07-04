@@ -1,5 +1,6 @@
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, RefObject } from 'react';
+import * as THREE from 'three';
 
 interface PerformanceMetrics {
   fps: number;
@@ -8,7 +9,7 @@ interface PerformanceMetrics {
   renderCalls: number;
 }
 
-export const useThreePerformance = (renderer: THREE.WebGLRenderer | null) => {
+export const useThreePerformance = (rendererRef: RefObject<THREE.WebGLRenderer | null>) => {
   const metricsRef = useRef<PerformanceMetrics>({
     fps: 60,
     frameTime: 16.67,
@@ -51,6 +52,7 @@ export const useThreePerformance = (renderer: THREE.WebGLRenderer | null) => {
   }, []);
 
   useEffect(() => {
+    const renderer = rendererRef.current;
     if (!renderer) return;
 
     // Override renderer.render to count calls
@@ -66,7 +68,7 @@ export const useThreePerformance = (renderer: THREE.WebGLRenderer | null) => {
       clearInterval(intervalId);
       renderer.render = originalRender;
     };
-  }, [renderer, updateMetrics, incrementRenderCalls]);
+  }, [rendererRef, updateMetrics, incrementRenderCalls]);
 
   return {
     metrics: metricsRef.current,

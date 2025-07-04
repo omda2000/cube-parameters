@@ -54,7 +54,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   );
 
   // Performance monitoring
-  const { metrics } = useThreePerformance(rendererRef.current);
+  const { metrics } = useThreePerformance(rendererRef);
 
   return {
     sceneRef,
