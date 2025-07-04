@@ -7,7 +7,7 @@ import type { SceneObject } from '../../types/model';
 
 interface PropertyPanelProps {
   selectedObject: SceneObject | null;
-  onPropertyChange: (property: string, value: any) => void;
+  onPropertyChange: (property: string, value: unknown) => void;
 }
 
 const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps) => {

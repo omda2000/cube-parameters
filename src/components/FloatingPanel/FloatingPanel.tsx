@@ -40,18 +40,18 @@ const FloatingPanel = ({
     }
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
     if (isDragging) {
       setPosition({
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
       });
     }
-  };
+  }, [isDragging, dragStart]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = React.useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   React.useEffect(() => {
     if (isDragging) {
@@ -62,7 +62,7 @@ const FloatingPanel = ({
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragStart, handleMouseMove, handleMouseUp]);
 
   return (
     <div

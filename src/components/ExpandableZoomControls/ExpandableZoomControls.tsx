@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, ChevronUp } from 'lucide-react';
+import type { SceneObject } from '@/types/model';
 
 interface ExpandableZoomControlsProps {
   onZoomAll: () => void;
@@ -10,7 +11,7 @@ interface ExpandableZoomControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetView: () => void;
-  selectedObject?: any;
+  selectedObject?: SceneObject | null;
   zoomLevel?: number;
 }
 
