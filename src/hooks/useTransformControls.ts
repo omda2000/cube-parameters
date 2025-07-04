@@ -49,7 +49,7 @@ export const useTransformControls = (
     scene.add(transformControls);
 
     return () => {
-      if (transformControls && scene) {
+      if (transformControls && scene && transformControls.parent) {
         console.log('Removing transform controls from scene');
         scene.remove(transformControls);
         transformControls.dispose();
@@ -62,9 +62,10 @@ export const useTransformControls = (
     if (transformControlsRef.current) {
       if (isSelected) {
         transformControlsRef.current.setMode(transformMode);
-        transformControlsRef.current.visible = true;
+        // TransformControls doesn't have a visible property, it's controlled by attachment
+        transformControlsRef.current.enabled = true;
       } else {
-        transformControlsRef.current.visible = false;
+        transformControlsRef.current.enabled = false;
       }
     }
   }, [transformMode, isSelected]);

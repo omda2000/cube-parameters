@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
@@ -27,7 +28,9 @@ export const useMoveTool = (
 
     return () => {
       control.dispose();
-      scene.remove(control);
+      if (scene && control.parent) {
+        scene.remove(control);
+      }
       transformRef.current = null;
     };
   }, [renderer, camera, scene, controls]);

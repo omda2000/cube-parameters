@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useState } from 'react';
+import * as THREE from 'three';
 import FileUploadDialog from '../../FileUpload/FileUploadDialog';
 import UnifiedSceneTree from '../../UnifiedSceneTree/UnifiedSceneTree';
 import type { LoadedModel } from '../../../types/model';

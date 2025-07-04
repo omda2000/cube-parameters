@@ -1,3 +1,5 @@
+
+import * as THREE from 'three';
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';

@@ -48,8 +48,8 @@ export class MaterialManager {
 
           if (originalMaterial instanceof THREE.MeshStandardMaterial) {
             hoverMaterial = originalMaterial.clone();
-            hoverMaterial.emissive = new THREE.Color(0x444444);
-            hoverMaterial.emissiveIntensity = 0.3;
+            (hoverMaterial as THREE.MeshStandardMaterial).emissive = new THREE.Color(0x444444);
+            (hoverMaterial as THREE.MeshStandardMaterial).emissiveIntensity = 0.3;
           } else {
             hoverMaterial = new THREE.MeshStandardMaterial({
               color: 0x666666,

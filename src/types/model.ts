@@ -1,3 +1,6 @@
+
+import * as THREE from 'three';
+
 export interface LoadedModel {
   id: string;
   name: string;
