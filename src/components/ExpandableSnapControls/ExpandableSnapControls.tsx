@@ -9,13 +9,15 @@ interface ExpandableSnapControlsProps {
   onSnapToGridChange: (enabled: boolean) => void;
   gridSize: number;
   onGridSizeChange: (size: number) => void;
+  unitSuffix?: string;
 }
 
 const ExpandableSnapControls = ({
   snapToGrid,
   onSnapToGridChange,
   gridSize,
-  onGridSizeChange
+  onGridSizeChange,
+  unitSuffix = ''
 }: ExpandableSnapControlsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,9 +83,10 @@ const ExpandableSnapControls = ({
                       variant={gridSize === size ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => onGridSizeChange(size)}
-                      className="h-6 p-0 text-xs"
+                      className="h-6 px-1 text-xs"
                     >
                       {size}
+                      {unitSuffix}
                     </Button>
                   ))}
                 </div>
