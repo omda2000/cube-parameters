@@ -204,6 +204,7 @@ const createCustomPrimitive = (type: string) => {
 - Proper cleanup of Three.js objects and event listeners
 - Efficient re-rendering with dependency arrays
 - Selective updates for frequently changing data
+- Cache parsed FBX models to avoid repeated loading
 
 ### Memory Management
 - Dispose of geometries and materials when removing objects
