@@ -4,6 +4,9 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import type { LoadedModel } from '../types/model';
 
+// Simple in-memory cache for parsed FBX models keyed by file metadata
+const fbxCache = new Map<string, THREE.Group>();
+
 export const useFBXLoader = (scene: THREE.Scene | null) => {
   const loaderRef = useRef<FBXLoader | null>(null);
   const [loadedModels, setLoadedModels] = useState<LoadedModel[]>([]);
@@ -29,15 +32,29 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
         console.log('FBX loader initialized');
       }
 
-      console.log('Reading file as array buffer...');
-      const arrayBuffer = await file.arrayBuffer();
-      
-      console.log('Parsing FBX data...');
-      const object = loaderRef.current.parse(arrayBuffer, '');
-      console.log('FBX parsed successfully:', object);
-      
-      // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
-      object.rotateX(-Math.PI / 2);
+      // Use file metadata as cache key
+      const cacheKey = `${file.name}_${file.size}_${file.lastModified}`;
+      let parsedObject: THREE.Group;
+
+      if (fbxCache.has(cacheKey)) {
+        console.log('Using cached FBX model');
+        parsedObject = fbxCache.get(cacheKey)!.clone(true);
+      } else {
+        console.log('Reading file as array buffer...');
+        const arrayBuffer = await file.arrayBuffer();
+
+        console.log('Parsing FBX data...');
+        parsedObject = loaderRef.current.parse(arrayBuffer, '');
+        console.log('FBX parsed successfully:', parsedObject);
+
+        // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
+        parsedObject.rotateX(-Math.PI / 2);
+
+        // Cache processed object for future loads
+        fbxCache.set(cacheKey, parsedObject.clone(true));
+      }
+
+      const object = parsedObject;
 
       // Calculate bounding box after rotation
       const boundingBox = new THREE.Box3().setFromObject(object);
