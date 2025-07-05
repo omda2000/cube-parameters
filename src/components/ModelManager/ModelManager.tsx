@@ -1,4 +1,5 @@
 
+import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Box, Trash2, Eye, TreePine } from 'lucide-react';

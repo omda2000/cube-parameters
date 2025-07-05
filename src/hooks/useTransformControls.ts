@@ -46,12 +46,12 @@ export const useTransformControls = (
     });
     
     console.log('Adding transform controls to scene:', transformControls);
-    scene.add(transformControls);
+    scene.add(transformControls as any);
 
     return () => {
       if (transformControls && scene) {
         console.log('Removing transform controls from scene');
-        scene.remove(transformControls);
+        scene.remove(transformControls as any);
         transformControls.dispose();
       }
     };
@@ -62,9 +62,9 @@ export const useTransformControls = (
     if (transformControlsRef.current) {
       if (isSelected) {
         transformControlsRef.current.setMode(transformMode);
-        transformControlsRef.current.visible = true;
+        (transformControlsRef.current as any).visible = true;
       } else {
-        transformControlsRef.current.visible = false;
+        (transformControlsRef.current as any).visible = false;
       }
     }
   }, [transformMode, isSelected]);
