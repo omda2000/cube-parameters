@@ -10,6 +10,7 @@ interface SceneObjectGroupProps {
   onToggleVisibility: (sceneObject: SceneObject) => void;
   onObjectSelect: (sceneObject: SceneObject, isMultiSelect?: boolean) => void;
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
+  hideTitle?: boolean;
 }
 
 const SceneObjectGroup = ({
@@ -19,15 +20,18 @@ const SceneObjectGroup = ({
   onToggleExpanded,
   onToggleVisibility,
   onObjectSelect,
-  onDelete
+  onDelete,
+  hideTitle = false
 }: SceneObjectGroupProps) => {
   if (objects.length === 0) return null;
 
   return (
     <div>
-      <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
-        {title} ({objects.length})
-      </div>
+      {!hideTitle && (
+        <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1 px-2">
+          {title} ({objects.length})
+        </div>
+      )}
       {objects.map(obj => (
         <SceneObjectNode
           key={obj.id}

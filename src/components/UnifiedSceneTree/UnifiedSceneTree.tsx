@@ -11,13 +11,17 @@ interface UnifiedSceneTreeProps {
   currentModel: LoadedModel | null;
   showPrimitives: boolean;
   scene: THREE.Scene | null;
+  searchQuery?: string;
+  showSelectedOnly?: boolean;
 }
 
 const UnifiedSceneTree = ({ 
   loadedModels, 
   currentModel, 
   showPrimitives,
-  scene
+  scene,
+  searchQuery = '',
+  showSelectedOnly = false
 }: UnifiedSceneTreeProps) => {
   const {
     expandedNodes,
@@ -28,7 +32,7 @@ const UnifiedSceneTree = ({
     handleObjectSelect,
     handleDelete,
     clearSelection
-  } = useSceneTreeState(scene, loadedModels, showPrimitives);
+  } = useSceneTreeState(scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly);
 
   return (
     <div className="space-y-2">

@@ -8,17 +8,34 @@ import { buildSceneObjects } from '../utils/sceneObjectBuilder';
 export const useSceneTreeState = (
   scene: THREE.Scene | null,
   loadedModels: LoadedModel[],
-  showPrimitives: boolean
+  showPrimitives: boolean,
+  searchQuery: string = '',
+  showSelectedOnly: boolean = false
 ) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
 
-  // Build unified scene tree
+  // Build unified scene tree with filtering
   useEffect(() => {
-    const objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
+    let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      objects = objects.filter(obj => 
+        obj.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Apply selected-only filter
+    if (showSelectedOnly) {
+      objects = objects.filter(obj => 
+        selectedObjects.some(selected => selected.id === obj.id)
+      );
+    }
+    
     setSceneObjects(objects);
-  }, [scene, loadedModels, showPrimitives, selectedObjects]);
+  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
