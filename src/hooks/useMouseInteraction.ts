@@ -1,15 +1,15 @@
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { MaterialManager } from './utils/materialManager';
 import { invalidateIntersectableCache } from './utils/raycastUtils';
 import { useSelectTool } from './tools/useSelectTool';
 import { usePointTool } from './tools/usePointTool';
 import { useMeasureTool } from './tools/useMeasureTool';
 import { useMouseTracking } from './mouse/useMouseTracking';
 import { useObjectData } from './mouse/useObjectData';
-import { performRaycast } from './mouse/raycastPerformance';
+import { useMouseInteractionState } from './mouse/useMouseInteractionState';
+import { useRaycastHandling } from './mouse/useRaycastHandling';
 import { getCursorForTool, setCursor } from './mouse/cursorUtils';
 
 export const useMouseInteraction = (
@@ -23,10 +23,8 @@ export const useMouseInteraction = (
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
-  const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
-  const materialManagerRef = useRef<MaterialManager | null>(null);
-
-  // Use the extracted hooks
+  // Use extracted hooks for state management
+  const { hoveredObject, setHoveredObject, materialManagerRef, initializeMaterialManager, cleanupMaterialManager } = useMouseInteractionState();
   const { mousePosition, mousePositionRef, throttledMouseMove, updateMousePosition } = useMouseTracking();
   const { objectData, setObjectData, extractObjectData } = useObjectData();
 
@@ -35,31 +33,22 @@ export const useMouseInteraction = (
   const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
   const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
 
-  const handleRaycastHover = useCallback((x: number, y: number) => {
-    if (!renderer || !camera || !scene) return;
-
-    const intersectedObject = performRaycast(x, y, renderer, camera, scene);
-
-    if (intersectedObject !== hoveredObject) {
-      if (hoveredObject && materialManagerRef.current) {
-        materialManagerRef.current.setHoverEffect(hoveredObject, false);
-      }
-
-      if (intersectedObject && materialManagerRef.current) {
-        materialManagerRef.current.setHoverEffect(intersectedObject, true);
-        setObjectData(extractObjectData(intersectedObject));
-      } else {
-        setObjectData(null);
-      }
-
-      setHoveredObject(intersectedObject);
-    }
-  }, [hoveredObject, renderer, camera, scene, extractObjectData]);
+  // Raycast handling
+  const { handleRaycastHover } = useRaycastHandling({
+    renderer,
+    camera,
+    scene,
+    hoveredObject,
+    setHoveredObject,
+    materialManager: materialManagerRef.current,
+    extractObjectData,
+    setObjectData
+  });
 
   useEffect(() => {
     if (!renderer || !camera || !scene) return;
 
-    materialManagerRef.current = new MaterialManager();
+    const materialManager = initializeMaterialManager();
 
     const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
       updateMousePosition(event.clientX, event.clientY);
@@ -85,8 +74,8 @@ export const useMouseInteraction = (
 
     const handleClick = (event: MouseEvent) => {
       // Clear any existing hover effects before selection
-      if (hoveredObject && materialManagerRef.current) {
-        materialManagerRef.current.setHoverEffect(hoveredObject, false);
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
 
@@ -104,8 +93,8 @@ export const useMouseInteraction = (
     };
 
     const handleMouseLeave = () => {
-      if (hoveredObject && materialManagerRef.current) {
-        materialManagerRef.current.setHoverEffect(hoveredObject, false);
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
         setObjectData(null);
       }
@@ -118,6 +107,7 @@ export const useMouseInteraction = (
       measureTool.handleRightClick();
     };
 
+    // Add event listeners
     renderer.domElement.addEventListener('mousemove', handleMouseMove);
     renderer.domElement.addEventListener('click', handleClick);
     renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
@@ -125,23 +115,42 @@ export const useMouseInteraction = (
     controls?.addEventListener('change', updateHover);
 
     return () => {
+      // Cleanup event listeners
       renderer.domElement.removeEventListener('mousemove', handleMouseMove);
       renderer.domElement.removeEventListener('click', handleClick);
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
       controls?.removeEventListener('change', updateHover);
       
-      if (hoveredObject && materialManagerRef.current) {
-        materialManagerRef.current.setHoverEffect(hoveredObject, false);
+      // Cleanup hover effects
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
       }
       
+      // Cleanup tools
       measureTool.cleanup();
       
-      if (materialManagerRef.current) {
-        materialManagerRef.current.dispose();
-      }
+      // Cleanup material manager
+      cleanupMaterialManager();
     };
-  }, [renderer, camera, scene, hoveredObject, activeTool, controls, selectTool, pointTool, measureTool, onObjectSelect, onPointCreate, onMeasureCreate, throttledMouseMove, updateMousePosition, handleRaycastHover]);
+  }, [
+    renderer, 
+    camera, 
+    scene, 
+    hoveredObject, 
+    activeTool, 
+    controls, 
+    selectTool, 
+    pointTool, 
+    measureTool, 
+    throttledMouseMove, 
+    updateMousePosition, 
+    handleRaycastHover,
+    initializeMaterialManager,
+    cleanupMaterialManager,
+    setHoveredObject,
+    setObjectData
+  ]);
 
   // Invalidate intersection cache when scene changes
   useEffect(() => {
@@ -150,5 +159,9 @@ export const useMouseInteraction = (
     }
   }, [scene, targetObject]);
 
-  return { objectData, mousePosition, isHovering: !!hoveredObject };
+  return { 
+    objectData, 
+    mousePosition, 
+    isHovering: !!hoveredObject 
+  };
 };

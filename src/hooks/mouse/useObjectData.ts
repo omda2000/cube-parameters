@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 
 interface ObjectData {
@@ -15,9 +15,29 @@ interface ObjectData {
 
 export const useObjectData = () => {
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
+  const isInitialized = useRef(false);
+
+  // Ensure proper initialization
+  useEffect(() => {
+    isInitialized.current = true;
+    return () => {
+      isInitialized.current = false;
+    };
+  }, []);
 
   // Memoize object data extraction to avoid recalculation
   const extractObjectData = useCallback((object: THREE.Object3D): ObjectData => {
+    if (!isInitialized.current) {
+      return {
+        name: 'Loading...',
+        type: 'Object3D',
+        position: new THREE.Vector3(),
+        rotation: new THREE.Euler(),
+        scale: new THREE.Vector3(1, 1, 1),
+        visible: true
+      };
+    }
+
     let vertices = 0;
     let triangles = 0;
 
@@ -45,9 +65,15 @@ export const useObjectData = () => {
     };
   }, []);
 
+  const safeSetObjectData = useCallback((data: ObjectData | null) => {
+    if (isInitialized.current) {
+      setObjectData(data);
+    }
+  }, []);
+
   return {
     objectData,
-    setObjectData,
+    setObjectData: safeSetObjectData,
     extractObjectData
   };
 };
