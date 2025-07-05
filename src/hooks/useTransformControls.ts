@@ -46,12 +46,13 @@ export const useTransformControls = (
     });
     
     console.log('Adding transform controls to scene:', transformControls);
-    scene.add(transformControls);
+    // Cast TransformControls to Object3D for scene operations
+    scene.add(transformControls as unknown as THREE.Object3D);
 
     return () => {
       if (transformControls && scene) {
         console.log('Removing transform controls from scene');
-        scene.remove(transformControls);
+        scene.remove(transformControls as unknown as THREE.Object3D);
         transformControls.dispose();
       }
     };
