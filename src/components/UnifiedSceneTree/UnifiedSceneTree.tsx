@@ -35,12 +35,12 @@ const UnifiedSceneTree = ({
   } = useSceneTreeState(scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly);
 
   return (
-    <div className="space-y-2">
+    <div className="h-full flex flex-col">
       <SceneTreeHeader 
         selectedObjects={selectedObjects}
         onClearSelection={clearSelection}
       />
-      <div className="max-h-96 overflow-y-auto border border-slate-600 rounded bg-slate-800/30">
+      <div className="flex-1 overflow-y-auto bg-slate-800/30 border border-slate-600 rounded">
         <div className="p-2">
           {sceneObjects.length === 0 ? (
             <EmptySceneState />

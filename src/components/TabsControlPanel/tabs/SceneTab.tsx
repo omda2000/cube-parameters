@@ -34,9 +34,9 @@ const SceneTab = ({
 
   return (
     <TooltipProvider>
-      <div className="space-y-3 p-2">
+      <div className="h-full flex flex-col">
         {/* Enhanced Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-3 border-b border-slate-600/50">
           <div className="flex items-center gap-2">
             <FolderTree className="h-4 w-4 text-indigo-400" />
             <span className="text-sm font-medium text-slate-200">Scene Objects</span>
@@ -61,7 +61,7 @@ const SceneTab = ({
         </div>
 
         {/* Search and Filter Controls */}
-        <div className="space-y-2">
+        <div className="p-3 space-y-2 border-b border-slate-600/50">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
             <Input
@@ -94,7 +94,7 @@ const SceneTab = ({
 
         {/* Upload Error Display */}
         {uploadError && (
-          <div className="p-2 bg-red-900/30 border border-red-800/50 rounded text-red-200 text-xs">
+          <div className="mx-3 mt-2 p-2 bg-red-900/30 border border-red-800/50 rounded text-red-200 text-xs">
             <div className="flex items-start gap-2">
               <span className="text-red-400">⚠</span>
               <span>{uploadError}</span>
@@ -102,8 +102,8 @@ const SceneTab = ({
           </div>
         )}
 
-        {/* Enhanced Scene Tree */}
-        <div className="flex-1">
+        {/* Scene Tree - Single scroll container */}
+        <div className="flex-1 overflow-hidden">
           <UnifiedSceneTree
             loadedModels={loadedModels}
             currentModel={currentModel}
