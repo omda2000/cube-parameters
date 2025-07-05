@@ -7,16 +7,10 @@ export const useSelectTool = (
   renderer: THREE.WebGLRenderer | null,
   camera: THREE.PerspectiveCamera | null,
   scene: THREE.Scene | null,
-  onObjectSelect?: (object: THREE.Object3D | null, addToSelection?: boolean) => void
+  onObjectSelect?: (object: THREE.Object3D | null) => void
 ) => {
   const handleClick = useCallback((event: MouseEvent) => {
-    if (!renderer || !camera || !scene) return;
-
-    // Handle multiple selection with Ctrl+Right Click
-    const isMultiSelect = (event.ctrlKey || event.metaKey) && event.button === 2;
-    const isRegularSelect = event.button === 0;
-
-    if (!isMultiSelect && !isRegularSelect) return;
+    if (!renderer || !camera || !scene || event.button !== 0) return;
 
     const { raycaster, mouse } = createRaycaster();
     const rect = renderer.domElement.getBoundingClientRect();
@@ -35,19 +29,11 @@ export const useSelectTool = (
         targetObject = targetObject.parent;
       }
       
-      onObjectSelect(targetObject, isMultiSelect);
-    } else if (onObjectSelect && !isMultiSelect) {
-      // Only clear selection on regular click, not on Ctrl+Right click
+      onObjectSelect(targetObject);
+    } else if (onObjectSelect) {
       onObjectSelect(null);
     }
   }, [renderer, camera, scene, onObjectSelect]);
 
-  const handleContextMenu = useCallback((event: MouseEvent) => {
-    // Prevent default context menu when Ctrl is held
-    if (event.ctrlKey || event.metaKey) {
-      event.preventDefault();
-    }
-  }, []);
-
-  return { handleClick, handleContextMenu };
+  return { handleClick };
 };

@@ -12,7 +12,7 @@ interface SceneObjectNodeProps {
   expandedNodes: Set<string>;
   onToggleExpanded: (nodeId: string) => void;
   onToggleVisibility: (sceneObject: SceneObject) => void;
-  onObjectSelect: (sceneObject: SceneObject, addToSelection?: boolean) => void;
+  onObjectSelect: (sceneObject: SceneObject) => void;
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
@@ -25,27 +25,22 @@ const SceneObjectNode = ({
   onObjectSelect,
   onDelete
 }: SceneObjectNodeProps) => {
-  const { isSelected } = useSelectionContext();
+  const { selectedObject } = useSelectionContext();
   
   const isExpanded = expandedNodes.has(sceneObject.id);
   const hasChildren = sceneObject.children.length > 0;
   const paddingLeft = level * 16;
-  const isSelectedObject = isSelected(sceneObject.id);
+  const isSelected = selectedObject?.id === sceneObject.id;
   const isDeletable = sceneObject.type === 'point' || sceneObject.type === 'measurement';
-
-  const handleClick = (event: React.MouseEvent) => {
-    const addToSelection = event.ctrlKey || event.metaKey;
-    onObjectSelect(sceneObject, addToSelection);
-  };
 
   return (
     <div>
       <div 
         className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer ${
-          isSelectedObject ? 'bg-blue-600/30 border border-blue-500/50' : ''
+          isSelected ? 'bg-blue-600/30 border border-blue-500/50' : ''
         }`}
         style={{ paddingLeft }}
-        onClick={handleClick}
+        onClick={() => onObjectSelect(sceneObject)}
       >
         <div className="flex items-center gap-1 flex-1 min-w-0">
           {hasChildren ? (
@@ -70,7 +65,7 @@ const SceneObjectNode = ({
           
           <NodeIcon type={sceneObject.type} />
           
-          <span className={`truncate flex-1 ${isSelectedObject ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
+          <span className={`truncate flex-1 ${isSelected ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
             {sceneObject.name}
           </span>
           
