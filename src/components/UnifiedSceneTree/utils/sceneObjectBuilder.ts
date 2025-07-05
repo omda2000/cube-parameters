@@ -11,8 +11,9 @@ export const buildSceneObjects = (
   if (!scene) return [];
 
   const objects: SceneObject[] = [];
+  const processedObjects = new Set<string>();
 
-  // Add loaded models
+  // Add loaded models first
   loadedModels.forEach(model => {
     const modelObject: SceneObject = {
       id: `model_${model.id}`,
@@ -24,12 +25,29 @@ export const buildSceneObjects = (
       selected: selectedObject?.id === `model_${model.id}`
     };
     objects.push(modelObject);
+    processedObjects.add(model.object.uuid);
   });
 
-  // Add primitives if showing
-  if (showPrimitives) {
-    scene.traverse((object) => {
-      if (object.userData.isPrimitive) {
+  // Traverse the entire scene to find all objects
+  scene.traverse((object) => {
+    // Skip if already processed or if it's the scene itself
+    if (processedObjects.has(object.uuid) || object === scene) return;
+    
+    // Skip objects that are children of already processed objects
+    let parent = object.parent;
+    let isChildOfProcessed = false;
+    while (parent && parent !== scene) {
+      if (processedObjects.has(parent.uuid)) {
+        isChildOfProcessed = true;
+        break;
+      }
+      parent = parent.parent;
+    }
+    if (isChildOfProcessed) return;
+
+    // Handle primitives
+    if (object.userData.isPrimitive) {
+      if (showPrimitives) {
         const primitiveObject: SceneObject = {
           id: `primitive_${object.uuid}`,
           name: object.name || 'Box Primitive',
@@ -40,12 +58,12 @@ export const buildSceneObjects = (
           selected: selectedObject?.id === `primitive_${object.uuid}`
         };
         objects.push(primitiveObject);
+        processedObjects.add(object.uuid);
       }
-    });
-  }
+      return;
+    }
 
-  // Add points
-  scene.traverse((object) => {
+    // Handle points
     if (object.userData.isPoint) {
       const pointObject: SceneObject = {
         id: `point_${object.uuid}`,
@@ -57,11 +75,11 @@ export const buildSceneObjects = (
         selected: selectedObject?.id === `point_${object.uuid}`
       };
       objects.push(pointObject);
+      processedObjects.add(object.uuid);
+      return;
     }
-  });
 
-  // Add measurement groups
-  scene.traverse((object) => {
+    // Handle measurement groups
     if (object.userData.isMeasurementGroup && object instanceof THREE.Group) {
       const measurementData = object.userData.measurementData;
       const distance = measurementData ? measurementData.distance : 0;
@@ -81,25 +99,59 @@ export const buildSceneObjects = (
         } : undefined
       };
       objects.push(measurementObject);
+      processedObjects.add(object.uuid);
+      return;
+    }
+
+    // Handle ground plane
+    if (object instanceof THREE.Mesh && 
+        object.geometry instanceof THREE.PlaneGeometry && 
+        object.userData.isHelper) {
+      const groundObject: SceneObject = {
+        id: 'ground',
+        name: 'Ground Plane',
+        type: 'ground',
+        object: object,
+        children: [],
+        visible: object.visible,
+        selected: selectedObject?.id === 'ground'
+      };
+      objects.push(groundObject);
+      processedObjects.add(object.uuid);
+      return;
+    }
+
+    // Handle all other objects (including meshes, groups, etc.)
+    if (object.parent === scene && !object.userData.isHelper) {
+      let objectType: SceneObject['type'] = 'mesh';
+      let objectName = object.name;
+
+      if (object instanceof THREE.Group) {
+        objectType = 'group';
+        objectName = objectName || `Group_${object.uuid.slice(0, 8)}`;
+      } else if (object instanceof THREE.Mesh) {
+        objectType = 'mesh';
+        objectName = objectName || `Mesh_${object.uuid.slice(0, 8)}`;
+      } else if (object instanceof THREE.Light) {
+        objectType = 'light';
+        objectName = objectName || `${object.type}_${object.uuid.slice(0, 8)}`;
+      } else {
+        objectName = objectName || `${object.type}_${object.uuid.slice(0, 8)}`;
+      }
+
+      const sceneObject: SceneObject = {
+        id: `object_${object.uuid}`,
+        name: objectName,
+        type: objectType,
+        object: object,
+        children: buildChildren(object, selectedObject),
+        visible: object.visible,
+        selected: selectedObject?.id === `object_${object.uuid}`
+      };
+      objects.push(sceneObject);
+      processedObjects.add(object.uuid);
     }
   });
-
-  // Add environment objects
-  const groundObject = scene.children.find(child => 
-    child instanceof THREE.Mesh && child.geometry instanceof THREE.PlaneGeometry && child.userData.isHelper
-  );
-  
-  if (groundObject) {
-    objects.push({
-      id: 'ground',
-      name: 'Ground Plane',
-      type: 'ground',
-      object: groundObject,
-      children: [],
-      visible: groundObject.visible,
-      selected: selectedObject?.id === 'ground'
-    });
-  }
 
   return objects;
 };
@@ -110,7 +162,9 @@ const buildChildren = (object: THREE.Object3D, selectedObject: any): SceneObject
     .map(child => ({
       id: `child_${child.uuid}`,
       name: child.name || `${child.type}_${child.uuid.slice(0, 8)}`,
-      type: child instanceof THREE.Mesh ? 'mesh' : 'group',
+      type: child instanceof THREE.Mesh ? 'mesh' : 
+            child instanceof THREE.Group ? 'group' : 
+            child instanceof THREE.Light ? 'light' : 'mesh',
       object: child,
       children: buildChildren(child, selectedObject),
       visible: child.visible,
@@ -120,10 +174,13 @@ const buildChildren = (object: THREE.Object3D, selectedObject: any): SceneObject
 
 export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
   return {
-    models: sceneObjects.filter(obj => obj.type === 'group'),
+    models: sceneObjects.filter(obj => obj.type === 'group' && obj.id.startsWith('model_')),
     primitives: sceneObjects.filter(obj => obj.type === 'primitive'),
     points: sceneObjects.filter(obj => obj.type === 'point'),
     measurements: sceneObjects.filter(obj => obj.type === 'measurement'),
+    meshes: sceneObjects.filter(obj => obj.type === 'mesh'),
+    groups: sceneObjects.filter(obj => obj.type === 'group' && !obj.id.startsWith('model_')),
+    lights: sceneObjects.filter(obj => obj.type === 'light'),
     environment: sceneObjects.filter(obj => obj.type === 'ground')
   };
 };

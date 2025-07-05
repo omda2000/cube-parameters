@@ -123,6 +123,26 @@ const UnifiedSceneTree = ({
               />
               
               <SceneObjectGroup
+                title="Meshes"
+                objects={groupedObjects.meshes}
+                expandedNodes={expandedNodes}
+                onToggleExpanded={toggleExpanded}
+                onToggleVisibility={toggleVisibility}
+                onObjectSelect={handleObjectSelect}
+                onDelete={handleDelete}
+              />
+              
+              <SceneObjectGroup
+                title="Groups"
+                objects={groupedObjects.groups}
+                expandedNodes={expandedNodes}
+                onToggleExpanded={toggleExpanded}
+                onToggleVisibility={toggleVisibility}
+                onObjectSelect={handleObjectSelect}
+                onDelete={handleDelete}
+              />
+              
+              <SceneObjectGroup
                 title="Primitives"
                 objects={groupedObjects.primitives}
                 expandedNodes={expandedNodes}
@@ -145,6 +165,16 @@ const UnifiedSceneTree = ({
               <SceneObjectGroup
                 title="Measurements"
                 objects={groupedObjects.measurements}
+                expandedNodes={expandedNodes}
+                onToggleExpanded={toggleExpanded}
+                onToggleVisibility={toggleVisibility}
+                onObjectSelect={handleObjectSelect}
+                onDelete={handleDelete}
+              />
+              
+              <SceneObjectGroup
+                title="Lights"
+                objects={groupedObjects.lights}
                 expandedNodes={expandedNodes}
                 onToggleExpanded={toggleExpanded}
                 onToggleVisibility={toggleVisibility}
