@@ -1,6 +1,6 @@
 
 import React, { memo } from 'react';
-import ModelViewerCore from './ModelViewer/ModelViewerCore';
+import { useModelViewerCore } from '../hooks/useModelViewerCore';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
 import type { 
   SunlightSettings, 
@@ -29,19 +29,6 @@ interface ThreeViewerProps {
 }
 
 const ThreeViewer = memo((props: ThreeViewerProps) => {
-  const core = ModelViewerCore(props);
-  
-  if (!core) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-red-500">
-        <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">Model Viewer Error</h2>
-          <p>Failed to initialize 3D viewer core</p>
-        </div>
-      </div>
-    );
-  }
-
   const {
     mountRef,
     objectData,
@@ -50,7 +37,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     selectedObjects,
     isLoading,
     error
-  } = core;
+  } = useModelViewerCore(props);
 
   if (error) {
     return (

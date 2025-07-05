@@ -1,17 +1,17 @@
 
-import React, { useRef, useEffect, memo } from 'react';
+import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { useThreeScene } from '../../hooks/useThreeScene';
-import { useBoxMesh } from '../../hooks/useBoxMesh';
-import { useMouseInteraction } from '../../hooks/useMouseInteraction';
-import { useLighting } from '../../hooks/useLighting';
-import { useEnvironment } from '../../hooks/useEnvironment';
-import { useFBXLoader } from '../../hooks/useFBXLoader';
-import { useSelectionEffects } from '../../hooks/useSelectionEffects';
-import { useObjectSelection } from '../../hooks/useObjectSelection';
-import { useCameraExposure } from '../../hooks/useCameraExposure';
-import { useModelsExposure } from '../../hooks/useModelsExposure';
-import { useToolHandlersViewer } from '../../hooks/useToolHandlersViewer';
+import { useThreeScene } from './useThreeScene';
+import { useBoxMesh } from './useBoxMesh';
+import { useMouseInteraction } from './useMouseInteraction';
+import { useLighting } from './useLighting';
+import { useEnvironment } from './useEnvironment';
+import { useFBXLoader } from './useFBXLoader';
+import { useSelectionEffects } from './useSelectionEffects';
+import { useObjectSelection } from './useObjectSelection';
+import { useCameraExposure } from './useCameraExposure';
+import { useModelsExposure } from './useModelsExposure';
+import { useToolHandlersViewer } from './useToolHandlersViewer';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -19,9 +19,9 @@ import type {
   LoadedModel,
   BoxDimensions,
   ShadowQuality
-} from '../../types/model';
+} from '../types/model';
 
-interface ModelViewerCoreProps {
+interface UseModelViewerCoreProps {
   dimensions: BoxDimensions;
   boxColor: string;
   objectName: string;
@@ -38,7 +38,7 @@ interface ModelViewerCoreProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
-const ModelViewerCore = memo(({ 
+export const useModelViewerCore = ({ 
   dimensions, 
   boxColor, 
   objectName, 
@@ -53,7 +53,7 @@ const ModelViewerCore = memo(({
   activeTool = 'select',
   onPointCreate,
   onMeasureCreate
-}: ModelViewerCoreProps) => {
+}: UseModelViewerCoreProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
 
   // Custom hooks for organized functionality
@@ -167,8 +167,4 @@ const ModelViewerCore = memo(({
     isLoading,
     error
   };
-});
-
-ModelViewerCore.displayName = 'ModelViewerCore';
-
-export default ModelViewerCore;
+};
