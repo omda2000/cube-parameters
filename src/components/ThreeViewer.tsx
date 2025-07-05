@@ -1,6 +1,5 @@
 
 import React, { memo } from 'react';
-import * as THREE from 'three';
 import { useModelViewerCore } from '../hooks/useModelViewerCore';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
 import type { 

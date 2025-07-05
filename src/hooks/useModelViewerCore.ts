@@ -1,8 +1,17 @@
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { useModelViewerSetup } from './viewer/useModelViewerSetup';
-import { useModelViewerEffects } from './viewer/useModelViewerEffects';
+import { useThreeScene } from './useThreeScene';
+import { useBoxMesh } from './useBoxMesh';
+import { useMouseInteraction } from './useMouseInteraction';
+import { useLighting } from './useLighting';
+import { useEnvironment } from './useEnvironment';
+import { useFBXLoader } from './useFBXLoader';
+import { useSelectionEffects } from './useSelectionEffects';
+import { useObjectSelection } from './useObjectSelection';
+import { useCameraExposure } from './useCameraExposure';
+import { useModelsExposure } from './useModelsExposure';
+import { useToolHandlersViewer } from './useToolHandlersViewer';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -45,20 +54,12 @@ export const useModelViewerCore = ({
   onPointCreate,
   onMeasureCreate
 }: UseModelViewerCoreProps) => {
-  // Setup phase - initialize Three.js scene and core components
-  const setupData = useModelViewerSetup({
-    dimensions,
-    boxColor,
-    objectName,
-    showPrimitives,
-    onModelsChange,
-    onPointCreate,
-    onMeasureCreate
-  });
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  // Custom hooks for organized functionality
+  const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
 
   const {
-    mountRef,
-    boxRef,
     sceneRef,
     perspectiveCameraRef,
     rendererRef,
@@ -67,38 +68,95 @@ export const useModelViewerCore = ({
     gridHelperRef,
     performanceMetrics,
     isOrthographic,
-    switchCamera,
+    switchCamera
+  } = useThreeScene(mountRef);
+
+  // Expose camera switching
+  useCameraExposure(switchCamera);
+
+  // Expose scene to parent components
+  useEffect(() => {
+    if (sceneRef.current && onSceneReady) {
+      onSceneReady(sceneRef.current);
+    }
+  }, [onSceneReady]);
+
+  const { boxRef } = useBoxMesh(
+    sceneRef.current,
+    dimensions,
+    boxColor,
+    objectName,
+    showPrimitives
+  );
+
+  // Mark box as primitive for scene tree
+  useEffect(() => {
+    if (boxRef.current) {
+      boxRef.current.userData.isPrimitive = true;
+    }
+  }, [boxRef]);
+
+  const {
     loadedModels,
     currentModel,
     isLoading,
     error,
-    selectedObjects,
+    loadFBXModel,
+    switchToModel,
+    removeModel
+  } = useFBXLoader(sceneRef.current);
+
+  // Expose models and FBX handlers
+  useModelsExposure(
+    loadedModels,
+    currentModel,
+    loadFBXModel,
+    switchToModel,
+    removeModel,
+    onModelsChange
+  );
+
+  // Tool handlers
+  const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
+    onPointCreate,
+    onMeasureCreate
+  );
+
+  // Use selection effects hook for visual feedback
+  useSelectionEffects(selectedObjects);
+
+  // Mouse interaction and hover effects
+  const { objectData, mousePosition, isHovering } = useMouseInteraction(
+    rendererRef.current,
+    perspectiveCameraRef.current,
+    currentModel ? currentModel.object : boxRef.current,
+    sceneRef.current,
     handleObjectSelect,
+    activeTool,
+    controlsRef.current,
     handlePointCreate,
     handleMeasureCreate
-  } = setupData;
+  );
 
-  // Effects phase - apply lighting, environment, selection, and mouse interaction
-  const { objectData, mousePosition, isHovering } = useModelViewerEffects({
-    sceneRef,
-    rendererRef,
-    perspectiveCameraRef,
-    controlsRef,
-    gridHelperRef,
-    boxRef,
-    currentModel,
-    selectedObjects,
+  useLighting(
+    sceneRef.current,
     sunlight,
     ambientLight,
-    shadowQuality,
+    shadowQuality
+  );
+
+  useEnvironment(
+    sceneRef.current,
     environment,
-    performanceMetrics,
-    activeTool,
-    handleObjectSelect,
-    handlePointCreate,
-    handleMeasureCreate,
-    onSceneReady
-  });
+    gridHelperRef.current
+  );
+
+  // Debug performance metrics in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Performance Metrics:', performanceMetrics);
+    }
+  }, [performanceMetrics]);
 
   return {
     mountRef,

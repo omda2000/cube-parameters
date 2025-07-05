@@ -1,6 +1,5 @@
 
 import { useEffect } from 'react';
-import * as THREE from 'three';
 import type { SceneObject } from '../types/model';
 import { SelectionMaterials } from './utils/selectionMaterials';
 import { usePointSelection } from './selection/usePointSelection';
