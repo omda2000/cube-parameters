@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Box, Trash2, Eye, TreePine } from 'lucide-react';
 import SceneTreeView from '../SceneTreeView/SceneTreeView';
+import * as THREE from 'three';
 
 interface LoadedModel {
   id: string;

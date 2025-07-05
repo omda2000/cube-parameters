@@ -62,9 +62,9 @@ export const useTransformControls = (
     if (transformControlsRef.current) {
       if (isSelected) {
         transformControlsRef.current.setMode(transformMode);
-        transformControlsRef.current.visible = true;
+        transformControlsRef.current.enabled = true;
       } else {
-        transformControlsRef.current.visible = false;
+        transformControlsRef.current.enabled = false;
       }
     }
   }, [transformMode, isSelected]);

@@ -4,6 +4,7 @@ import { useModelViewerSetup } from '../hooks/viewer/useModelViewerSetup';
 import { useModelViewerEffects } from '../hooks/viewer/useModelViewerEffects';
 import { useOptimizedRenderer } from '../hooks/viewer/useOptimizedRenderer';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
+import * as THREE from 'three';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 

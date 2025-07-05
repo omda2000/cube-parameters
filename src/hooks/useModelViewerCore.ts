@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { useModelViewerSetup } from './viewer/useModelViewerSetup';
 import { useModelViewerEffects } from './viewer/useModelViewerEffects';
 import { useOptimizedRenderer } from './viewer/useOptimizedRenderer';
+import * as THREE from 'three';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 

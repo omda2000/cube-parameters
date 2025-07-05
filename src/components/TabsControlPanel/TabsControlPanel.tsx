@@ -1,9 +1,11 @@
+
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
 import MaterialsTab from './tabs/MaterialsTab';
 import ViewTab from './tabs/ViewTab';
 import SettingsTab from './tabs/SettingsTab';
+import * as THREE from 'three';
 import type { 
   LoadedModel, 
   SunlightSettings, 

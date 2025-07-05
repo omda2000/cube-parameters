@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { useState } from 'react';
 import FileUploadDialog from '../../FileUpload/FileUploadDialog';
 import UnifiedSceneTree from '../../UnifiedSceneTree/UnifiedSceneTree';
+import * as THREE from 'three';
 import type { LoadedModel } from '../../../types/model';
 
 interface SceneTabProps {
