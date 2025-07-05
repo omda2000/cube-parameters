@@ -22,19 +22,13 @@ const UnifiedSceneTree = ({
 }: UnifiedSceneTreeProps) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
-  const sceneChildrenCount = scene ? scene.children.length : 0;
   const { selectedObject, selectObject } = useSelectionContext();
 
   // Build unified scene tree
   useEffect(() => {
-    const objects = buildSceneObjects(
-      scene,
-      loadedModels,
-      showPrimitives,
-      selectedObject
-    );
+    const objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObject);
     setSceneObjects(objects);
-  }, [scene, sceneChildrenCount, loadedModels, showPrimitives, selectedObject]);
+  }, [scene, loadedModels, showPrimitives, selectedObject]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);

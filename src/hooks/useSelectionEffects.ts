@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import type { SceneObject } from '../types/model';
 import { SelectionMaterials } from './utils/selectionMaterials';
 import { usePointSelection } from './selection/usePointSelection';
@@ -10,13 +10,10 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
   const { applyPointSelection } = usePointSelection();
   const { applyMeasurementSelection } = useMeasurementSelection();
   const { applyMeshSelection } = useMeshSelection();
-  const selectionMaterialsRef = useRef<SelectionMaterials>(new SelectionMaterials());
-  const previousSelectedObjectRef = useRef<SceneObject | null>(null);
+  const selectionMaterials = new SelectionMaterials();
 
   const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
-    const overlayMaterial = selectionMaterialsRef.current.getOverlayMaterial();
-
-    console.log('Applying selection effects:', { objectId: object.uuid, selected, objectType });
+    const overlayMaterial = selectionMaterials.getOverlayMaterial();
 
     // Handle points
     if (objectType === 'point') {
@@ -30,37 +27,30 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
       return;
     }
 
-    // Handle meshes and primitives
+    // Handle meshes
     applyMeshSelection(object, selected, overlayMaterial);
   };
 
   // Apply/remove selection effects when selectedObject changes
   useEffect(() => {
-    const previousSelected = previousSelectedObjectRef.current;
-    
-    // Remove effects from previously selected object
-    if (previousSelected?.object && previousSelected !== selectedObject) {
-      console.log('Removing selection from previous object:', previousSelected.id);
-      applySelectionEffects(previousSelected.object, false, previousSelected.type);
-    }
+    return () => {
+      // Cleanup on unmount
+      if (selectedObject?.object) {
+        applySelectionEffects(selectedObject.object, false, selectedObject.type);
+      }
+      selectionMaterials.dispose();
+    };
+  }, []);
 
-    // Apply effects to newly selected object
+  useEffect(() => {
     if (selectedObject?.object) {
-      console.log('Applying selection to new object:', selectedObject.id);
       applySelectionEffects(selectedObject.object, true, selectedObject.type);
     }
 
-    // Update reference
-    previousSelectedObjectRef.current = selectedObject;
-  }, [selectedObject]);
-
-  // Cleanup on unmount
-  useEffect(() => {
     return () => {
-      if (previousSelectedObjectRef.current?.object) {
-        applySelectionEffects(previousSelectedObjectRef.current.object, false, previousSelectedObjectRef.current.type);
+      if (selectedObject?.object) {
+        applySelectionEffects(selectedObject.object, false, selectedObject.type);
       }
-      selectionMaterialsRef.current.dispose();
     };
-  }, []);
+  }, [selectedObject]);
 };

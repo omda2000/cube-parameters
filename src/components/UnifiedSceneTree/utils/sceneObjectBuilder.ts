@@ -6,7 +6,7 @@ export const buildSceneObjects = (
   scene: THREE.Scene | null,
   loadedModels: LoadedModel[],
   showPrimitives: boolean,
-  selectedObject: SceneObject | null
+  selectedObject: any
 ): SceneObject[] => {
   if (!scene) return [];
 
@@ -14,15 +14,14 @@ export const buildSceneObjects = (
 
   // Add loaded models
   loadedModels.forEach(model => {
-    const modelId = `model_${model.id}`;
     const modelObject: SceneObject = {
-      id: modelId,
+      id: `model_${model.id}`,
       name: model.name,
       type: 'group',
       object: model.object,
       children: buildChildren(model.object, selectedObject),
       visible: model.object.visible,
-      selected: selectedObject?.id === modelId
+      selected: selectedObject?.id === `model_${model.id}`
     };
     objects.push(modelObject);
   });
@@ -31,15 +30,14 @@ export const buildSceneObjects = (
   if (showPrimitives) {
     scene.traverse((object) => {
       if (object.userData.isPrimitive) {
-        const primitiveId = `primitive_${object.uuid}`;
         const primitiveObject: SceneObject = {
-          id: primitiveId,
+          id: `primitive_${object.uuid}`,
           name: object.name || 'Box Primitive',
           type: 'primitive',
           object: object,
           children: [],
           visible: object.visible,
-          selected: selectedObject?.id === primitiveId
+          selected: selectedObject?.id === `primitive_${object.uuid}`
         };
         objects.push(primitiveObject);
       }
@@ -49,15 +47,14 @@ export const buildSceneObjects = (
   // Add points
   scene.traverse((object) => {
     if (object.userData.isPoint) {
-      const pointId = `point_${object.uuid}`;
       const pointObject: SceneObject = {
-        id: pointId,
+        id: `point_${object.uuid}`,
         name: object.name || `Point (${object.position.x.toFixed(2)}, ${object.position.y.toFixed(2)}, ${object.position.z.toFixed(2)})`,
         type: 'point',
         object: object,
         children: [],
         visible: object.visible,
-        selected: selectedObject?.id === pointId
+        selected: selectedObject?.id === `point_${object.uuid}`
       };
       objects.push(pointObject);
     }
@@ -68,16 +65,15 @@ export const buildSceneObjects = (
     if (object.userData.isMeasurementGroup && object instanceof THREE.Group) {
       const measurementData = object.userData.measurementData;
       const distance = measurementData ? measurementData.distance : 0;
-      const measurementId = `measurement_${object.uuid}`;
       
       const measurementObject: SceneObject = {
-        id: measurementId,
+        id: `measurement_${object.uuid}`,
         name: `Measurement (${distance.toFixed(3)} units)`,
         type: 'measurement',
         object: object,
         children: [],
         visible: object.visible,
-        selected: selectedObject?.id === measurementId,
+        selected: selectedObject?.id === `measurement_${object.uuid}`,
         measurementData: measurementData ? {
           startPoint: measurementData.startPoint,
           endPoint: measurementData.endPoint,
@@ -94,36 +90,32 @@ export const buildSceneObjects = (
   );
   
   if (groundObject) {
-    const groundId = 'ground';
     objects.push({
-      id: groundId,
+      id: 'ground',
       name: 'Ground Plane',
       type: 'ground',
       object: groundObject,
       children: [],
       visible: groundObject.visible,
-      selected: selectedObject?.id === groundId
+      selected: selectedObject?.id === 'ground'
     });
   }
 
   return objects;
 };
 
-const buildChildren = (object: THREE.Object3D, selectedObject: SceneObject | null): SceneObject[] => {
+const buildChildren = (object: THREE.Object3D, selectedObject: any): SceneObject[] => {
   return object.children
     .filter(child => !child.userData.isHelper)
-    .map(child => {
-      const childId = `child_${child.uuid}`;
-      return {
-        id: childId,
-        name: child.name || `${child.type}_${child.uuid.slice(0, 8)}`,
-        type: child instanceof THREE.Mesh ? 'mesh' : 'group',
-        object: child,
-        children: buildChildren(child, selectedObject),
-        visible: child.visible,
-        selected: selectedObject?.id === childId
-      };
-    });
+    .map(child => ({
+      id: `child_${child.uuid}`,
+      name: child.name || `${child.type}_${child.uuid.slice(0, 8)}`,
+      type: child instanceof THREE.Mesh ? 'mesh' : 'group',
+      object: child,
+      children: buildChildren(child, selectedObject),
+      visible: child.visible,
+      selected: selectedObject?.id === `child_${child.uuid}`
+    }));
 };
 
 export const groupSceneObjects = (sceneObjects: SceneObject[]) => {

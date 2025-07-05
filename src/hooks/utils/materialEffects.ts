@@ -7,15 +7,9 @@ export const applyMaterialOverlay = (
   originalMaterials: Map<THREE.Object3D, THREE.Material | THREE.Material[]>
 ) => {
   if (object instanceof THREE.Mesh) {
-    // Store original material only if not already stored
+    // Store original material
     if (!originalMaterials.has(object)) {
-      // Clone the material to avoid reference issues
-      const originalMaterial = object.material;
-      if (Array.isArray(originalMaterial)) {
-        originalMaterials.set(object, [...originalMaterial]);
-      } else {
-        originalMaterials.set(object, originalMaterial);
-      }
+      originalMaterials.set(object, object.material);
     }
     
     // Apply red overlay
@@ -32,12 +26,7 @@ export const applyMaterialOverlay = (
     object.children.forEach(child => {
       if (child instanceof THREE.Mesh && !child.userData.isHelper) {
         if (!originalMaterials.has(child)) {
-          const originalMaterial = child.material;
-          if (Array.isArray(originalMaterial)) {
-            originalMaterials.set(child, [...originalMaterial]);
-          } else {
-            originalMaterials.set(child, originalMaterial);
-          }
+          originalMaterials.set(child, child.material);
         }
         
         const originalMaterial = originalMaterials.get(child);
@@ -60,15 +49,6 @@ export const restoreOriginalMaterials = (
     if (originalMaterial) {
       object.material = originalMaterial;
       originalMaterials.delete(object);
-      
-      // Force material update
-      if (Array.isArray(object.material)) {
-        object.material.forEach(mat => {
-          if (mat.needsUpdate !== undefined) mat.needsUpdate = true;
-        });
-      } else if (object.material.needsUpdate !== undefined) {
-        object.material.needsUpdate = true;
-      }
     }
   }
 
@@ -80,15 +60,6 @@ export const restoreOriginalMaterials = (
         if (originalMaterial) {
           child.material = originalMaterial;
           originalMaterials.delete(child);
-          
-          // Force material update
-          if (Array.isArray(child.material)) {
-            child.material.forEach(mat => {
-              if (mat.needsUpdate !== undefined) mat.needsUpdate = true;
-            });
-          } else if (child.material.needsUpdate !== undefined) {
-            child.material.needsUpdate = true;
-          }
         }
       }
     });

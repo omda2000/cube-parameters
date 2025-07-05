@@ -14,12 +14,10 @@ export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [selectedObject, setSelectedObject] = useState<SceneObject | null>(null);
 
   const selectObject = useCallback((object: SceneObject | null) => {
-    console.log('SelectionContext: selectObject called with:', object?.id || 'null');
     setSelectedObject(object);
   }, []);
 
   const clearSelection = useCallback(() => {
-    console.log('SelectionContext: clearSelection called');
     setSelectedObject(null);
   }, []);
 
