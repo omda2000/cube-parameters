@@ -7,6 +7,7 @@ import { createRaycaster, getIntersectableObjects, invalidateIntersectableCache 
 import { useSelectTool } from './tools/useSelectTool';
 import { usePointTool } from './tools/usePointTool';
 import { useMeasureTool } from './tools/useMeasureTool';
+import type { SceneObject } from '../types/model';
 
 interface ObjectData {
   name: string;
@@ -28,7 +29,8 @@ export const useMouseInteraction = (
   activeTool: 'select' | 'point' | 'measure' | 'move' = 'select',
   controls?: OrbitControls | null,
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
-  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
+  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void,
+  selectedObject?: SceneObject | null
 ) => {
   const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
@@ -222,6 +224,14 @@ export const useMouseInteraction = (
       invalidateIntersectableCache();
     }
   }, [scene, targetObject]);
+
+  // Clear hover state when selection is cleared
+  useEffect(() => {
+    if (!selectedObject && hoveredObject && materialManagerRef.current) {
+      materialManagerRef.current.setHoverEffect(hoveredObject, false);
+      setHoveredObject(null);
+    }
+  }, [selectedObject]);
 
   return { objectData, mousePosition, isHovering: !!hoveredObject };
 };

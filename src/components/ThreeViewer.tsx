@@ -140,7 +140,8 @@ const ThreeViewer = memo(({
     activeTool,
     controlsRef.current,
     handlePointCreate,
-    handleMeasureCreate
+    handleMeasureCreate,
+    selectedObject
   );
 
   // Zoom controls hook - use perspective camera ref for compatibility
