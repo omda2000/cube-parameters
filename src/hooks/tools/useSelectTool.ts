@@ -31,6 +31,7 @@ export const useSelectTool = (
       
       onObjectSelect(targetObject);
     } else if (onObjectSelect) {
+      // Clicked on empty canvas - deselect
       onObjectSelect(null);
     }
   }, [renderer, camera, scene, onObjectSelect]);
