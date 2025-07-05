@@ -21,7 +21,7 @@ export const applyMaterialOverlay = (
           const clonedMat = mat.clone();
           if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
             clonedMat.transparent = true;
-            clonedMat.opacity = 0.7; // Semi-transparent
+            clonedMat.opacity = 0.3; // 30% opacity
             clonedMat.color = new THREE.Color(0xff0000); // Red color
           }
           return clonedMat;
@@ -32,7 +32,7 @@ export const applyMaterialOverlay = (
         const clonedMat = originalMaterial.clone();
         if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
           clonedMat.transparent = true;
-          clonedMat.opacity = 0.7; // Semi-transparent
+          clonedMat.opacity = 0.3; // 30% opacity
           clonedMat.color = new THREE.Color(0xff0000); // Red color
         }
         object.material = clonedMat;
@@ -55,7 +55,7 @@ export const applyMaterialOverlay = (
               const clonedMat = mat.clone();
               if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
                 clonedMat.transparent = true;
-                clonedMat.opacity = 0.7;
+                clonedMat.opacity = 0.3;
                 clonedMat.color = new THREE.Color(0xff0000);
               }
               return clonedMat;
@@ -65,7 +65,7 @@ export const applyMaterialOverlay = (
             const clonedMat = originalMaterial.clone();
             if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
               clonedMat.transparent = true;
-              clonedMat.opacity = 0.7;
+              clonedMat.opacity = 0.3;
               clonedMat.color = new THREE.Color(0xff0000);
             }
             child.material = clonedMat;
@@ -85,8 +85,12 @@ export const restoreOriginalMaterials = (
     if (originalMaterial) {
       // Dispose cloned materials before restoring
       if (Array.isArray(object.material)) {
-        object.material.forEach(mat => mat.dispose());
-      } else {
+        object.material.forEach(mat => {
+          if (mat && typeof mat.dispose === 'function') {
+            mat.dispose();
+          }
+        });
+      } else if (object.material && typeof object.material.dispose === 'function') {
         object.material.dispose();
       }
       
@@ -103,8 +107,12 @@ export const restoreOriginalMaterials = (
         if (originalMaterial) {
           // Dispose cloned materials before restoring
           if (Array.isArray(child.material)) {
-            child.material.forEach(mat => mat.dispose());
-          } else {
+            child.material.forEach(mat => {
+              if (mat && typeof mat.dispose === 'function') {
+                mat.dispose();
+              }
+            });
+          } else if (child.material && typeof child.material.dispose === 'function') {
             child.material.dispose();
           }
           
