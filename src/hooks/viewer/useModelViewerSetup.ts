@@ -104,12 +104,17 @@ export const useModelViewerSetup = ({
     }
   }, [onSceneReady]);
 
-  // Expose models to parent
+  // Expose models to parent with proper change detection
   useEffect(() => {
     if (onModelsChange) {
-      onModelsChange(loadedModels, currentModel);
+      // Use a timeout to batch updates and prevent rapid firing
+      const timeoutId = setTimeout(() => {
+        onModelsChange(loadedModels, currentModel);
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [loadedModels, currentModel, onModelsChange]);
+  }, [loadedModels.length, currentModel?.id, onModelsChange]);
 
   return {
     mountRef,

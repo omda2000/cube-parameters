@@ -53,7 +53,7 @@ export const useModelViewerEffects = ({
   // Camera exposure
   useCameraExposure(switchCamera);
 
-  // Models exposure
+  // Models exposure with proper change detection
   useModelsExposure(
     loadedModels,
     currentModel,

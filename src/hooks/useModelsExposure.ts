@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { LoadedModel } from '../types/model';
 
 export const useModelsExposure = (
@@ -10,10 +10,33 @@ export const useModelsExposure = (
   removeModel: (modelId: string) => void,
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void
 ) => {
-  // Expose models to parent component
+  // Use refs to track previous values and prevent unnecessary calls
+  const prevModelsRef = useRef<LoadedModel[]>([]);
+  const prevCurrentModelRef = useRef<LoadedModel | null>(null);
+
+  // Expose models to parent component only when they actually change
   useEffect(() => {
     if (onModelsChange) {
-      onModelsChange(loadedModels, currentModel);
+      // Check if models or current model actually changed
+      const modelsChanged = 
+        loadedModels.length !== prevModelsRef.current.length ||
+        loadedModels.some((model, index) => model.id !== prevModelsRef.current[index]?.id);
+      
+      const currentModelChanged = 
+        currentModel?.id !== prevCurrentModelRef.current?.id;
+
+      if (modelsChanged || currentModelChanged) {
+        console.log('Models changed, notifying parent:', { 
+          modelsCount: loadedModels.length, 
+          currentModelId: currentModel?.id 
+        });
+        
+        onModelsChange(loadedModels, currentModel);
+        
+        // Update refs
+        prevModelsRef.current = [...loadedModels];
+        prevCurrentModelRef.current = currentModel;
+      }
     }
   }, [loadedModels, currentModel, onModelsChange]);
 
