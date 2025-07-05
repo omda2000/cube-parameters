@@ -22,13 +22,13 @@ const UnifiedSceneTree = ({
 }: UnifiedSceneTreeProps) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
-  const { selectedObject, selectObject } = useSelectionContext();
+  const { selectedObjects, selectMultipleObjects } = useSelectionContext();
 
   // Build unified scene tree
   useEffect(() => {
-    const objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObject);
+    const objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
     setSceneObjects(objects);
-  }, [scene, loadedModels, showPrimitives, selectedObject]);
+  }, [scene, loadedModels, showPrimitives, selectedObjects]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
@@ -45,9 +45,8 @@ const UnifiedSceneTree = ({
     setSceneObjects([...sceneObjects]);
   };
 
-  const handleObjectSelect = (sceneObject: SceneObject) => {
-    const isCurrentlySelected = selectedObject?.id === sceneObject.id;
-    selectObject(isCurrentlySelected ? null : sceneObject);
+  const handleObjectSelect = (sceneObject: SceneObject, addToSelection = false) => {
+    selectMultipleObjects(sceneObject, addToSelection);
   };
 
   const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
@@ -84,11 +83,6 @@ const UnifiedSceneTree = ({
         }
       }
       
-      // Clear selection if this object was selected
-      if (selectedObject?.id === sceneObject.id) {
-        selectObject(null);
-      }
-      
       // Force re-render
       setSceneObjects([...sceneObjects]);
     }
@@ -102,6 +96,11 @@ const UnifiedSceneTree = ({
       <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
         <Box className="h-4 w-4" />
         Scene Hierarchy
+        {selectedObjects.length > 1 && (
+          <span className="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded">
+            {selectedObjects.length} selected
+          </span>
+        )}
       </div>
       <div className="max-h-96 overflow-y-auto border border-slate-600 rounded bg-slate-800/30">
         <div className="p-2">
@@ -112,6 +111,10 @@ const UnifiedSceneTree = ({
             </div>
           ) : (
             <div className="space-y-1">
+              <div className="text-xs text-slate-500 mb-2">
+                Tip: Hold Ctrl+Click to select multiple objects
+              </div>
+              
               <SceneObjectGroup
                 title="Models"
                 objects={groupedObjects.models}

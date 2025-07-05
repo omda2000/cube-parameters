@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, memo } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../hooks/useThreeScene';
@@ -61,7 +60,7 @@ const ThreeViewer = memo(({
   const mountRef = useRef<HTMLDivElement>(null);
 
   // Custom hooks for organized functionality
-  const { selectedObject, clearSelection, handleObjectSelect } = useObjectSelection();
+  const { selectedObjects, selectedObject, clearSelection, handleObjectSelect } = useObjectSelection();
 
   const {
     sceneRef,
@@ -127,8 +126,8 @@ const ThreeViewer = memo(({
     onMeasureCreate
   );
 
-  // Use selection effects hook for visual feedback
-  useSelectionEffects(selectedObject);
+  // Use selection effects hook for visual feedback - pass selectedObjects array
+  useSelectionEffects(selectedObjects);
 
   // Mouse interaction and hover effects - use perspective camera for compatibility
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
@@ -188,6 +187,11 @@ const ThreeViewer = memo(({
         visible={isHovering}
       />
       <SelectionOverlay selectedObject={selectedObject} />
+      {selectedObjects.length > 1 && (
+        <div className="absolute top-4 left-4 bg-blue-600/20 text-blue-300 px-3 py-1 rounded text-sm">
+          {selectedObjects.length} objects selected
+        </div>
+      )}
     </div>
   );
 });

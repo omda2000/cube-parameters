@@ -24,7 +24,7 @@ export const useMouseInteraction = (
   camera: THREE.PerspectiveCamera | null,
   targetObject: THREE.Mesh | THREE.Group | null,
   scene: THREE.Scene | null,
-  onObjectSelect?: (object: THREE.Object3D | null) => void,
+  onObjectSelect?: (object: THREE.Object3D | null, addToSelection?: boolean) => void,
   activeTool: 'select' | 'point' | 'measure' | 'move' = 'select',
   controls?: OrbitControls | null,
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
@@ -188,7 +188,11 @@ export const useMouseInteraction = (
 
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault();
-      measureTool.handleRightClick();
+      if (activeTool === 'select') {
+        selectTool.handleContextMenu(event);
+      } else if (activeTool === 'measure') {
+        measureTool.handleRightClick();
+      }
     };
 
     renderer.domElement.addEventListener('mousemove', handleMouseMove);

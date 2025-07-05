@@ -8,7 +8,7 @@ interface SceneObjectGroupProps {
   expandedNodes: Set<string>;
   onToggleExpanded: (nodeId: string) => void;
   onToggleVisibility: (sceneObject: SceneObject) => void;
-  onObjectSelect: (sceneObject: SceneObject) => void;
+  onObjectSelect: (sceneObject: SceneObject, addToSelection?: boolean) => void;
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 

@@ -6,7 +6,7 @@ import { usePointSelection } from './selection/usePointSelection';
 import { useMeasurementSelection } from './selection/useMeasurementSelection';
 import { useMeshSelection } from './selection/useMeshSelection';
 
-export const useSelectionEffects = (selectedObject: SceneObject | null) => {
+export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
   const { applyPointSelection } = usePointSelection();
   const { applyMeasurementSelection } = useMeasurementSelection();
   const { applyMeshSelection } = useMeshSelection();
@@ -31,26 +31,34 @@ export const useSelectionEffects = (selectedObject: SceneObject | null) => {
     applyMeshSelection(object, selected, overlayMaterial);
   };
 
-  // Apply/remove selection effects when selectedObject changes
+  // Apply/remove selection effects when selectedObjects changes
   useEffect(() => {
     return () => {
       // Cleanup on unmount
-      if (selectedObject?.object) {
-        applySelectionEffects(selectedObject.object, false, selectedObject.type);
-      }
+      selectedObjects.forEach(selectedObject => {
+        if (selectedObject?.object) {
+          applySelectionEffects(selectedObject.object, false, selectedObject.type);
+        }
+      });
       selectionMaterials.dispose();
     };
   }, []);
 
   useEffect(() => {
-    if (selectedObject?.object) {
-      applySelectionEffects(selectedObject.object, true, selectedObject.type);
-    }
+    // Apply selection effects to all selected objects
+    selectedObjects.forEach(selectedObject => {
+      if (selectedObject?.object) {
+        applySelectionEffects(selectedObject.object, true, selectedObject.type);
+      }
+    });
 
     return () => {
-      if (selectedObject?.object) {
-        applySelectionEffects(selectedObject.object, false, selectedObject.type);
-      }
+      // Remove selection effects from all selected objects
+      selectedObjects.forEach(selectedObject => {
+        if (selectedObject?.object) {
+          applySelectionEffects(selectedObject.object, false, selectedObject.type);
+        }
+      });
     };
-  }, [selectedObject]);
+  }, [selectedObjects]);
 };
