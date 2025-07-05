@@ -7,11 +7,12 @@ export const useSelectTool = (
   renderer: THREE.WebGLRenderer | null,
   camera: THREE.PerspectiveCamera | null,
   scene: THREE.Scene | null,
-  onObjectSelect?: (object: THREE.Object3D | null) => void
+  onObjectSelect?: (object: THREE.Object3D | null, isMultiSelect?: boolean) => void
 ) => {
   const handleClick = useCallback((event: MouseEvent) => {
     if (!renderer || !camera || !scene || event.button !== 0) return;
 
+    const isCtrlClick = event.ctrlKey || event.metaKey;
     const { raycaster, mouse } = createRaycaster();
     const rect = renderer.domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -29,9 +30,9 @@ export const useSelectTool = (
         targetObject = targetObject.parent;
       }
       
-      onObjectSelect(targetObject);
-    } else if (onObjectSelect) {
-      onObjectSelect(null);
+      onObjectSelect(targetObject, isCtrlClick);
+    } else if (onObjectSelect && !isCtrlClick) {
+      onObjectSelect(null, false);
     }
   }, [renderer, camera, scene, onObjectSelect]);
 
