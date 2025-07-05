@@ -1,17 +1,8 @@
 
-import { useRef, useEffect } from 'react';
-import * as THREE from 'three';
-import { useThreeScene } from './useThreeScene';
-import { useBoxMesh } from './useBoxMesh';
-import { useMouseInteraction } from './useMouseInteraction';
-import { useLighting } from './useLighting';
-import { useEnvironment } from './useEnvironment';
-import { useFBXLoader } from './useFBXLoader';
-import { useSelectionEffects } from './useSelectionEffects';
-import { useObjectSelection } from './useObjectSelection';
-import { useCameraExposure } from './useCameraExposure';
-import { useModelsExposure } from './useModelsExposure';
-import { useToolHandlersViewer } from './useToolHandlersViewer';
+import { useRef } from 'react';
+import { useModelViewerSetup } from './viewer/useModelViewerSetup';
+import { useModelViewerEffects } from './viewer/useModelViewerEffects';
+import { useOptimizedRenderer } from './viewer/useOptimizedRenderer';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -38,125 +29,63 @@ interface UseModelViewerCoreProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
-export const useModelViewerCore = ({ 
-  dimensions, 
-  boxColor, 
-  objectName, 
-  sunlight,
-  ambientLight,
-  shadowQuality,
-  environment,
-  onFileUpload,
-  onModelsChange,
-  onSceneReady,
-  showPrimitives = true,
-  activeTool = 'select',
-  onPointCreate,
-  onMeasureCreate
-}: UseModelViewerCoreProps) => {
-  const mountRef = useRef<HTMLDivElement>(null);
-
-  // Custom hooks for organized functionality
-  const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
-
+export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
+  // Core Three.js setup
   const {
-    sceneRef,
-    perspectiveCameraRef,
-    rendererRef,
-    labelRendererRef,
-    controlsRef,
-    gridHelperRef,
-    performanceMetrics,
-    isOrthographic,
-    switchCamera
-  } = useThreeScene(mountRef);
-
-  // Expose camera switching
-  useCameraExposure(switchCamera);
-
-  // Expose scene to parent components
-  useEffect(() => {
-    if (sceneRef.current && onSceneReady) {
-      onSceneReady(sceneRef.current);
-    }
-  }, [onSceneReady]);
-
-  const { boxRef } = useBoxMesh(
-    sceneRef.current,
-    dimensions,
-    boxColor,
-    objectName,
-    showPrimitives
-  );
-
-  // Mark box as primitive for scene tree
-  useEffect(() => {
-    if (boxRef.current) {
-      boxRef.current.userData.isPrimitive = true;
-    }
-  }, [boxRef]);
-
-  const {
-    loadedModels,
+    mountRef,
+    scene,
+    camera,
+    renderer,
+    controls,
     currentModel,
+    boxRef,
     isLoading,
     error,
     loadFBXModel,
     switchToModel,
-    removeModel
-  } = useFBXLoader(sceneRef.current);
+    removeModel,
+    performanceMetrics,
+    isOrthographic,
+    switchCamera
+  } = useModelViewerSetup({
+    dimensions: props.dimensions,
+    boxColor: props.boxColor,
+    objectName: props.objectName,
+    sunlight: props.sunlight,
+    ambientLight: props.ambientLight,
+    shadowQuality: props.shadowQuality,
+    environment: props.environment,
+    onModelsChange: props.onModelsChange,
+    onSceneReady: props.onSceneReady,
+    showPrimitives: props.showPrimitives
+  });
 
-  // Expose models and FBX handlers
-  useModelsExposure(
-    loadedModels,
+  // Renderer optimization
+  useOptimizedRenderer(renderer);
+
+  // Effects and interactions
+  const {
+    objectData,
+    mousePosition,
+    isHovering,
+    selectedObjects
+  } = useModelViewerEffects({
+    renderer,
+    camera,
+    scene,
+    controls,
     currentModel,
+    boxRef,
+    activeTool: props.activeTool,
+    onPointCreate: props.onPointCreate,
+    onMeasureCreate: props.onMeasureCreate,
+    loadedModels: currentModel ? [currentModel] : [],
     loadFBXModel,
     switchToModel,
     removeModel,
-    onModelsChange
-  );
-
-  // Tool handlers
-  const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
-    onPointCreate,
-    onMeasureCreate
-  );
-
-  // Use selection effects hook for visual feedback
-  useSelectionEffects(selectedObjects);
-
-  // Mouse interaction and hover effects
-  const { objectData, mousePosition, isHovering } = useMouseInteraction(
-    rendererRef.current,
-    perspectiveCameraRef.current,
-    currentModel ? currentModel.object : boxRef.current,
-    sceneRef.current,
-    handleObjectSelect,
-    activeTool,
-    controlsRef.current,
-    handlePointCreate,
-    handleMeasureCreate
-  );
-
-  useLighting(
-    sceneRef.current,
-    sunlight,
-    ambientLight,
-    shadowQuality
-  );
-
-  useEnvironment(
-    sceneRef.current,
-    environment,
-    gridHelperRef.current
-  );
-
-  // Debug performance metrics in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Performance Metrics:', performanceMetrics);
-    }
-  }, [performanceMetrics]);
+    onModelsChange: props.onModelsChange,
+    switchCamera
+  });
 
   return {
     mountRef,
@@ -165,6 +94,7 @@ export const useModelViewerCore = ({
     isHovering,
     selectedObjects,
     isLoading,
-    error
+    error,
+    performanceMetrics
   };
 };
