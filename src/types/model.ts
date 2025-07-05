@@ -42,7 +42,7 @@ export type ShadowQuality = 'low' | 'medium' | 'high';
 export interface SceneObject {
   id: string;
   name: string;
-  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point' | 'measurement';
+  type: 'mesh' | 'group' | 'light' | 'primitive' | 'ground' | 'point' | 'measurement' | 'model' | 'environment';
   object: THREE.Object3D;
   children: SceneObject[];
   visible: boolean;

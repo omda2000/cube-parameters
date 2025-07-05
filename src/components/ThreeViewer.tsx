@@ -61,7 +61,7 @@ const ThreeViewer = memo(({
   const mountRef = useRef<HTMLDivElement>(null);
 
   // Custom hooks for organized functionality
-  const { selectedObject, clearSelection, handleObjectSelect } = useObjectSelection();
+  const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
 
   const {
     sceneRef,
@@ -128,7 +128,7 @@ const ThreeViewer = memo(({
   );
 
   // Use selection effects hook for visual feedback
-  useSelectionEffects(selectedObject);
+  useSelectionEffects(selectedObjects);
 
   // Mouse interaction and hover effects - use perspective camera for compatibility
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
@@ -148,7 +148,7 @@ const ThreeViewer = memo(({
     sceneRef,
     perspectiveCameraRef,
     controlsRef,
-    selectedObject
+    selectedObjects.length > 0 ? selectedObjects[0] : null
   );
 
   // Keyboard shortcuts - use perspective camera ref for compatibility
@@ -156,7 +156,7 @@ const ThreeViewer = memo(({
     onClearSelection: clearSelection,
     onZoomAll: zoomAll,
     onZoomToSelected: zoomToSelected,
-    selectedObject
+    selectedObject: selectedObjects.length > 0 ? selectedObjects[0] : null
   });
 
   useLighting(
@@ -187,7 +187,7 @@ const ThreeViewer = memo(({
         mousePosition={mousePosition}
         visible={isHovering}
       />
-      <SelectionOverlay selectedObject={selectedObject} />
+      <SelectionOverlay selectedObject={selectedObjects.length > 0 ? selectedObjects[0] : null} />
     </div>
   );
 });
