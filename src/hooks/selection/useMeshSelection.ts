@@ -19,7 +19,7 @@ export const useMeshSelection = () => {
         object.parent?.add(outline);
       }
       
-      // Apply semi-transparent red overlay
+      // Apply red overlay
       applyMaterialOverlay(object, overlayMaterial, originalMaterials);
     } else {
       // Remove outline

@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronDown, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import * as THREE from 'three';
+import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { SceneObject } from '../../../types/model';
 import NodeIcon from './NodeIcon';
 
@@ -9,7 +10,6 @@ interface SceneObjectNodeProps {
   sceneObject: SceneObject;
   level: number;
   expandedNodes: Set<string>;
-  selectedObject: SceneObject | null;
   onToggleExpanded: (nodeId: string) => void;
   onToggleVisibility: (sceneObject: SceneObject) => void;
   onObjectSelect: (sceneObject: SceneObject) => void;
@@ -20,24 +20,24 @@ const SceneObjectNode = ({
   sceneObject,
   level,
   expandedNodes,
-  selectedObject,
   onToggleExpanded,
   onToggleVisibility,
   onObjectSelect,
   onDelete
 }: SceneObjectNodeProps) => {
+  const { selectedObject } = useSelectionContext();
+  
   const isExpanded = expandedNodes.has(sceneObject.id);
   const hasChildren = sceneObject.children.length > 0;
-  const isSelected = selectedObject?.id === sceneObject.id;
   const paddingLeft = level * 16;
+  const isSelected = selectedObject?.id === sceneObject.id;
+  const isDeletable = sceneObject.type === 'point' || sceneObject.type === 'measurement';
 
   return (
     <div>
       <div 
-        className={`flex items-center py-1 px-2 rounded text-sm cursor-pointer transition-colors ${
-          isSelected 
-            ? 'bg-indigo-600/40 hover:bg-indigo-600/50' 
-            : 'hover:bg-slate-700/30'
+        className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer ${
+          isSelected ? 'bg-blue-600/30 border border-blue-500/50' : ''
         }`}
         style={{ paddingLeft }}
         onClick={() => onObjectSelect(sceneObject)}
@@ -65,7 +65,7 @@ const SceneObjectNode = ({
           
           <NodeIcon type={sceneObject.type} />
           
-          <span className={`truncate flex-1 ${isSelected ? 'text-white font-medium' : 'text-slate-200'}`}>
+          <span className={`truncate flex-1 ${isSelected ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
             {sceneObject.name}
           </span>
           
@@ -86,14 +86,17 @@ const SceneObjectNode = ({
               )}
             </Button>
             
-            {(sceneObject.type === 'point' || sceneObject.type === 'measurement') && (
+            {isDeletable && (
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
                 onClick={(e) => onDelete(sceneObject, e)}
+                title="Delete"
               >
-                <Trash2 className="h-3 w-3" />
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </Button>
             )}
           </div>
@@ -108,7 +111,6 @@ const SceneObjectNode = ({
               sceneObject={child}
               level={level + 1}
               expandedNodes={expandedNodes}
-              selectedObject={selectedObject}
               onToggleExpanded={onToggleExpanded}
               onToggleVisibility={onToggleVisibility}
               onObjectSelect={onObjectSelect}

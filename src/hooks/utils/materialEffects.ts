@@ -7,36 +7,17 @@ export const applyMaterialOverlay = (
   originalMaterials: Map<THREE.Object3D, THREE.Material | THREE.Material[]>
 ) => {
   if (object instanceof THREE.Mesh) {
-    // Store original material if not already stored
+    // Store original material
     if (!originalMaterials.has(object)) {
       originalMaterials.set(object, object.material);
     }
     
-    // Create a clone of the original material and modify it
+    // Apply red overlay
     const originalMaterial = originalMaterials.get(object);
-    if (originalMaterial) {
-      if (Array.isArray(originalMaterial)) {
-        // Handle multi-material meshes
-        const newMaterials = originalMaterial.map(mat => {
-          const clonedMat = mat.clone();
-          if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
-            clonedMat.transparent = true;
-            clonedMat.opacity = 0.3; // 30% opacity
-            clonedMat.color = new THREE.Color(0xff0000); // Red color
-          }
-          return clonedMat;
-        });
-        object.material = newMaterials;
-      } else {
-        // Handle single material
-        const clonedMat = originalMaterial.clone();
-        if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
-          clonedMat.transparent = true;
-          clonedMat.opacity = 0.3; // 30% opacity
-          clonedMat.color = new THREE.Color(0xff0000); // Red color
-        }
-        object.material = clonedMat;
-      }
+    if (Array.isArray(originalMaterial)) {
+      object.material = [...originalMaterial, overlayMaterial];
+    } else {
+      object.material = [originalMaterial as THREE.Material, overlayMaterial];
     }
   }
 
@@ -49,27 +30,10 @@ export const applyMaterialOverlay = (
         }
         
         const originalMaterial = originalMaterials.get(child);
-        if (originalMaterial) {
-          if (Array.isArray(originalMaterial)) {
-            const newMaterials = originalMaterial.map(mat => {
-              const clonedMat = mat.clone();
-              if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
-                clonedMat.transparent = true;
-                clonedMat.opacity = 0.3;
-                clonedMat.color = new THREE.Color(0xff0000);
-              }
-              return clonedMat;
-            });
-            child.material = newMaterials;
-          } else {
-            const clonedMat = originalMaterial.clone();
-            if (clonedMat instanceof THREE.MeshStandardMaterial || clonedMat instanceof THREE.MeshBasicMaterial) {
-              clonedMat.transparent = true;
-              clonedMat.opacity = 0.3;
-              clonedMat.color = new THREE.Color(0xff0000);
-            }
-            child.material = clonedMat;
-          }
+        if (Array.isArray(originalMaterial)) {
+          child.material = [...originalMaterial, overlayMaterial];
+        } else {
+          child.material = [originalMaterial as THREE.Material, overlayMaterial];
         }
       }
     });
@@ -83,17 +47,6 @@ export const restoreOriginalMaterials = (
   if (object instanceof THREE.Mesh) {
     const originalMaterial = originalMaterials.get(object);
     if (originalMaterial) {
-      // Dispose cloned materials before restoring
-      if (Array.isArray(object.material)) {
-        object.material.forEach(mat => {
-          if (mat && typeof mat.dispose === 'function') {
-            mat.dispose();
-          }
-        });
-      } else if (object.material && typeof object.material.dispose === 'function') {
-        object.material.dispose();
-      }
-      
       object.material = originalMaterial;
       originalMaterials.delete(object);
     }
@@ -105,17 +58,6 @@ export const restoreOriginalMaterials = (
       if (child instanceof THREE.Mesh && !child.userData.isHelper) {
         const originalMaterial = originalMaterials.get(child);
         if (originalMaterial) {
-          // Dispose cloned materials before restoring
-          if (Array.isArray(child.material)) {
-            child.material.forEach(mat => {
-              if (mat && typeof mat.dispose === 'function') {
-                mat.dispose();
-              }
-            });
-          } else if (child.material && typeof child.material.dispose === 'function') {
-            child.material.dispose();
-          }
-          
           child.material = originalMaterial;
           originalMaterials.delete(child);
         }

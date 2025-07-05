@@ -10,9 +10,8 @@ export class SelectionMaterials {
         color: 0xff0000,
         transparent: true,
         opacity: 0.3,
-        depthTest: true,
-        depthWrite: false,
-        blending: THREE.NormalBlending
+        depthTest: false,
+        depthWrite: false
       });
     }
     return this.overlayMaterial;
