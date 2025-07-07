@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 import type { LoadedModel, SceneObject } from '../../../types/model';
 
@@ -116,4 +115,63 @@ export const buildSceneObjects = (
   });
 
   return sceneObjects;
+};
+
+export interface GroupedSceneObjects {
+  models: SceneObject[];
+  meshes: SceneObject[];
+  groups: SceneObject[];
+  primitives: SceneObject[];
+  points: SceneObject[];
+  measurements: SceneObject[];
+  lights: SceneObject[];
+  environment: SceneObject[];
+}
+
+export const groupSceneObjects = (sceneObjects: SceneObject[]): GroupedSceneObjects => {
+  const grouped: GroupedSceneObjects = {
+    models: [],
+    meshes: [],
+    groups: [],
+    primitives: [],
+    points: [],
+    measurements: [],
+    lights: [],
+    environment: []
+  };
+
+  sceneObjects.forEach(obj => {
+    switch (obj.type) {
+      case 'model':
+        grouped.models.push(obj);
+        break;
+      case 'mesh':
+        grouped.meshes.push(obj);
+        break;
+      case 'group':
+        grouped.groups.push(obj);
+        break;
+      case 'primitive':
+        grouped.primitives.push(obj);
+        break;
+      case 'point':
+        grouped.points.push(obj);
+        break;
+      case 'measurement':
+        grouped.measurements.push(obj);
+        break;
+      case 'light':
+        grouped.lights.push(obj);
+        break;
+      case 'environment':
+      case 'ground':
+        grouped.environment.push(obj);
+        break;
+      default:
+        // Default to meshes for unknown types
+        grouped.meshes.push(obj);
+    }
+  });
+
+  return grouped;
 };
