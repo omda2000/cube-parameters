@@ -1,6 +1,6 @@
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Settings, Box, Triangle, Sun, TreePine, MapPin } from 'lucide-react';
 import * as THREE from 'three';
 import type { SceneObject } from '../../types/model';
@@ -46,43 +46,15 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
     }
   };
 
-  const getMeshInfo = (object: THREE.Object3D) => {
-    if (object instanceof THREE.Mesh && object.geometry) {
-      const geometry = object.geometry;
-      let vertices = 0;
-      let faces = 0;
-
-      if (geometry.attributes.position) {
-        vertices = geometry.attributes.position.count;
+  const getMaterialName = (object: THREE.Object3D) => {
+    if (object instanceof THREE.Mesh && object.material) {
+      if (Array.isArray(object.material)) {
+        return object.material.map(mat => mat.name || mat.type).join(', ');
       }
-      if (geometry.index) {
-        faces = geometry.index.count / 3;
-      } else {
-        faces = vertices / 3;
-      }
-
-      return { vertices, faces: Math.floor(faces) };
+      return object.material.name || object.material.type;
     }
-    return null;
+    return 'No material';
   };
-
-  const handleTransformChange = (axis: 'x' | 'y' | 'z', property: 'position' | 'rotation' | 'scale', value: number) => {
-    if (selectedObject && selectedObject.object) {
-      const obj = selectedObject.object;
-      
-      if (property === 'position' && obj.position) {
-        obj.position[axis] = value;
-      } else if (property === 'rotation' && obj.rotation) {
-        obj.rotation[axis] = value;
-      } else if (property === 'scale' && obj.scale) {
-        obj.scale[axis] = value;
-      }
-      
-      onPropertyChange(`${property}.${axis}`, value);
-    }
-  };
-
-  const meshInfo = getMeshInfo(selectedObject.object);
 
   return (
     <div className="space-y-4">
@@ -92,7 +64,7 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
       </h2>
 
       <div className="space-y-4">
-        {/* Basic Info */}
+        {/* Object Name */}
         <div>
           <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</Label>
           <Input
@@ -102,165 +74,16 @@ const PropertyPanel = ({ selectedObject, onPropertyChange }: PropertyPanelProps)
           />
         </div>
 
-        <div>
-          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Type</Label>
-          <Input
-            value={selectedObject.type}
-            readOnly
-            className="mt-1 bg-slate-700/50"
-          />
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">UUID</Label>
-          <Input
-            value={selectedObject.object.uuid.slice(0, 8) + '...'}
-            readOnly
-            className="mt-1 bg-slate-700/50 text-xs"
-          />
-        </div>
-
-        <Separator className="bg-slate-600" />
-
-        {/* Geometry Info - only show for mesh objects */}
-        {meshInfo && selectedObject.type === 'mesh' && (
-          <>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Vertices</Label>
-                <Input
-                  value={meshInfo.vertices}
-                  readOnly
-                  className="mt-1 bg-slate-700/50"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Faces</Label>
-                <Input
-                  value={meshInfo.faces}
-                  readOnly
-                  className="mt-1 bg-slate-700/50"
-                />
-              </div>
-            </div>
-            <Separator className="bg-slate-600" />
-          </>
-        )}
-
-        {/* Transform Properties */}
-        <div>
-          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-            {selectedObject.type === 'point' ? 'Coordinates' : 'Position'}
-          </Label>
-          <div className="grid grid-cols-3 gap-2">
-            <div>
-              <Label className="text-xs text-slate-400">X</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={selectedObject.object.position.x.toFixed(2)}
-                onChange={(e) => handleTransformChange('x', 'position', parseFloat(e.target.value))}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-slate-400">Y</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={selectedObject.object.position.y.toFixed(2)}
-                onChange={(e) => handleTransformChange('y', 'position', parseFloat(e.target.value))}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-slate-400">Z</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={selectedObject.object.position.z.toFixed(2)}
-                onChange={(e) => handleTransformChange('z', 'position', parseFloat(e.target.value))}
-                className="mt-1"
-              />
-            </div>
+        {/* Material - only show for mesh objects */}
+        {selectedObject.type === 'mesh' && (
+          <div>
+            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Material</Label>
+            <Input
+              value={getMaterialName(selectedObject.object)}
+              readOnly
+              className="mt-1 bg-slate-700/50"
+            />
           </div>
-        </div>
-
-        {/* Hide rotation and scale for point objects */}
-        {selectedObject.type !== 'point' && (
-          <>
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Rotation (degrees)</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Label className="text-xs text-slate-400">X</Label>
-                  <Input
-                    type="number"
-                    step="1"
-                    value={(selectedObject.object.rotation.x * 180 / Math.PI).toFixed(1)}
-                    onChange={(e) => handleTransformChange('x', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Y</Label>
-                  <Input
-                    type="number"
-                    step="1"
-                    value={(selectedObject.object.rotation.y * 180 / Math.PI).toFixed(1)}
-                    onChange={(e) => handleTransformChange('y', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Z</Label>
-                  <Input
-                    type="number"
-                    step="1"
-                    value={(selectedObject.object.rotation.z * 180 / Math.PI).toFixed(1)}
-                    onChange={(e) => handleTransformChange('z', 'rotation', parseFloat(e.target.value) * Math.PI / 180)}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Scale</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Label className="text-xs text-slate-400">X</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={selectedObject.object.scale.x.toFixed(2)}
-                    onChange={(e) => handleTransformChange('x', 'scale', parseFloat(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Y</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={selectedObject.object.scale.y.toFixed(2)}
-                    onChange={(e) => handleTransformChange('y', 'scale', parseFloat(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-slate-400">Z</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={selectedObject.object.scale.z.toFixed(2)}
-                    onChange={(e) => handleTransformChange('z', 'scale', parseFloat(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-          </>
         )}
       </div>
     </div>
