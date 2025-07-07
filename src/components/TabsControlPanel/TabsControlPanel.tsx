@@ -3,7 +3,6 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
-import MaterialsTab from './tabs/MaterialsTab';
 import LightingTab from './tabs/LightingTab';
 import ViewTab from './tabs/ViewTab';
 import SettingsTab from './tabs/SettingsTab';
@@ -83,10 +82,9 @@ const TabsControlPanel = ({
   return (
     <div className="w-full h-full flex flex-col">
       <Tabs value={activeTab} className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-6 mb-4">
+        <TabsList className="grid w-full grid-cols-5 mb-4">
           <TabsTrigger value="scene" className="text-xs">Scene</TabsTrigger>
           <TabsTrigger value="properties" className="text-xs">Properties</TabsTrigger>
-          <TabsTrigger value="materials" className="text-xs">Materials</TabsTrigger>
           <TabsTrigger value="lighting" className="text-xs">Lighting</TabsTrigger>
           <TabsTrigger value="view" className="text-xs">View</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
@@ -109,17 +107,6 @@ const TabsControlPanel = ({
 
           <TabsContent value="properties" className="h-full overflow-y-auto mt-0">
             <PropertiesTab 
-              dimensions={dimensions}
-              setDimensions={setDimensions}
-              boxColor={boxColor}
-              setBoxColor={setBoxColor}
-              objectName={objectName}
-              setObjectName={setObjectName}
-            />
-          </TabsContent>
-
-          <TabsContent value="materials" className="h-full overflow-y-auto mt-0">
-            <MaterialsTab 
               dimensions={dimensions}
               setDimensions={setDimensions}
               boxColor={boxColor}
