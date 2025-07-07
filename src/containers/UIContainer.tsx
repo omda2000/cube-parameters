@@ -12,7 +12,7 @@ import { useZoomHandlers } from '../hooks/useZoomHandlers';
 import { useControlHandlers } from '../hooks/useControlHandlers';
 
 const UIContainer = () => {
-  const { scene } = useAppState();
+  const { scene, camera, controls } = useAppState();
   const sceneState = useSceneState();
   const uiState = useUIState();
   
@@ -56,6 +56,8 @@ const UIContainer = () => {
     activeTab: uiState.activeControlTab,
     isOrthographic: uiState.isOrthographic,
     onCameraToggle: handleCameraToggle,
+    camera: camera,
+    controls: controls,
     ...sceneState
   };
 

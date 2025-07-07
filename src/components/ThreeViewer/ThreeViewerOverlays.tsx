@@ -2,7 +2,6 @@
 import React from 'react';
 import ModelViewerOverlays from '../ModelViewer/ModelViewerOverlays';
 import MobileNavigationControls from '../MobileNavigationControls/MobileNavigationControls';
-import NavigationCube from '../NavigationCube/NavigationCube';
 import { useResponsiveMode } from '../../hooks/useResponsiveMode';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -54,13 +53,6 @@ const ThreeViewerOverlays = ({
           hasSelection={selectedObjects.length > 0}
         />
       )}
-      
-      {/* Navigation Cube - always visible */}
-      <NavigationCube
-        camera={camera}
-        controls={controls}
-        size={isMobile ? 80 : 100}
-      />
     </>
   );
 };
