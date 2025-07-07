@@ -2,6 +2,26 @@
 import * as THREE from 'three';
 import type { LoadedModel, SceneObject } from '../../../types/model';
 
+// Helper function to generate consistent object IDs (same as in useObjectSelection)
+const generateObjectId = (object: THREE.Object3D): string => {
+  if (object.userData.isPrimitive) {
+    return `primitive_${object.uuid}`;
+  } else if (object.userData.isPoint) {
+    return `point_${object.uuid}`;
+  } else if (object.userData.isMeasurementGroup) {
+    return `measurement_${object.uuid}`;
+  } else if (object instanceof THREE.Group) {
+    return `group_${object.uuid}`;
+  } else if (object instanceof THREE.Mesh) {
+    return `mesh_${object.uuid}`;
+  } else if (object instanceof THREE.Light) {
+    return `light_${object.uuid}`;
+  } else if (object.type === 'GridHelper' || object.type === 'AxesHelper') {
+    return `env_${object.uuid}`;
+  }
+  return `object_${object.uuid}`;
+};
+
 export const buildSceneObjects = (
   scene: THREE.Scene | null,
   loadedModels: LoadedModel[],
@@ -16,37 +36,29 @@ export const buildSceneObjects = (
   // Helper function to determine object type and create SceneObject
   const createSceneObject = (object: THREE.Object3D, parentId?: string): SceneObject => {
     let objectType: SceneObject['type'] = 'mesh';
-    let objectId = `object_${object.uuid}`;
+    const objectId = generateObjectId(object);
 
     // Determine object type based on userData and object properties
     if (object.userData.isPrimitive) {
       objectType = 'primitive';
-      objectId = `primitive_${object.uuid}`;
     } else if (object.userData.isPoint) {
       objectType = 'point';
-      objectId = `point_${object.uuid}`;
     } else if (object.userData.isMeasurementGroup) {
       objectType = 'measurement';
-      objectId = `measurement_${object.uuid}`;
     } else if (object instanceof THREE.Group) {
       objectType = 'group';
-      objectId = `group_${object.uuid}`;
     } else if (object instanceof THREE.Mesh) {
       objectType = 'mesh';
-      objectId = `mesh_${object.uuid}`;
     } else if (object instanceof THREE.Light) {
       objectType = 'light';
-      objectId = `light_${object.uuid}`;
     } else if (object.type === 'GridHelper' || object.type === 'AxesHelper') {
       objectType = 'environment';
-      objectId = `env_${object.uuid}`;
     }
 
     // Check if this is a loaded model
     const isLoadedModel = loadedModels.some(model => model.object === object);
     if (isLoadedModel) {
       objectType = 'model';
-      objectId = `model_${object.uuid}`;
     }
 
     const sceneObject: SceneObject = {
