@@ -1,4 +1,6 @@
 
+import * as THREE from 'three';
+
 export const getCursorForTool = (activeTool: 'select' | 'point' | 'measure' | 'move'): string => {
   const cursors = {
     point: 'crosshair',
