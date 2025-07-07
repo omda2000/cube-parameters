@@ -63,7 +63,7 @@ const UIOverlay = ({
   onShadeTypeChange,
   modelCount
 }: UIOverlayProps) => {
-  const { isMobile } = useResponsiveMode();
+  const { isMobile, isTablet } = useResponsiveMode();
 
   return (
     <>
@@ -73,42 +73,58 @@ const UIOverlay = ({
       </div>
 
       {/* Aid Tools Bar - responsive positioning */}
-      <div className={`${isMobile ? 'fixed top-4 left-4 right-4' : ''}`}>
+      <div className={`fixed z-50 ${isMobile ? 'top-4 left-4 right-16' : 'top-4 left-4'}`}>
         <AidToolsBar
           onToolSelect={onToolSelect}
           activeTool={activeTool}
         />
       </div>
 
-      {/* Control Panel Tabs - hidden on mobile when not needed */}
-      {(!isMobile || showControlPanel) && (
+      {/* Control Panel Tabs - always visible but responsive */}
+      <div className={`${isMobile ? 'fixed top-16 left-4 z-50' : ''}`}>
         <ControlPanelTabs
           activeTab={activeControlTab}
           onTabChange={onTabChange}
           isPanelOpen={showControlPanel}
         />
-      )}
+      </div>
 
-      {/* Fixed Control Panel - responsive sizing */}
-      <FixedControlPanel
-        isOpen={showControlPanel}
-        onClose={onCloseControlPanel}
-      >
-        <TabsControlPanel {...controlsPanelProps} />
-      </FixedControlPanel>
+      {/* Fixed Control Panel - responsive sizing and positioning */}
+      <div className={`${isMobile ? 'fixed inset-x-4 top-28 z-40' : ''}`}>
+        <FixedControlPanel
+          isOpen={showControlPanel}
+          onClose={onCloseControlPanel}
+          className={`${
+            isMobile 
+              ? 'w-full max-w-none h-[60vh] max-h-none' 
+              : isTablet 
+                ? 'w-80 h-96'
+                : 'w-96 h-[32rem]'
+          }`}
+        >
+          <TabsControlPanel {...controlsPanelProps} />
+        </FixedControlPanel>
+      </div>
 
       {/* Measure Tools Panel - responsive positioning */}
-      <div className={`fixed z-40 ${isMobile ? 'left-4 bottom-32' : 'left-4 bottom-28'}`}>
+      <div className={`fixed z-40 ${
+        isMobile 
+          ? 'left-4 right-4 bottom-32'
+          : isTablet
+            ? 'left-4 bottom-24'
+            : 'left-4 bottom-28'
+      }`}>
         <MeasureToolsPanel
           measurements={measurements}
           onClearAll={onClearAllMeasurements}
           onRemoveMeasurement={onRemoveMeasurement}
           visible={showMeasurePanel}
           onClose={onCloseMeasurePanel}
+          className={isMobile ? 'w-full' : ''}
         />
       </div>
 
-      {/* Bottom Floating Bar - responsive */}
+      {/* Bottom Floating Bar - hidden on mobile, responsive on tablet/desktop */}
       {!isMobile && (
         <BottomFloatingBar
           objectCount={modelCount}
@@ -128,6 +144,7 @@ const UIOverlay = ({
           onSnapToGridChange={() => {}}
           gridSize={1}
           onGridSizeChange={() => {}}
+          className={isTablet ? 'scale-90' : ''}
         />
       )}
     </>

@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { useModelViewerSetup } from '../hooks/viewer/useModelViewerSetup';
 import { useModelViewerEffects } from '../hooks/viewer/useModelViewerEffects';
@@ -7,7 +6,7 @@ import { useTouchControls } from '../hooks/useTouchControls';
 import { useResponsiveMode } from '../hooks/useResponsiveMode';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
 import MobileNavigationControls from './MobileNavigationControls/MobileNavigationControls';
-import VirtualJoystick from './VirtualJoystick/VirtualJoystick';
+import NavigationCube from './NavigationCube/NavigationCube';
 import TouchGestureHandler from './TouchGestureHandler/TouchGestureHandler';
 import * as THREE from 'three';
 import type { 
@@ -111,34 +110,6 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     }
   }, [camera]);
 
-  const handleJoystickMove = React.useCallback((x: number, y: number) => {
-    if (controls && (Math.abs(x) > 0.1 || Math.abs(y) > 0.1)) {
-      const rotationSpeed = 0.02;
-      
-      // Use spherical coordinates to rotate around the target
-      const spherical = new THREE.Spherical();
-      const offset = new THREE.Vector3();
-      
-      if (camera) {
-        offset.copy(camera.position).sub(controls.target);
-        spherical.setFromVector3(offset);
-        
-        // Apply rotation
-        spherical.theta -= x * rotationSpeed;
-        spherical.phi += y * rotationSpeed;
-        
-        // Limit phi to avoid flipping
-        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
-        
-        offset.setFromSpherical(spherical);
-        camera.position.copy(controls.target).add(offset);
-        camera.lookAt(controls.target);
-      }
-      
-      controls.update();
-    }
-  }, [controls, camera]);
-
   const handleZoomIn = React.useCallback(() => {
     if (controls && camera) {
       const direction = new THREE.Vector3();
@@ -227,23 +198,22 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
       
       {/* Mobile-specific controls */}
       {isMobile && (
-        <>
-          <MobileNavigationControls
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onZoomAll={handleZoomAll}
-            onZoomToSelected={handleZoomAll}
-            onResetView={handleResetView}
-            hasSelection={selectedObjects.length > 0}
-          />
-          
-          <VirtualJoystick
-            onMove={handleJoystickMove}
-            size={120}
-            maxDistance={50}
-          />
-        </>
+        <MobileNavigationControls
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onZoomAll={handleZoomAll}
+          onZoomToSelected={handleZoomAll}
+          onResetView={handleResetView}
+          hasSelection={selectedObjects.length > 0}
+        />
       )}
+      
+      {/* Navigation Cube - always visible */}
+      <NavigationCube
+        camera={camera}
+        controls={controls}
+        size={isMobile ? 80 : 100}
+      />
       
       {isLoading && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
