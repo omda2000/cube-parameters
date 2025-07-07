@@ -112,27 +112,50 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   }, [camera]);
 
   const handleJoystickMove = React.useCallback((x: number, y: number) => {
-    if (controls && Math.abs(x) > 0.1 || Math.abs(y) > 0.1) {
+    if (controls && (Math.abs(x) > 0.1 || Math.abs(y) > 0.1)) {
       const rotationSpeed = 0.02;
-      controls.rotateLeft(x * rotationSpeed);
-      controls.rotateUp(y * rotationSpeed);
+      
+      // Use spherical coordinates to rotate around the target
+      const spherical = new THREE.Spherical();
+      const offset = new THREE.Vector3();
+      
+      if (camera) {
+        offset.copy(camera.position).sub(controls.target);
+        spherical.setFromVector3(offset);
+        
+        // Apply rotation
+        spherical.theta -= x * rotationSpeed;
+        spherical.phi += y * rotationSpeed;
+        
+        // Limit phi to avoid flipping
+        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+        
+        offset.setFromSpherical(spherical);
+        camera.position.copy(controls.target).add(offset);
+        camera.lookAt(controls.target);
+      }
+      
       controls.update();
     }
-  }, [controls]);
+  }, [controls, camera]);
 
   const handleZoomIn = React.useCallback(() => {
-    if (controls) {
-      controls.dollyIn(1.2);
+    if (controls && camera) {
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      camera.position.add(direction.multiplyScalar(0.5));
       controls.update();
     }
-  }, [controls]);
+  }, [controls, camera]);
 
   const handleZoomOut = React.useCallback(() => {
-    if (controls) {
-      controls.dollyOut(1.2);
+    if (controls && camera) {
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      camera.position.add(direction.multiplyScalar(-0.5));
       controls.update();
     }
-  }, [controls]);
+  }, [controls, camera]);
 
   const handleZoomAll = React.useCallback(() => {
     if (controls && scene) {

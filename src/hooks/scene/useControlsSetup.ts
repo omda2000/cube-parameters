@@ -30,7 +30,7 @@ export const useControlsSetup = (
       controls.rotateSpeed = 0.8; // Faster rotation for touch
       controls.zoomSpeed = 1.2; // More responsive zoom
       controls.panSpeed = 1.0; // Easier panning
-      controls.enableKeys = false; // Disable keyboard on mobile
+      // Note: enableKeys is not available in OrbitControls, keyboard is disabled by default on mobile
       
       // Enhanced touch controls
       controls.touches = {
