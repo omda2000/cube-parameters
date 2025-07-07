@@ -103,6 +103,7 @@ const TabsControlPanel = ({
               onModelSelect={onModelSelect}
               onModelRemove={onModelRemove}
               onPrimitiveSelect={onPrimitiveSelect}
+              scene={scene}
             />
           </TabsContent>
 
@@ -118,7 +119,14 @@ const TabsControlPanel = ({
           </TabsContent>
 
           <TabsContent value="materials" className="h-full overflow-y-auto mt-0">
-            <MaterialsTab />
+            <MaterialsTab 
+              dimensions={dimensions}
+              setDimensions={setDimensions}
+              boxColor={boxColor}
+              setBoxColor={setBoxColor}
+              objectName={objectName}
+              setObjectName={setObjectName}
+            />
           </TabsContent>
 
           <TabsContent value="lighting" className="h-full overflow-y-auto mt-0">
@@ -137,6 +145,8 @@ const TabsControlPanel = ({
           <TabsContent value="view" className="h-full overflow-y-auto space-y-4 mt-0">
             <NavigationPanel camera={camera} controls={controls} />
             <ViewTab 
+              environment={environment}
+              setEnvironment={setEnvironment}
               isOrthographic={isOrthographic}
               onCameraToggle={onCameraToggle}
             />

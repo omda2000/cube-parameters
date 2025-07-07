@@ -17,6 +17,9 @@ interface SceneTabProps {
   isUploading: boolean;
   uploadError: string | null;
   onFileUpload: (file: File) => void;
+  onModelSelect: (modelId: string) => void;
+  onModelRemove: (modelId: string) => void;
+  onPrimitiveSelect: (type: string) => void;
   scene?: THREE.Scene | null;
 }
 
@@ -26,6 +29,9 @@ const SceneTab = ({
   isUploading,
   uploadError,
   onFileUpload,
+  onModelSelect,
+  onModelRemove,
+  onPrimitiveSelect,
   scene
 }: SceneTabProps) => {
   const [searchQuery, setSearchQuery] = useState('');

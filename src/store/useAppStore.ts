@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -15,8 +16,12 @@ import type {
 // App State Slice
 interface AppStateSlice {
   scene: THREE.Scene | null;
+  camera: THREE.Camera | null;
+  controls: OrbitControls | null;
   isInitialized: boolean;
   setScene: (scene: THREE.Scene | null) => void;
+  setCamera: (camera: THREE.Camera | null) => void;
+  setControls: (controls: OrbitControls | null) => void;
   setInitialized: (initialized: boolean) => void;
 }
 
@@ -68,8 +73,12 @@ export const useAppStore = create<AppStore>()(
     (set) => ({
       // App State
       scene: null,
+      camera: null,
+      controls: null,
       isInitialized: false,
       setScene: (scene) => set({ scene }, false, 'setScene'),
+      setCamera: (camera) => set({ camera }, false, 'setCamera'),
+      setControls: (controls) => set({ controls }, false, 'setControls'),
       setInitialized: (isInitialized) => set({ isInitialized }, false, 'setInitialized'),
 
       // UI State
@@ -133,8 +142,12 @@ export const useAppStore = create<AppStore>()(
 export const useAppState = () => useAppStore(
   useShallow((state) => ({
     scene: state.scene,
+    camera: state.camera,
+    controls: state.controls,
     isInitialized: state.isInitialized,
     setScene: state.setScene,
+    setCamera: state.setCamera,
+    setControls: state.setControls,
     setInitialized: state.setInitialized,
   }))
 );

@@ -1,5 +1,7 @@
 
 import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -34,6 +36,11 @@ interface ControlsPanelProps {
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
   activeTab: string;
+  scene?: THREE.Scene;
+  isOrthographic: boolean;
+  onCameraToggle: () => void;
+  camera: THREE.Camera | null;
+  controls: OrbitControls | null;
 }
 
 const ControlsPanel = ({ panelWidth, activeTab, ...props }: ControlsPanelProps) => {

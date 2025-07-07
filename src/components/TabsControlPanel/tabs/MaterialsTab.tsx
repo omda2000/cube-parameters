@@ -6,21 +6,21 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Separator } from '@/components/ui/separator';
 
 interface MaterialsTabProps {
-  dimensions: { length: number; width: number; height: number };
-  setDimensions: (dimensions: { length: number; width: number; height: number }) => void;
-  boxColor: string;
-  setBoxColor: (color: string) => void;
-  objectName: string;
-  setObjectName: (name: string) => void;
+  dimensions?: { length: number; width: number; height: number };
+  setDimensions?: (dimensions: { length: number; width: number; height: number }) => void;
+  boxColor?: string;
+  setBoxColor?: (color: string) => void;
+  objectName?: string;
+  setObjectName?: (name: string) => void;
 }
 
 const MaterialsTab = ({
-  dimensions,
-  setDimensions,
-  boxColor,
-  setBoxColor,
-  objectName,
-  setObjectName
+  dimensions = { length: 1, width: 1, height: 1 },
+  setDimensions = () => {},
+  boxColor = '#4F46E5',
+  setBoxColor = () => {},
+  objectName = 'My Object',
+  setObjectName = () => {}
 }: MaterialsTabProps) => {
   return (
     <TooltipProvider>
