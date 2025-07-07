@@ -4,25 +4,30 @@ import * as THREE from 'three';
 import { createMeasurementSelectionEffect } from '../utils/outlineEffects';
 
 export const useMeasurementSelection = () => {
-  const measurementOutlineRef = useRef<THREE.Group | null>(null);
+  const measurementOutlineMapRef = useRef<Map<THREE.Object3D, THREE.Group>>(new Map());
 
   const applyMeasurementSelection = (object: THREE.Object3D, selected: boolean) => {
     if (!(object instanceof THREE.Group)) return;
+
+    const outlineMap = measurementOutlineMapRef.current;
 
     if (selected) {
       if ((object as any).userData.label) {
         (object as any).userData.label.visible = true;
       }
-      const measurementOutline = createMeasurementSelectionEffect(object);
-      if (measurementOutline) {
-        measurementOutlineRef.current = measurementOutline;
-        object.parent?.add(measurementOutline);
+      if (!outlineMap.has(object)) {
+        const measurementOutline = createMeasurementSelectionEffect(object);
+        if (measurementOutline) {
+          outlineMap.set(object, measurementOutline);
+          object.parent?.add(measurementOutline);
+        }
       }
     } else {
-      if (measurementOutlineRef.current) {
-        measurementOutlineRef.current.parent?.remove(measurementOutlineRef.current);
+      const outline = outlineMap.get(object);
+      if (outline) {
+        outline.parent?.remove(outline);
         // Dispose all children materials and geometries
-        measurementOutlineRef.current.children.forEach(child => {
+        outline.children.forEach(child => {
           if (child instanceof THREE.Mesh) {
             child.geometry.dispose();
             (child.material as THREE.Material).dispose();
@@ -31,7 +36,7 @@ export const useMeasurementSelection = () => {
             (child.material as THREE.Material).dispose();
           }
         });
-        measurementOutlineRef.current = null;
+        outlineMap.delete(object);
       }
       if ((object as any).userData.label) {
         (object as any).userData.label.visible = false;
