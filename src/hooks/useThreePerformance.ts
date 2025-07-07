@@ -1,5 +1,5 @@
+
 import { useRef, useEffect, useCallback } from 'react';
-import * as THREE from 'three';
 
 interface PerformanceMetrics {
   fps: number;

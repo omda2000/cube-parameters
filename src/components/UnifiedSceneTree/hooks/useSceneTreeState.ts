@@ -16,19 +16,18 @@ export const useSceneTreeState = (
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
 
-  // Build unified scene tree with filtering and selection sync
+  // Build unified scene tree with filtering
   useEffect(() => {
-    console.log('Building scene objects with selection sync:', { 
+    console.log('Building scene objects with:', { 
       showSelectedOnly, 
       selectedObjectsCount: selectedObjects.length,
       selectedObjectIds: selectedObjects.map(obj => obj.id)
     });
     
-    // Build objects with current selection state
     let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
     
     // Apply selected-only filter FIRST
-    if (showSelectedOnly && selectedObjects.length > 0) {
+    if (showSelectedOnly) {
       console.log('Filtering for selected objects only');
       objects = objects.filter(obj => {
         const isSelected = selectedObjects.some(selected => selected.id === obj.id);
@@ -60,11 +59,7 @@ export const useSceneTreeState = (
 
   const toggleVisibility = (sceneObject: SceneObject) => {
     sceneObject.object.visible = !sceneObject.object.visible;
-    // Update the scene object state to reflect the change
-    const updatedObjects = sceneObjects.map(obj => 
-      obj.id === sceneObject.id ? { ...obj, visible: obj.object.visible } : obj
-    );
-    setSceneObjects(updatedObjects);
+    setSceneObjects([...sceneObjects]);
   };
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
@@ -109,8 +104,8 @@ export const useSceneTreeState = (
         }
       }
       
-      // Force re-render by updating the objects list
-      setSceneObjects(prev => prev.filter(obj => obj.id !== sceneObject.id));
+      // Force re-render
+      setSceneObjects([...sceneObjects]);
     }
   };
 
