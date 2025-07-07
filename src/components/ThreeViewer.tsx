@@ -3,7 +3,12 @@ import React, { memo } from 'react';
 import { useModelViewerSetup } from '../hooks/viewer/useModelViewerSetup';
 import { useModelViewerEffects } from '../hooks/viewer/useModelViewerEffects';
 import { useOptimizedRenderer } from '../hooks/viewer/useOptimizedRenderer';
+import { useTouchControls } from '../hooks/useTouchControls';
+import { useResponsiveMode } from '../hooks/useResponsiveMode';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
+import MobileNavigationControls from './MobileNavigationControls/MobileNavigationControls';
+import VirtualJoystick from './VirtualJoystick/VirtualJoystick';
+import TouchGestureHandler from './TouchGestureHandler/TouchGestureHandler';
 import * as THREE from 'three';
 import type { 
   SunlightSettings, 
@@ -32,6 +37,8 @@ interface ThreeViewerProps {
 }
 
 const ThreeViewer = memo((props: ThreeViewerProps) => {
+  const { isMobile } = useResponsiveMode();
+  
   // Core setup
   const {
     mountRef,
@@ -89,6 +96,69 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     switchCamera
   });
 
+  // Mobile touch controls
+  const handleDoubleTap = React.useCallback(() => {
+    if (controls) {
+      controls.reset();
+    }
+  }, [controls]);
+
+  const handlePinchZoom = React.useCallback((scale: number) => {
+    if (camera && camera instanceof THREE.PerspectiveCamera) {
+      const newPosition = camera.position.clone();
+      newPosition.multiplyScalar(2 - scale);
+      camera.position.copy(newPosition);
+    }
+  }, [camera]);
+
+  const handleJoystickMove = React.useCallback((x: number, y: number) => {
+    if (controls && Math.abs(x) > 0.1 || Math.abs(y) > 0.1) {
+      const rotationSpeed = 0.02;
+      controls.rotateLeft(x * rotationSpeed);
+      controls.rotateUp(y * rotationSpeed);
+      controls.update();
+    }
+  }, [controls]);
+
+  const handleZoomIn = React.useCallback(() => {
+    if (controls) {
+      controls.dollyIn(1.2);
+      controls.update();
+    }
+  }, [controls]);
+
+  const handleZoomOut = React.useCallback(() => {
+    if (controls) {
+      controls.dollyOut(1.2);
+      controls.update();
+    }
+  }, [controls]);
+
+  const handleZoomAll = React.useCallback(() => {
+    if (controls && scene) {
+      const box = new THREE.Box3().setFromObject(scene);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      
+      controls.target.copy(center);
+      
+      if (camera) {
+        const maxDim = Math.max(size.x, size.y, size.z);
+        camera.position.copy(center);
+        camera.position.z += maxDim * 2;
+        camera.lookAt(center);
+      }
+      
+      controls.update();
+    }
+  }, [controls, scene, camera]);
+
+  const handleResetView = React.useCallback(() => {
+    if (controls) {
+      controls.reset();
+    }
+  }, [controls]);
+
   // Debug performance in development
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -115,13 +185,43 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mountRef} className="w-full h-full" />
+      <TouchGestureHandler
+        camera={camera}
+        controls={controls}
+        onDoubleTap={handleDoubleTap}
+        onPinchZoom={handlePinchZoom}
+        onThreeFingerTap={handleZoomAll}
+      >
+        <div ref={mountRef} className="w-full h-full" />
+      </TouchGestureHandler>
+      
       <ModelViewerOverlays
         objectData={objectData}
         mousePosition={mousePosition}
         isHovering={isHovering}
         selectedObjects={selectedObjects}
       />
+      
+      {/* Mobile-specific controls */}
+      {isMobile && (
+        <>
+          <MobileNavigationControls
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onZoomAll={handleZoomAll}
+            onZoomToSelected={handleZoomAll}
+            onResetView={handleResetView}
+            hasSelection={selectedObjects.length > 0}
+          />
+          
+          <VirtualJoystick
+            onMove={handleJoystickMove}
+            size={120}
+            maxDistance={50}
+          />
+        </>
+      )}
+      
       {isLoading && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="text-white flex items-center gap-2">
