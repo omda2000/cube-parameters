@@ -6,8 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { useMaterialProperties } from '../../../hooks/useMaterialProperties';
-import { useContext } from 'react';
-import { SelectionContext } from '../../../contexts/SelectionContext';
+import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { BoxDimensions } from '../../../types/model';
 
 interface PropertiesTabProps {
@@ -27,7 +26,7 @@ const PropertiesTab = ({
   objectName,
   setObjectName
 }: PropertiesTabProps) => {
-  const { selectedObjects } = useContext(SelectionContext);
+  const { selectedObjects } = useSelectionContext();
   const { materialProps, updateMaterialProperty } = useMaterialProperties(selectedObjects);
 
   // Use material properties from selected object or fallback to box properties
