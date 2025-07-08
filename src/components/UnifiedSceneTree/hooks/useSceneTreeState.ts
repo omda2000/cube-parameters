@@ -54,8 +54,16 @@ export const useSceneTreeState = (
   };
 
   const toggleVisibility = (sceneObject: SceneObject) => {
-    sceneObject.object.visible = !sceneObject.object.visible;
-    setSceneObjects([...sceneObjects]);
+    // Toggle visibility for the object and all its children
+    const newVisibility = !sceneObject.object.visible;
+    
+    sceneObject.object.traverse((child) => {
+      child.visible = newVisibility;
+    });
+    sceneObject.object.visible = newVisibility;
+    
+    // Force re-render by updating the scene objects array
+    setSceneObjects(prevObjects => [...prevObjects]);
   };
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
