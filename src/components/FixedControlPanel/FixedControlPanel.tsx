@@ -26,13 +26,24 @@ const FixedControlPanel = ({
   const panelRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Only allow dragging when clicking on the header area
     setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
       y: e.clientY - position.y
     });
     e.preventDefault();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      setIsDragging(true);
+      setDragStart({
+        x: touch.clientX - position.x,
+        y: touch.clientY - position.y
+      });
+      e.preventDefault();
+    }
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -43,7 +54,21 @@ const FixedControlPanel = ({
     }
   };
 
+  const handleTouchMove = (e: TouchEvent) => {
+    if (isDragging && e.touches.length === 1) {
+      const touch = e.touches[0];
+      const newX = Math.max(0, Math.min(window.innerWidth - 288, touch.clientX - dragStart.x));
+      const newY = Math.max(0, Math.min(window.innerHeight - 100, touch.clientY - dragStart.y));
+      setPosition({ x: newX, y: newY });
+      e.preventDefault();
+    }
+  };
+
   const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchEnd = () => {
     setIsDragging(false);
   };
 
@@ -58,9 +83,13 @@ const FixedControlPanel = ({
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
       };
     }
   }, [isDragging, dragStart]);
@@ -88,10 +117,11 @@ const FixedControlPanel = ({
       <div 
         className={cn(
           "flex items-center justify-between px-3 py-2 border-b border-slate-700/30 cursor-grab select-none",
-          "hover:bg-slate-800/50 transition-colors rounded-t-xl",
+          "hover:bg-slate-800/50 transition-colors rounded-t-xl touch-none",
           isDragging ? "cursor-grabbing" : "cursor-grab"
         )}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
         onClick={handleHeaderClick}
       >
         <div className="flex items-center gap-2">

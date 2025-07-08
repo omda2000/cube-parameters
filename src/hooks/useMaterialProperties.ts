@@ -8,6 +8,7 @@ interface MaterialProperties {
   metalness: number;
   roughness: number;
   envMapIntensity: number;
+  opacity: number;
 }
 
 export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
@@ -15,7 +16,8 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
     color: '#808080',
     metalness: 0.1,
     roughness: 0.6,
-    envMapIntensity: 0.5
+    envMapIntensity: 0.5,
+    opacity: 1.0
   });
 
   // Extract material properties from the first selected object
@@ -32,7 +34,8 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
               color: `#${material.color.getHexString()}`,
               metalness: material.metalness,
               roughness: material.roughness,
-              envMapIntensity: material.envMapIntensity || 0.5
+              envMapIntensity: material.envMapIntensity || 0.5,
+              opacity: material.opacity
             });
             return true;
           }
@@ -76,6 +79,10 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
                   break;
                 case 'envMapIntensity':
                   material.envMapIntensity = value;
+                  break;
+                case 'opacity':
+                  material.opacity = value;
+                  material.transparent = value < 1.0;
                   break;
               }
               material.needsUpdate = true;

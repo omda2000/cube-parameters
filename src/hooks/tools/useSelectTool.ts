@@ -31,8 +31,12 @@ export const useSelectTool = (
       }
       
       onObjectSelect(targetObject, isCtrlClick);
-    } else if (onObjectSelect && !isCtrlClick) {
-      onObjectSelect(null, false);
+    } else {
+      // Always call onObjectSelect with null when clicking empty space
+      // This ensures deselection happens regardless of isCtrlClick
+      if (onObjectSelect) {
+        onObjectSelect(null, false);
+      }
     }
   }, [renderer, camera, scene, onObjectSelect]);
 

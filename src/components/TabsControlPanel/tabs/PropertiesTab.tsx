@@ -1,5 +1,5 @@
 
-import { Box, Palette, Tag, Ruler, Sparkles, Eye, Globe } from 'lucide-react';
+import { Box, Palette, Tag, Ruler, Sparkles, Eye, Globe, Droplets } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -40,6 +40,7 @@ const PropertiesTab = ({
   const metalness = materialProps?.metalness ?? 0.1;
   const roughness = materialProps?.roughness ?? 0.6;
   const envMapIntensity = materialProps?.envMapIntensity ?? 0.5;
+  const opacity = materialProps?.opacity ?? 1.0;
 
   return (
     <TooltipProvider>
@@ -90,6 +91,23 @@ const PropertiesTab = ({
                 placeholder="#808080"
               />
             </div>
+          </div>
+
+          {/* Opacity */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Droplets className="h-2.5 w-2.5 text-blue-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Opacity</Label>
+              <span className="text-xs text-slate-400 ml-auto">{opacity.toFixed(2)}</span>
+            </div>
+            <Slider
+              value={[opacity * 100]}
+              max={100}
+              step={1}
+              className="w-full"
+              onValueChange={([value]) => updateMaterialProperty('opacity', value / 100)}
+              disabled={!hasSelectedObject}
+            />
           </div>
 
           {/* Metalness */}
