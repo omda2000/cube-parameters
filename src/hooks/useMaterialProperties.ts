@@ -51,14 +51,27 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
           }
         });
       }
+    } else {
+      // Reset to default when no objects selected
+      setMaterialProps({
+        color: '#808080',
+        metalness: 0.1,
+        roughness: 0.6,
+        envMapIntensity: 0.5,
+        opacity: 1.0
+      });
     }
   }, [selectedObjects]);
 
   // Update material properties on selected objects
   const updateMaterialProperty = useCallback((property: keyof MaterialProperties, value: any) => {
+    // Update local state immediately for responsive UI
     setMaterialProps(prev => ({ ...prev, [property]: value }));
 
+    // Apply to all selected objects
     selectedObjects.forEach(selectedObject => {
+      if (!selectedObject?.object) return;
+
       const updateObjectMaterial = (obj: THREE.Object3D) => {
         if (obj instanceof THREE.Mesh && obj.material) {
           const materials = Array.isArray(obj.material) 
@@ -67,6 +80,18 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
 
           materials.forEach(material => {
             if (material instanceof THREE.MeshStandardMaterial) {
+              // Store original properties if not already stored
+              if (!material.userData.originalProperties) {
+                material.userData.originalProperties = {
+                  color: material.color.getHex(),
+                  metalness: material.metalness,
+                  roughness: material.roughness,
+                  envMapIntensity: material.envMapIntensity,
+                  opacity: material.opacity,
+                  transparent: material.transparent
+                };
+              }
+
               switch (property) {
                 case 'color':
                   material.color.setHex(parseInt(value.replace('#', ''), 16));

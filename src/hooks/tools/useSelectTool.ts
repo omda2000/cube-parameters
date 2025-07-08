@@ -32,8 +32,7 @@ export const useSelectTool = (
       
       onObjectSelect(targetObject, isCtrlClick);
     } else {
-      // Always call onObjectSelect with null when clicking empty space
-      // This ensures deselection happens regardless of isCtrlClick
+      // Always clear selection when clicking empty space, regardless of ctrl key
       if (onObjectSelect) {
         onObjectSelect(null, false);
       }
