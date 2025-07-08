@@ -29,9 +29,11 @@ const PropertiesTab = ({
 
   const updateMaterialColor = (material: THREE.Material, color: THREE.Color) => {
     try {
-      if (material && typeof material === 'object') {
-        if ('color' in material && material.color && typeof material.color.copy === 'function') {
-          material.color.copy(color);
+      // Check if material has a color property and it's a THREE.Color
+      if (material && 'color' in material) {
+        const colorProperty = (material as any).color;
+        if (colorProperty && colorProperty instanceof THREE.Color) {
+          colorProperty.copy(color);
           material.needsUpdate = true;
         }
       }
