@@ -80,16 +80,38 @@ const TabsControlPanel = ({
   camera,
   controls
 }: TabsControlPanelProps) => {
+  // Apply default grey material to objects without materials
+  React.useEffect(() => {
+    if (!scene) return;
+
+    const defaultMaterial = new THREE.MeshPhongMaterial({
+      color: 0x808080, // Grey color
+      shininess: 30,
+      transparent: false
+    });
+
+    const applyDefaultMaterial = (object: THREE.Object3D) => {
+      if (object instanceof THREE.Mesh && !object.material) {
+        object.material = defaultMaterial.clone();
+      }
+      
+      object.children.forEach(applyDefaultMaterial);
+    };
+
+    scene.children.forEach(applyDefaultMaterial);
+  }, [scene, loadedModels]);
+
   return (
     <div className="w-full h-full flex flex-col">
       <Tabs value={activeTab} className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-6 mb-4">
-          <TabsTrigger value="scene" className="text-xs">Scene</TabsTrigger>
-          <TabsTrigger value="properties" className="text-xs">Properties</TabsTrigger>
-          <TabsTrigger value="materials" className="text-xs">Materials</TabsTrigger>
-          <TabsTrigger value="lighting" className="text-xs">Lighting</TabsTrigger>
-          <TabsTrigger value="view" className="text-xs">View</TabsTrigger>
-          <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
+        {/* Hide tab list - navigation handled by left panel icons */}
+        <TabsList className="hidden">
+          <TabsTrigger value="scene">Scene</TabsTrigger>
+          <TabsTrigger value="properties">Properties</TabsTrigger>
+          <TabsTrigger value="materials">Materials</TabsTrigger>
+          <TabsTrigger value="lighting">Lighting</TabsTrigger>
+          <TabsTrigger value="view">View</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <div className="flex-1 overflow-hidden">
