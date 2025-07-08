@@ -38,17 +38,17 @@ const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelT
                     variant="ghost"
                     size="sm"
                     onClick={() => handleTabClick(tab.id)}
-                    className={`h-8 w-8 p-0 transition-all duration-150 hover:scale-105 ${
+                    className={`h-10 w-10 p-0 transition-all duration-150 hover:scale-105 ${
                       isActive
                         ? 'bg-primary text-primary-foreground shadow-md'
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     }`}
                   >
-                    <IconComponent className="h-4 w-4" />
+                    <IconComponent className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p className="text-xs">{tab.label}</p>
+                  <p className="text-sm">{tab.label}</p>
                 </TooltipContent>
               </Tooltip>
             );

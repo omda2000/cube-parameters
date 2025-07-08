@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
+import * as THREE from 'three';
 import type { BoxDimensions } from '../../../types/model';
 
 interface PropertiesTabProps {
@@ -25,6 +26,99 @@ const PropertiesTab = ({
   setObjectName
 }: PropertiesTabProps) => {
   const { selectedObject } = useSelectionContext();
+
+  const handleColorChange = (newColor: string) => {
+    setBoxColor(newColor);
+    
+    if (selectedObject?.object) {
+      try {
+        // Safely update material color
+        if (selectedObject.object instanceof THREE.Mesh) {
+          const mesh = selectedObject.object as THREE.Mesh;
+          if (mesh.material) {
+            const color = new THREE.Color(newColor);
+            
+            if (Array.isArray(mesh.material)) {
+              mesh.material.forEach(mat => {
+                if (mat instanceof THREE.MeshStandardMaterial || 
+                    mat instanceof THREE.MeshBasicMaterial || 
+                    mat instanceof THREE.MeshPhongMaterial) {
+                  mat.color.copy(color);
+                  mat.needsUpdate = true;
+                }
+              });
+            } else {
+              const material = mesh.material;
+              if (material instanceof THREE.MeshStandardMaterial || 
+                  material instanceof THREE.MeshBasicMaterial || 
+                  material instanceof THREE.MeshPhongMaterial) {
+                material.color.copy(color);
+                material.needsUpdate = true;
+              }
+            }
+          }
+        }
+        
+        // Update all child meshes
+        selectedObject.object.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.material) {
+            const color = new THREE.Color(newColor);
+            
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => {
+                if (mat instanceof THREE.MeshStandardMaterial || 
+                    mat instanceof THREE.MeshBasicMaterial || 
+                    mat instanceof THREE.MeshPhongMaterial) {
+                  mat.color.copy(color);
+                  mat.needsUpdate = true;
+                }
+              });
+            } else {
+              const material = child.material;
+              if (material instanceof THREE.MeshStandardMaterial || 
+                  material instanceof THREE.MeshBasicMaterial || 
+                  material instanceof THREE.MeshPhongMaterial) {
+                material.color.copy(color);
+                material.needsUpdate = true;
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error updating material color:', error);
+      }
+    }
+  };
+
+  const handleNameChange = (newName: string) => {
+    setObjectName(newName);
+    if (selectedObject?.object) {
+      selectedObject.object.name = newName;
+    }
+  };
+
+  const handleDimensionChange = (key: keyof BoxDimensions, value: number) => {
+    const newDimensions = { ...dimensions, [key]: value };
+    setDimensions(newDimensions);
+    
+    // Update geometry if it's a box
+    if (selectedObject?.object instanceof THREE.Mesh) {
+      const mesh = selectedObject.object as THREE.Mesh;
+      if (mesh.geometry instanceof THREE.BoxGeometry) {
+        try {
+          const newGeometry = new THREE.BoxGeometry(
+            newDimensions.length,
+            newDimensions.width,
+            newDimensions.height
+          );
+          mesh.geometry.dispose();
+          mesh.geometry = newGeometry;
+        } catch (error) {
+          console.error('Error updating geometry:', error);
+        }
+      }
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -48,10 +142,7 @@ const PropertiesTab = ({
                     </div>
                     <Input
                       value={selectedObject.name}
-                      onChange={(e) => {
-                        selectedObject.object.name = e.target.value;
-                        setObjectName(e.target.value);
-                      }}
+                      onChange={(e) => handleNameChange(e.target.value)}
                       className="h-6 text-xs"
                       placeholder="Object name"
                     />
@@ -78,12 +169,12 @@ const PropertiesTab = ({
                       <input
                         type="color"
                         value={boxColor}
-                        onChange={(e) => setBoxColor(e.target.value)}
+                        onChange={(e) => handleColorChange(e.target.value)}
                         className="w-8 h-6 rounded border border-slate-600 bg-transparent"
                       />
                       <Input
                         value={boxColor}
-                        onChange={(e) => setBoxColor(e.target.value)}
+                        onChange={(e) => handleColorChange(e.target.value)}
                         className="h-6 text-xs flex-1"
                         placeholder="#000000"
                       />
@@ -111,23 +202,29 @@ const PropertiesTab = ({
                       <Input
                         type="number"
                         value={dimensions.length}
-                        onChange={(e) => setDimensions({ ...dimensions, length: parseFloat(e.target.value) || 1 })}
+                        onChange={(e) => handleDimensionChange('length', parseFloat(e.target.value) || 1)}
                         className="h-6 text-xs"
                         placeholder="L"
+                        step="0.1"
+                        min="0.1"
                       />
                       <Input
                         type="number"
                         value={dimensions.width}
-                        onChange={(e) => setDimensions({ ...dimensions, width: parseFloat(e.target.value) || 1 })}
+                        onChange={(e) => handleDimensionChange('width', parseFloat(e.target.value) || 1)}
                         className="h-6 text-xs"
                         placeholder="W"
+                        step="0.1"
+                        min="0.1"
                       />
                       <Input
                         type="number"
                         value={dimensions.height}
-                        onChange={(e) => setDimensions({ ...dimensions, height: parseFloat(e.target.value) || 1 })}
+                        onChange={(e) => handleDimensionChange('height', parseFloat(e.target.value) || 1)}
                         className="h-6 text-xs"
                         placeholder="H"
+                        step="0.1"
+                        min="0.1"
                       />
                     </div>
                   </div>
