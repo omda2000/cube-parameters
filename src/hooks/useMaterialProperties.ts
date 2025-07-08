@@ -23,17 +23,30 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
     if (selectedObjects.length > 0 && selectedObjects[0].object) {
       const object = selectedObjects[0].object;
       
-      if (object instanceof THREE.Mesh && object.material) {
-        const material = Array.isArray(object.material) ? object.material[0] : object.material;
-        
-        if (material instanceof THREE.MeshStandardMaterial) {
-          setMaterialProps({
-            color: `#${material.color.getHexString()}`,
-            metalness: material.metalness,
-            roughness: material.roughness,
-            envMapIntensity: material.envMapIntensity || 0.5
-          });
+      const extractMaterialProps = (obj: THREE.Object3D) => {
+        if (obj instanceof THREE.Mesh && obj.material) {
+          const material = Array.isArray(obj.material) ? obj.material[0] : obj.material;
+          
+          if (material instanceof THREE.MeshStandardMaterial) {
+            setMaterialProps({
+              color: `#${material.color.getHexString()}`,
+              metalness: material.metalness,
+              roughness: material.roughness,
+              envMapIntensity: material.envMapIntensity || 0.5
+            });
+            return true;
+          }
         }
+        return false;
+      };
+
+      // Try to extract from object itself first, then traverse children
+      if (!extractMaterialProps(object)) {
+        object.traverse((child) => {
+          if (extractMaterialProps(child)) {
+            return; // Stop traversing once we find a material
+          }
+        });
       }
     }
   }, [selectedObjects]);
@@ -43,31 +56,37 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
     setMaterialProps(prev => ({ ...prev, [property]: value }));
 
     selectedObjects.forEach(selectedObject => {
-      if (selectedObject.object instanceof THREE.Mesh && selectedObject.object.material) {
-        const materials = Array.isArray(selectedObject.object.material) 
-          ? selectedObject.object.material 
-          : [selectedObject.object.material];
+      const updateObjectMaterial = (obj: THREE.Object3D) => {
+        if (obj instanceof THREE.Mesh && obj.material) {
+          const materials = Array.isArray(obj.material) 
+            ? obj.material 
+            : [obj.material];
 
-        materials.forEach(material => {
-          if (material instanceof THREE.MeshStandardMaterial) {
-            switch (property) {
-              case 'color':
-                material.color.setHex(parseInt(value.replace('#', ''), 16));
-                break;
-              case 'metalness':
-                material.metalness = value;
-                break;
-              case 'roughness':
-                material.roughness = value;
-                break;
-              case 'envMapIntensity':
-                material.envMapIntensity = value;
-                break;
+          materials.forEach(material => {
+            if (material instanceof THREE.MeshStandardMaterial) {
+              switch (property) {
+                case 'color':
+                  material.color.setHex(parseInt(value.replace('#', ''), 16));
+                  break;
+                case 'metalness':
+                  material.metalness = value;
+                  break;
+                case 'roughness':
+                  material.roughness = value;
+                  break;
+                case 'envMapIntensity':
+                  material.envMapIntensity = value;
+                  break;
+              }
+              material.needsUpdate = true;
             }
-            material.needsUpdate = true;
-          }
-        });
-      }
+          });
+        }
+      };
+
+      // Update the object itself and all its children
+      updateObjectMaterial(selectedObject.object);
+      selectedObject.object.traverse(updateObjectMaterial);
     });
   }, [selectedObjects]);
 
