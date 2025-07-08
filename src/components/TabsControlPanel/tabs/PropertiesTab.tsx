@@ -27,66 +27,53 @@ const PropertiesTab = ({
 }: PropertiesTabProps) => {
   const { selectedObject } = useSelectionContext();
 
+  const updateMaterialColor = (material: THREE.Material, color: THREE.Color) => {
+    try {
+      if (material && typeof material === 'object') {
+        if ('color' in material && material.color && typeof material.color.copy === 'function') {
+          material.color.copy(color);
+          material.needsUpdate = true;
+        }
+      }
+    } catch (error) {
+      console.error('Error updating material color:', error);
+    }
+  };
+
   const handleColorChange = (newColor: string) => {
     setBoxColor(newColor);
     
-    if (selectedObject?.object) {
-      try {
-        // Safely update material color
-        if (selectedObject.object instanceof THREE.Mesh) {
-          const mesh = selectedObject.object as THREE.Mesh;
-          if (mesh.material) {
-            const color = new THREE.Color(newColor);
-            
-            if (Array.isArray(mesh.material)) {
-              mesh.material.forEach(mat => {
-                if (mat instanceof THREE.MeshStandardMaterial || 
-                    mat instanceof THREE.MeshBasicMaterial || 
-                    mat instanceof THREE.MeshPhongMaterial) {
-                  mat.color.copy(color);
-                  mat.needsUpdate = true;
-                }
-              });
-            } else {
-              const material = mesh.material;
-              if (material instanceof THREE.MeshStandardMaterial || 
-                  material instanceof THREE.MeshBasicMaterial || 
-                  material instanceof THREE.MeshPhongMaterial) {
-                material.color.copy(color);
-                material.needsUpdate = true;
-              }
-            }
+    if (!selectedObject?.object) {
+      return;
+    }
+
+    try {
+      const color = new THREE.Color(newColor);
+      
+      // Handle the selected object
+      if (selectedObject.object instanceof THREE.Mesh) {
+        const mesh = selectedObject.object as THREE.Mesh;
+        if (mesh.material) {
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(mat => updateMaterialColor(mat, color));
+          } else {
+            updateMaterialColor(mesh.material, color);
           }
         }
-        
-        // Update all child meshes
-        selectedObject.object.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.material) {
-            const color = new THREE.Color(newColor);
-            
-            if (Array.isArray(child.material)) {
-              child.material.forEach(mat => {
-                if (mat instanceof THREE.MeshStandardMaterial || 
-                    mat instanceof THREE.MeshBasicMaterial || 
-                    mat instanceof THREE.MeshPhongMaterial) {
-                  mat.color.copy(color);
-                  mat.needsUpdate = true;
-                }
-              });
-            } else {
-              const material = child.material;
-              if (material instanceof THREE.MeshStandardMaterial || 
-                  material instanceof THREE.MeshBasicMaterial || 
-                  material instanceof THREE.MeshPhongMaterial) {
-                material.color.copy(color);
-                material.needsUpdate = true;
-              }
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error updating material color:', error);
       }
+      
+      // Handle all child meshes
+      selectedObject.object.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => updateMaterialColor(mat, color));
+          } else {
+            updateMaterialColor(child.material, color);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error in handleColorChange:', error);
     }
   };
 
