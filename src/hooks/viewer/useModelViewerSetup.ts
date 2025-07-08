@@ -6,6 +6,7 @@ import { useBoxMesh } from '../useBoxMesh';
 import { useLighting } from '../useLighting';
 import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
+import { useDefaultMaterials } from '../useDefaultMaterials';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -82,31 +83,8 @@ export const useModelViewerSetup = ({
     removeModel
   } = useFBXLoader(sceneRef.current);
 
-  // Apply default materials to objects without materials
-  useEffect(() => {
-    if (!sceneRef.current) return;
-
-    const defaultMaterial = new THREE.MeshPhongMaterial({
-      color: 0x808080, // Grey color
-      shininess: 30,
-      transparent: false,
-      side: THREE.DoubleSide
-    });
-
-    const applyDefaultMaterial = (object: THREE.Object3D) => {
-      if (object instanceof THREE.Mesh && !object.material) {
-        object.material = defaultMaterial.clone();
-      }
-      object.children.forEach(applyDefaultMaterial);
-    };
-
-    // Apply to newly loaded models
-    loadedModels.forEach(model => {
-      if (model.object) {
-        applyDefaultMaterial(model.object);
-      }
-    });
-  }, [loadedModels]);
+  // Apply default materials using the centralized hook
+  useDefaultMaterials(sceneRef.current, loadedModels);
 
   // Lighting setup
   useLighting(

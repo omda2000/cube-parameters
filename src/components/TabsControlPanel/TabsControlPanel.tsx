@@ -80,26 +80,7 @@ const TabsControlPanel = ({
   camera,
   controls
 }: TabsControlPanelProps) => {
-  // Apply default grey material to objects without materials
-  React.useEffect(() => {
-    if (!scene) return;
-
-    const defaultMaterial = new THREE.MeshPhongMaterial({
-      color: 0x808080, // Grey color
-      shininess: 30,
-      transparent: false
-    });
-
-    const applyDefaultMaterial = (object: THREE.Object3D) => {
-      if (object instanceof THREE.Mesh && !object.material) {
-        object.material = defaultMaterial.clone();
-      }
-      
-      object.children.forEach(applyDefaultMaterial);
-    };
-
-    scene.children.forEach(applyDefaultMaterial);
-  }, [scene, loadedModels]);
+  // Removed duplicate material logic - now handled by useDefaultMaterials hook
 
   return (
     <div className="w-full h-full flex flex-col">
