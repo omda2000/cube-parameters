@@ -65,6 +65,9 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
 
   // Update material properties on selected objects
   const updateMaterialProperty = useCallback((property: keyof MaterialProperties, value: any) => {
+    // Don't proceed if no objects are selected
+    if (selectedObjects.length === 0) return;
+
     // Update local state immediately for responsive UI
     setMaterialProps(prev => ({ ...prev, [property]: value }));
 
@@ -108,6 +111,9 @@ export const useMaterialProperties = (selectedObjects: SceneObject[]) => {
                 case 'opacity':
                   material.opacity = value;
                   material.transparent = value < 1.0;
+                  // Update stored original properties to reflect user changes
+                  material.userData.originalProperties.opacity = value;
+                  material.userData.originalProperties.transparent = value < 1.0;
                   break;
               }
               material.needsUpdate = true;
