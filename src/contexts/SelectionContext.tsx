@@ -20,7 +20,6 @@ export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [selectedObjects, setSelectedObjects] = useState<SceneObject[]>([]);
 
   const selectObject = useCallback((object: SceneObject | null) => {
-    console.log('SelectionContext: selectObject called with:', object);
     if (object) {
       setSelectedObjects([object]);
     } else {
@@ -57,7 +56,6 @@ export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const clearSelection = useCallback(() => {
-    console.log('SelectionContext: clearSelection called');
     setSelectedObjects([]);
   }, []);
 
