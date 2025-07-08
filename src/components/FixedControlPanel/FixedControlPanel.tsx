@@ -26,21 +26,21 @@ const FixedControlPanel = ({
   return (
     <div
       className={cn(
-        "fixed left-14 top-12 bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-40",
+        "fixed left-14 top-12 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-xl shadow-2xl z-40",
         "w-72 h-[480px] max-h-[82vh]", // Reduced width from 320px to 288px
         className
       )}
     >
       {/* Compact Header */}
       {title && (
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border/30">
-          <h3 className="text-xs font-semibold text-card-foreground">{title}</h3>
+        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700/30">
+          <h3 className="text-xs font-semibold text-slate-200">{title}</h3>
           {onClose && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md"
+              className="h-5 w-5 p-0 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-md"
             >
               <X className="h-3 w-3" />
             </Button>

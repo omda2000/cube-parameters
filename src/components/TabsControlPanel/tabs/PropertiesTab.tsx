@@ -36,6 +36,11 @@ const PropertiesTab = ({
     ? (color: string) => updateMaterialProperty('color', color)
     : setBoxColor;
 
+  // Safe fallbacks for material properties
+  const metalness = materialProps?.metalness ?? 0.1;
+  const roughness = materialProps?.roughness ?? 0.6;
+  const envMapIntensity = materialProps?.envMapIntensity ?? 0.5;
+
   return (
     <TooltipProvider>
       <div className="space-y-3 p-2">
@@ -92,10 +97,10 @@ const PropertiesTab = ({
             <div className="flex items-center gap-1">
               <Sparkles className="h-2.5 w-2.5 text-yellow-400" />
               <Label className="text-xs text-slate-500 dark:text-slate-500">Metalness</Label>
-              <span className="text-xs text-slate-400 ml-auto">{materialProps.metalness.toFixed(2)}</span>
+              <span className="text-xs text-slate-400 ml-auto">{metalness.toFixed(2)}</span>
             </div>
             <Slider
-              value={[materialProps.metalness * 100]}
+              value={[metalness * 100]}
               max={100}
               step={1}
               className="w-full"
@@ -109,10 +114,10 @@ const PropertiesTab = ({
             <div className="flex items-center gap-1">
               <Eye className="h-2.5 w-2.5 text-green-400" />
               <Label className="text-xs text-slate-500 dark:text-slate-500">Roughness</Label>
-              <span className="text-xs text-slate-400 ml-auto">{materialProps.roughness.toFixed(2)}</span>
+              <span className="text-xs text-slate-400 ml-auto">{roughness.toFixed(2)}</span>
             </div>
             <Slider
-              value={[materialProps.roughness * 100]}
+              value={[roughness * 100]}
               max={100}
               step={1}
               className="w-full"
@@ -126,10 +131,10 @@ const PropertiesTab = ({
             <div className="flex items-center gap-1">
               <Globe className="h-2.5 w-2.5 text-cyan-400" />
               <Label className="text-xs text-slate-500 dark:text-slate-500">Reflection</Label>
-              <span className="text-xs text-slate-400 ml-auto">{materialProps.envMapIntensity.toFixed(2)}</span>
+              <span className="text-xs text-slate-400 ml-auto">{envMapIntensity.toFixed(2)}</span>
             </div>
             <Slider
-              value={[materialProps.envMapIntensity * 100]}
+              value={[envMapIntensity * 100]}
               max={100}
               step={1}
               className="w-full"
