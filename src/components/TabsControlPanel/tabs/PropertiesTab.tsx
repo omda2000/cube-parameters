@@ -1,7 +1,8 @@
 
-import { Box, Palette, Tag, Ruler } from 'lucide-react';
+import { Box, Palette, Tag, Ruler, Sparkles, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import type { BoxDimensions } from '../../../types/model';
@@ -25,109 +26,144 @@ const PropertiesTab = ({
 }: PropertiesTabProps) => {
   return (
     <TooltipProvider>
-      <div className="space-y-2 p-1">
-        {/* Header */}
-        <div className="flex items-center gap-1 mb-2">
-          <Box className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Properties</span>
+      <div className="space-y-3 p-2">
+        {/* Compact Header */}
+        <div className="flex items-center gap-1.5 mb-2">
+          <Box className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Properties</span>
         </div>
 
-        {/* Object name */}
+        {/* Object name - Compact */}
         <div className="space-y-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Tag className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Name</Label>
-                </div>
-                <Input
-                  value={objectName}
-                  onChange={(e) => setObjectName(e.target.value)}
-                  className="h-6 text-xs"
-                  placeholder="Object name"
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Object Name</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-1">
+            <Tag className="h-3 w-3 text-slate-400" />
+            <Label className="text-xs text-slate-600 dark:text-slate-400">Name</Label>
+          </div>
+          <Input
+            value={objectName}
+            onChange={(e) => setObjectName(e.target.value)}
+            className="h-7 text-xs"
+            placeholder="Object name"
+          />
         </div>
 
-        <Separator className="bg-slate-600" />
+        <Separator className="bg-slate-600/30" />
 
-        {/* Color picker */}
-        <div className="space-y-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Palette className="h-3 w-3 text-pink-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Color</Label>
-                </div>
-                <div className="flex gap-1">
-                  <input
-                    type="color"
-                    value={boxColor}
-                    onChange={(e) => setBoxColor(e.target.value)}
-                    className="w-8 h-6 rounded border border-slate-600 bg-transparent"
-                  />
-                  <Input
-                    value={boxColor}
-                    onChange={(e) => setBoxColor(e.target.value)}
-                    className="h-6 text-xs flex-1"
-                    placeholder="#000000"
-                  />
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Material Color</p>
-            </TooltipContent>
-          </Tooltip>
+        {/* Material Properties Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1">
+            <Palette className="h-3 w-3 text-blue-400" />
+            <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Material</Label>
+          </div>
+          
+          {/* Color */}
+          <div className="space-y-1">
+            <Label className="text-xs text-slate-500 dark:text-slate-500">Diffuse Color</Label>
+            <div className="flex gap-1.5">
+              <input
+                type="color"
+                value={boxColor}
+                onChange={(e) => setBoxColor(e.target.value)}
+                className="w-7 h-7 rounded border border-slate-600/50 bg-transparent cursor-pointer"
+              />
+              <Input
+                value={boxColor}
+                onChange={(e) => setBoxColor(e.target.value)}
+                className="h-7 text-xs flex-1"
+                placeholder="#808080"
+              />
+            </div>
+          </div>
+
+          {/* Metalness */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Sparkles className="h-2.5 w-2.5 text-yellow-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Metalness</Label>
+              <span className="text-xs text-slate-400 ml-auto">0.1</span>
+            </div>
+            <Slider
+              value={[10]}
+              max={100}
+              step={1}
+              className="w-full"
+              disabled
+            />
+          </div>
+
+          {/* Roughness */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Eye className="h-2.5 w-2.5 text-green-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Roughness</Label>
+              <span className="text-xs text-slate-400 ml-auto">0.6</span>
+            </div>
+            <Slider
+              value={[60]}
+              max={100}
+              step={1}
+              className="w-full"
+              disabled
+            />
+          </div>
+
+          {/* Environment Intensity */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Globe className="h-2.5 w-2.5 text-cyan-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Reflection</Label>
+              <span className="text-xs text-slate-400 ml-auto">0.5</span>
+            </div>
+            <Slider
+              value={[50]}
+              max={100}
+              step={1}
+              className="w-full"
+              disabled
+            />
+          </div>
         </div>
 
-        <Separator className="bg-slate-600" />
+        <Separator className="bg-slate-600/30" />
 
-        {/* Dimensions */}
-        <div className="space-y-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Ruler className="h-3 w-3 text-cyan-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Dimensions</Label>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  <Input
-                    type="number"
-                    value={dimensions.length}
-                    onChange={(e) => setDimensions({ ...dimensions, length: parseFloat(e.target.value) || 1 })}
-                    className="h-6 text-xs"
-                    placeholder="L"
-                  />
-                  <Input
-                    type="number"
-                    value={dimensions.width}
-                    onChange={(e) => setDimensions({ ...dimensions, width: parseFloat(e.target.value) || 1 })}
-                    className="h-6 text-xs"
-                    placeholder="W"
-                  />
-                  <Input
-                    type="number"
-                    value={dimensions.height}
-                    onChange={(e) => setDimensions({ ...dimensions, height: parseFloat(e.target.value) || 1 })}
-                    className="h-6 text-xs"
-                    placeholder="H"
-                  />
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Object Dimensions (L, W, H)</p>
-            </TooltipContent>
-          </Tooltip>
+        {/* Dimensions - Compact */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1">
+            <Ruler className="h-3 w-3 text-cyan-400" />
+            <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Dimensions</Label>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            <div>
+              <Label className="text-xs text-slate-500">L</Label>
+              <Input
+                type="number"
+                value={dimensions.length}
+                onChange={(e) => setDimensions({ ...dimensions, length: parseFloat(e.target.value) || 1 })}
+                className="h-7 text-xs"
+                placeholder="L"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-slate-500">W</Label>
+              <Input
+                type="number"
+                value={dimensions.width}
+                onChange={(e) => setDimensions({ ...dimensions, width: parseFloat(e.target.value) || 1 })}
+                className="h-7 text-xs"
+                placeholder="W"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-slate-500">H</Label>
+              <Input
+                type="number"
+                value={dimensions.height}
+                onChange={(e) => setDimensions({ ...dimensions, height: parseFloat(e.target.value) || 1 })}
+                className="h-7 text-xs"
+                placeholder="H"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </TooltipProvider>
