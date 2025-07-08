@@ -22,7 +22,7 @@ const ModelViewerOverlays = memo(({
       <ObjectDataOverlay 
         objectData={objectData}
         mousePosition={mousePosition}
-        visible={isHovering}
+        visible={isHovering && selectedObjects.length > 0}
       />
       <SelectionOverlay 
         selectedObject={selectedObjects.length > 0 ? selectedObjects[0] : null} 

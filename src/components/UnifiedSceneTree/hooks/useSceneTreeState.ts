@@ -54,8 +54,22 @@ export const useSceneTreeState = (
   };
 
   const toggleVisibility = (sceneObject: SceneObject) => {
-    sceneObject.object.visible = !sceneObject.object.visible;
+    // Force a re-render by updating the scene objects array
     setSceneObjects([...sceneObjects]);
+    
+    // If scene exists, trigger a render update
+    if (scene) {
+      // Force the renderer to update by marking the scene as needing update
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh && obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(mat => mat.needsUpdate = true);
+          } else {
+            obj.material.needsUpdate = true;
+          }
+        }
+      });
+    }
   };
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {

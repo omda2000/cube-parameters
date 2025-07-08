@@ -33,7 +33,11 @@ export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const addToSelection = useCallback((object: SceneObject) => {
     setSelectedObjects(prev => {
-      if (!prev.find(obj => obj.id === object.id)) {
+      // Check if object is already selected by comparing both ID and Three.js object reference
+      const isAlreadySelected = prev.find(obj => 
+        obj.id === object.id || obj.object === object.object
+      );
+      if (!isAlreadySelected) {
         return [...prev, object];
       }
       return prev;
@@ -41,14 +45,18 @@ export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const removeFromSelection = useCallback((object: SceneObject) => {
-    setSelectedObjects(prev => prev.filter(obj => obj.id !== object.id));
+    setSelectedObjects(prev => prev.filter(obj => 
+      obj.id !== object.id && obj.object !== object.object
+    ));
   }, []);
 
   const toggleSelection = useCallback((object: SceneObject) => {
     setSelectedObjects(prev => {
-      const isCurrentlySelected = prev.find(obj => obj.id === object.id);
+      const isCurrentlySelected = prev.find(obj => 
+        obj.id === object.id || obj.object === object.object
+      );
       if (isCurrentlySelected) {
-        return prev.filter(obj => obj.id !== object.id);
+        return prev.filter(obj => obj.id !== object.id && obj.object !== object.object);
       } else {
         return [...prev, object];
       }
@@ -60,7 +68,9 @@ export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const isSelected = useCallback((object: SceneObject) => {
-    return selectedObjects.some(obj => obj.id === object.id);
+    return selectedObjects.some(obj => 
+      obj.id === object.id || obj.object === object.object
+    );
   }, [selectedObjects]);
 
   // Backward compatibility
