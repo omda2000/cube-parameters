@@ -1,5 +1,5 @@
 
-import { Box, Palette, Tag, Ruler, Sparkles, Eye } from 'lucide-react';
+import { Box, Palette, Tag, Ruler, Sparkles, Eye, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
