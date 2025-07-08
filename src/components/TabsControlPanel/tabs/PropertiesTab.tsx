@@ -5,6 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import { useMaterialProperties } from '../../../hooks/useMaterialProperties';
+import { useContext } from 'react';
+import { SelectionContext } from '../../../contexts/SelectionContext';
 import type { BoxDimensions } from '../../../types/model';
 
 interface PropertiesTabProps {
@@ -24,6 +27,16 @@ const PropertiesTab = ({
   objectName,
   setObjectName
 }: PropertiesTabProps) => {
+  const { selectedObjects } = useContext(SelectionContext);
+  const { materialProps, updateMaterialProperty } = useMaterialProperties(selectedObjects);
+
+  // Use material properties from selected object or fallback to box properties
+  const hasSelectedObject = selectedObjects.length > 0;
+  const displayColor = hasSelectedObject ? materialProps.color : boxColor;
+  const setDisplayColor = hasSelectedObject 
+    ? (color: string) => updateMaterialProperty('color', color)
+    : setBoxColor;
+
   return (
     <TooltipProvider>
       <div className="space-y-3 p-2">
@@ -62,13 +75,13 @@ const PropertiesTab = ({
             <div className="flex gap-1.5">
               <input
                 type="color"
-                value={boxColor}
-                onChange={(e) => setBoxColor(e.target.value)}
+                value={displayColor}
+                onChange={(e) => setDisplayColor(e.target.value)}
                 className="w-7 h-7 rounded border border-slate-600/50 bg-transparent cursor-pointer"
               />
               <Input
-                value={boxColor}
-                onChange={(e) => setBoxColor(e.target.value)}
+                value={displayColor}
+                onChange={(e) => setDisplayColor(e.target.value)}
                 className="h-7 text-xs flex-1"
                 placeholder="#808080"
               />
@@ -80,14 +93,15 @@ const PropertiesTab = ({
             <div className="flex items-center gap-1">
               <Sparkles className="h-2.5 w-2.5 text-yellow-400" />
               <Label className="text-xs text-slate-500 dark:text-slate-500">Metalness</Label>
-              <span className="text-xs text-slate-400 ml-auto">0.1</span>
+              <span className="text-xs text-slate-400 ml-auto">{materialProps.metalness.toFixed(2)}</span>
             </div>
             <Slider
-              value={[10]}
+              value={[materialProps.metalness * 100]}
               max={100}
               step={1}
               className="w-full"
-              disabled
+              onValueChange={([value]) => updateMaterialProperty('metalness', value / 100)}
+              disabled={!hasSelectedObject}
             />
           </div>
 
@@ -96,14 +110,15 @@ const PropertiesTab = ({
             <div className="flex items-center gap-1">
               <Eye className="h-2.5 w-2.5 text-green-400" />
               <Label className="text-xs text-slate-500 dark:text-slate-500">Roughness</Label>
-              <span className="text-xs text-slate-400 ml-auto">0.6</span>
+              <span className="text-xs text-slate-400 ml-auto">{materialProps.roughness.toFixed(2)}</span>
             </div>
             <Slider
-              value={[60]}
+              value={[materialProps.roughness * 100]}
               max={100}
               step={1}
               className="w-full"
-              disabled
+              onValueChange={([value]) => updateMaterialProperty('roughness', value / 100)}
+              disabled={!hasSelectedObject}
             />
           </div>
 
@@ -112,14 +127,15 @@ const PropertiesTab = ({
             <div className="flex items-center gap-1">
               <Globe className="h-2.5 w-2.5 text-cyan-400" />
               <Label className="text-xs text-slate-500 dark:text-slate-500">Reflection</Label>
-              <span className="text-xs text-slate-400 ml-auto">0.5</span>
+              <span className="text-xs text-slate-400 ml-auto">{materialProps.envMapIntensity.toFixed(2)}</span>
             </div>
             <Slider
-              value={[50]}
+              value={[materialProps.envMapIntensity * 100]}
               max={100}
               step={1}
               className="w-full"
-              disabled
+              onValueChange={([value]) => updateMaterialProperty('envMapIntensity', value / 100)}
+              disabled={!hasSelectedObject}
             />
           </div>
         </div>

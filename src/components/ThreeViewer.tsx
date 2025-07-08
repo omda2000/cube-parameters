@@ -1,10 +1,10 @@
 
-import React, { memo } from 'react';
-import { useModelViewerSetup } from '../hooks/viewer/useModelViewerSetup';
-import { useOptimizedRenderer } from '../hooks/viewer/useOptimizedRenderer';
+import React, { useRef, useEffect, memo } from 'react';
 import ThreeViewerCore from './ThreeViewer/ThreeViewerCore';
-import ThreeViewerOverlays from './ThreeViewer/ThreeViewerOverlays';
-import { useThreeViewerHandlers } from './ThreeViewer/ThreeViewerHandlers';
+import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
+import { useModelViewerCore } from '../hooks/useModelViewerCore';
+import { useShadeType } from '../hooks/useShadeType';
+import ExpandableShadeSelector from './ExpandableShadeSelector/ExpandableShadeSelector';
 import * as THREE from 'three';
 import type { 
   SunlightSettings, 
@@ -25,70 +25,68 @@ interface ThreeViewerProps {
   environment: EnvironmentSettings;
   onFileUpload?: (file: File) => void;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
-  onSceneReady?: (scene: THREE.Scene) => void;
   showPrimitives?: boolean;
+  onSceneReady?: (scene: THREE.Scene) => void;
   activeTool?: 'select' | 'point' | 'measure' | 'move';
   onPointCreate?: (point: { x: number; y: number; z: number }) => void;
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
 
 const ThreeViewer = memo((props: ThreeViewerProps) => {
-  // Core setup
-  const {
-    scene,
-    camera,
-    renderer,
-    controls,
-    currentModel
-  } = useModelViewerSetup({
-    dimensions: props.dimensions,
-    boxColor: props.boxColor,
-    objectName: props.objectName,
-    sunlight: props.sunlight,
-    ambientLight: props.ambientLight,
-    shadowQuality: props.shadowQuality,
-    environment: props.environment,
-    onModelsChange: props.onModelsChange,
-    onSceneReady: props.onSceneReady,
-    showPrimitives: props.showPrimitives
-  });
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const { shadeType, setShadeType } = useShadeType(sceneRef);
 
-  // Renderer optimization
-  useOptimizedRenderer(renderer);
-
-  // Event handlers
   const {
-    handleDoubleTap,
-    handlePinchZoom,
-    handleZoomIn,
-    handleZoomOut,
-    handleZoomAll,
-    handleResetView
-  } = useThreeViewerHandlers({ controls, camera, scene });
+    mountRef,
+    objectData,
+    mousePosition,
+    isHovering,
+    selectedObjects,
+    isLoading,
+    error,
+    performanceMetrics
+  } = useModelViewerCore(props);
+
+  // Get scene reference from the core hook
+  useEffect(() => {
+    if (props.onSceneReady) {
+      const checkScene = () => {
+        const mountElement = mountRef.current;
+        if (mountElement) {
+          const canvas = mountElement.querySelector('canvas');
+          if (canvas && (canvas as any).__scene) {
+            sceneRef.current = (canvas as any).__scene;
+          }
+        }
+      };
+      
+      const interval = setInterval(checkScene, 100);
+      return () => clearInterval(interval);
+    }
+  }, [mountRef, props.onSceneReady]);
 
   return (
     <div className="relative w-full h-full">
-      <ThreeViewerCore
+      <ThreeViewerCore 
         {...props}
-        camera={camera}
-        controls={controls}
-        onDoubleTap={handleDoubleTap}
-        onPinchZoom={handlePinchZoom}
-        onThreeFingerTap={handleZoomAll}
+        camera={null}
+        controls={null}
       />
       
-      <ThreeViewerOverlays
-        objectData={null}
-        mousePosition={{ x: 0, y: 0 }}
-        isHovering={false}
-        selectedObjects={[]}
-        camera={camera}
-        controls={controls}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onZoomAll={handleZoomAll}
-        onResetView={handleResetView}
+      <ModelViewerOverlays
+        objectData={objectData}
+        mousePosition={mousePosition}
+        isHovering={isHovering}
+        selectedObjects={selectedObjects}
       />
+
+      {/* Shading Controls */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+        <ExpandableShadeSelector
+          currentShadeType={shadeType}
+          onShadeTypeChange={setShadeType}
+        />
+      </div>
     </div>
   );
 });

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 
 export type ShadeType = 'shaded' | 'wireframe' | 'hidden' | 'shaded-with-edges';
@@ -7,11 +7,11 @@ export type ShadeType = 'shaded' | 'wireframe' | 'hidden' | 'shaded-with-edges';
 export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
   const [shadeType, setShadeType] = useState<ShadeType>('shaded');
 
-  const applyShadeTypeToScene = (type: ShadeType) => {
+  const applyShadeTypeToScene = useCallback((type: ShadeType) => {
     if (!sceneRef.current) return;
 
     sceneRef.current.traverse((object) => {
-      if (object instanceof THREE.Mesh) {
+      if (object instanceof THREE.Mesh && !object.userData.isHelper) {
         const mesh = object as THREE.Mesh;
         
         // Store original material if not already stored
@@ -21,17 +21,19 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             : mesh.material.clone();
         }
 
+        // Clean up previous edge helpers
+        if (mesh.userData.edgesHelper) {
+          mesh.remove(mesh.userData.edgesHelper);
+          mesh.userData.edgesHelper.geometry.dispose();
+          (mesh.userData.edgesHelper.material as THREE.Material).dispose();
+          delete mesh.userData.edgesHelper;
+        }
+
         switch (type) {
           case 'shaded':
-            // Restore original material and remove edge helpers
+            // Restore original material
             if (mesh.userData.originalMaterial) {
               mesh.material = mesh.userData.originalMaterial;
-            }
-            if (mesh.userData.edgesHelper) {
-              mesh.remove(mesh.userData.edgesHelper);
-              mesh.userData.edgesHelper.geometry.dispose();
-              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
-              delete mesh.userData.edgesHelper;
             }
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
@@ -46,15 +48,9 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             break;
 
           case 'wireframe':
-            // Restore material and remove edge helpers
+            // Restore material first, then enable wireframe
             if (mesh.userData.originalMaterial) {
               mesh.material = mesh.userData.originalMaterial;
-            }
-            if (mesh.userData.edgesHelper) {
-              mesh.remove(mesh.userData.edgesHelper);
-              mesh.userData.edgesHelper.geometry.dispose();
-              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
-              delete mesh.userData.edgesHelper;
             }
             mesh.visible = true;
             if (Array.isArray(mesh.material)) {
@@ -69,21 +65,12 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             break;
 
           case 'hidden':
-            // Restore material and remove edge helpers then hide
-            if (mesh.userData.originalMaterial) {
-              mesh.material = mesh.userData.originalMaterial;
-            }
-            if (mesh.userData.edgesHelper) {
-              mesh.remove(mesh.userData.edgesHelper);
-              mesh.userData.edgesHelper.geometry.dispose();
-              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
-              delete mesh.userData.edgesHelper;
-            }
+            // Simply hide the mesh
             mesh.visible = false;
             break;
 
           case 'shaded-with-edges':
-            // Restore original material first
+            // Restore original material
             if (mesh.userData.originalMaterial) {
               mesh.material = mesh.userData.originalMaterial;
             }
@@ -99,10 +86,14 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             }
             
             // Add wireframe edges
-            if (!mesh.userData.edgesHelper && mesh.geometry) {
+            if (mesh.geometry) {
               const edges = new THREE.EdgesGeometry(mesh.geometry);
-              const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+              const edgesMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x000000,
+                linewidth: 1
+              });
               const edgesHelper = new THREE.LineSegments(edges, edgesMaterial);
+              edgesHelper.userData.isHelper = true;
               mesh.add(edgesHelper);
               mesh.userData.edgesHelper = edgesHelper;
             }
@@ -110,17 +101,20 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
         }
       }
     });
-  };
+  }, [sceneRef]);
 
   useEffect(() => {
     applyShadeTypeToScene(shadeType);
-  }, [shadeType, sceneRef]);
+  }, [shadeType, applyShadeTypeToScene]);
+
+  const setShadeTypeWithEffect = useCallback((type: ShadeType) => {
+    setShadeType(type);
+    // Apply immediately for responsive feedback
+    setTimeout(() => applyShadeTypeToScene(type), 0);
+  }, [applyShadeTypeToScene]);
 
   return {
     shadeType,
-    setShadeType: (type: ShadeType) => {
-      setShadeType(type);
-      applyShadeTypeToScene(type);
-    }
+    setShadeType: setShadeTypeWithEffect
   };
 };
