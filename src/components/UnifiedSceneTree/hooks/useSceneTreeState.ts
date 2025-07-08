@@ -64,23 +64,6 @@ export const useSceneTreeState = (
     } else {
       selectObject(sceneObject);
     }
-    
-    // Update canvas selection outline
-    if (scene) {
-      scene.traverse(obj => {
-        if (obj.userData.isSelected) {
-          obj.userData.isSelected = false;
-        }
-      });
-      
-      // Mark selected objects
-      selectedObjects.forEach(selectedObj => {
-        selectedObj.object.userData.isSelected = true;
-      });
-      
-      // Mark newly selected object
-      sceneObject.object.userData.isSelected = true;
-    }
   };
 
   const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
