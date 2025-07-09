@@ -96,7 +96,6 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".fbx,.obj,.gltf,.glb"
           onChange={handleFileInputChange}
         />
       </div>
