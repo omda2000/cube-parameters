@@ -1,5 +1,5 @@
 
-import React, { useState, memo } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SceneObject } from '../../../types/model';
@@ -15,7 +15,7 @@ interface SceneObjectGroupsProps {
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
-const SceneObjectGroups = memo(({
+const SceneObjectGroups = ({
   sceneObjects,
   expandedNodes,
   onToggleExpanded,
@@ -25,20 +25,16 @@ const SceneObjectGroups = memo(({
 }: SceneObjectGroupsProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
-  
-  // Memoize grouped objects to prevent recalculation
-  const groupedObjects = React.useMemo(() => groupSceneObjects(sceneObjects), [sceneObjects]);
+  const groupedObjects = groupSceneObjects(sceneObjects);
 
   const toggleGroupCollapse = (groupName: string) => {
-    setCollapsedGroups(prev => {
-      const newCollapsed = new Set(prev);
-      if (newCollapsed.has(groupName)) {
-        newCollapsed.delete(groupName);
-      } else {
-        newCollapsed.add(groupName);
-      }
-      return newCollapsed;
-    });
+    const newCollapsed = new Set(collapsedGroups);
+    if (newCollapsed.has(groupName)) {
+      newCollapsed.delete(groupName);
+    } else {
+      newCollapsed.add(groupName);
+    }
+    setCollapsedGroups(newCollapsed);
   };
 
   const toggleCategoryVisibility = (groupName: string, objects: SceneObject[]) => {
@@ -55,9 +51,6 @@ const SceneObjectGroups = memo(({
     // Toggle visibility for all objects in the category
     objects.forEach(obj => {
       obj.object.visible = isCurrentlyHidden;
-      obj.object.traverse((child) => {
-        child.visible = isCurrentlyHidden;
-      });
     });
   };
 
@@ -70,7 +63,7 @@ const SceneObjectGroups = memo(({
     return (
       <div key={title} className="mb-2">
         <div 
-          className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded transition-colors"
+          className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded"
         >
           <Button
             variant="ghost"
@@ -134,8 +127,6 @@ const SceneObjectGroups = memo(({
       {renderGroup("Environment", groupedObjects.environment)}
     </div>
   );
-});
-
-SceneObjectGroups.displayName = 'SceneObjectGroups';
+};
 
 export default SceneObjectGroups;
