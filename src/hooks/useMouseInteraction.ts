@@ -1,123 +1,167 @@
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { invalidateIntersectableCache } from './utils/raycastUtils';
+import { useSelectTool } from './tools/useSelectTool';
+import { usePointTool } from './tools/usePointTool';
+import { useMeasureTool } from './tools/useMeasureTool';
+import { useMouseTracking } from './mouse/useMouseTracking';
+import { useObjectData } from './mouse/useObjectData';
 import { useMouseInteractionState } from './mouse/useMouseInteractionState';
 import { useRaycastHandling } from './mouse/useRaycastHandling';
-import { useMouseTracking } from './mouse/useMouseTracking';
-import type { LoadedModel } from '../types/model';
+import { getCursorForTool, setCursor } from './mouse/cursorUtils';
 
-interface UseMouseInteractionProps {
-  renderer: THREE.WebGLRenderer | null;
-  camera: THREE.PerspectiveCamera | null;
-  targetObject: THREE.Object3D | null;
-  scene: THREE.Scene | null;
-  onObjectSelect: (object: THREE.Object3D | null, isMultiSelect?: boolean) => void;
-  activeTool: string;
-  controls: any;
-  onPointCreate?: (point: { x: number; y: number; z: number }) => void;
-  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
-}
+export const useMouseInteraction = (
+  renderer: THREE.WebGLRenderer | null,
+  camera: THREE.PerspectiveCamera | null,
+  targetObject: THREE.Mesh | THREE.Group | null,
+  scene: THREE.Scene | null,
+  onObjectSelect?: (object: THREE.Object3D | null) => void,
+  activeTool: 'select' | 'point' | 'measure' | 'move' = 'select',
+  controls?: OrbitControls | null,
+  onPointCreate?: (point: { x: number; y: number; z: number }) => void,
+  onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
+) => {
+  // Use extracted hooks for state management
+  const { hoveredObject, setHoveredObject, materialManagerRef, initializeMaterialManager, cleanupMaterialManager } = useMouseInteractionState();
+  const { mousePosition, mousePositionRef, throttledMouseMove, updateMousePosition } = useMouseTracking();
+  const { objectData, setObjectData, extractObjectData } = useObjectData();
 
-export const useMouseInteraction = ({
-  renderer,
-  camera,
-  targetObject,
-  scene,
-  onObjectSelect,
-  activeTool,
-  controls,
-  onPointCreate,
-  onMeasureCreate
-}: UseMouseInteractionProps) => {
-  const raycasterRef = useRef(new THREE.Raycaster());
-  const mouseRef = useRef(new THREE.Vector2());
-  
-  const {
-    objectData,
-    mousePosition,
-    isHovering,
-    updateObjectData,
-    updateMousePosition,
-    updateHovering
-  } = useMouseInteractionState();
+  // Initialize tools
+  const selectTool = useSelectTool(renderer, camera, scene, onObjectSelect);
+  const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
+  const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
 
-  // Handle mouse move events
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    if (!renderer || !camera || !scene) return;
+  // Raycast handling
+  const { handleRaycastHover } = useRaycastHandling({
+    renderer,
+    camera,
+    scene,
+    hoveredObject,
+    setHoveredObject,
+    materialManager: materialManagerRef.current,
+    extractObjectData,
+    setObjectData
+  });
 
-    const rect = renderer.domElement.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    mouseRef.current.set(x, y);
-    updateMousePosition({ x: event.clientX, y: event.clientY });
-
-    // Raycast for object detection
-    raycasterRef.current.setFromCamera(mouseRef.current, camera);
-    const intersects = raycasterRef.current.intersectObjects(scene.children, true);
-
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      updateObjectData({
-        object: intersect.object,
-        point: intersect.point,
-        distance: intersect.distance
-      });
-      updateHovering(true);
-    } else {
-      updateObjectData(null);
-      updateHovering(false);
-    }
-  }, [renderer, camera, scene, updateObjectData, updateMousePosition, updateHovering]);
-
-  // Handle mouse click events
-  const handleMouseClick = useCallback((event: MouseEvent) => {
-    if (!renderer || !camera || !scene) return;
-
-    const rect = renderer.domElement.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    mouseRef.current.set(x, y);
-    raycasterRef.current.setFromCamera(mouseRef.current, camera);
-    
-    const intersects = raycasterRef.current.intersectObjects(scene.children, true);
-    const isMultiSelect = event.ctrlKey || event.metaKey;
-
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      
-      if (activeTool === 'point' && onPointCreate) {
-        onPointCreate({
-          x: intersect.point.x,
-          y: intersect.point.y,
-          z: intersect.point.z
-        });
-      } else if (activeTool === 'select') {
-        onObjectSelect(intersect.object, isMultiSelect);
-      }
-    } else if (activeTool === 'select') {
-      onObjectSelect(null, isMultiSelect);
-    }
-  }, [renderer, camera, scene, activeTool, onObjectSelect, onPointCreate]);
-
-  // Set up event listeners
   useEffect(() => {
-    if (!renderer) return;
+    if (!renderer || !camera || !scene) return;
 
-    const canvas = renderer.domElement;
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('click', handleMouseClick);
+    const materialManager = initializeMaterialManager();
+
+    const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
+      updateMousePosition(event.clientX, event.clientY);
+
+      // Update cursor based on active tool
+      setCursor(renderer, getCursorForTool(activeTool));
+
+      // Handle measure tool preview
+      if (activeTool === 'measure') {
+        measureTool.handleMouseMove(event);
+      }
+
+      // Handle hover effects for select tool
+      if (activeTool === 'select') {
+        handleRaycastHover(event.clientX, event.clientY);
+      }
+    });
+
+    const updateHover = () => {
+      if (activeTool !== 'select') return;
+      handleRaycastHover(mousePositionRef.current.x, mousePositionRef.current.y);
+    };
+
+    const handleClick = (event: MouseEvent) => {
+      // Clear any existing hover effects before selection
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
+        setHoveredObject(null);
+      }
+
+      switch (activeTool) {
+        case 'select':
+          selectTool.handleClick(event);
+          break;
+        case 'point':
+          pointTool.handleClick(event);
+          break;
+        case 'measure':
+          measureTool.handleClick(event);
+          break;
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
+        setHoveredObject(null);
+        setObjectData(null);
+      }
+      measureTool.cleanup();
+      setCursor(renderer, 'default');
+    };
+
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+      measureTool.handleRightClick();
+    };
+
+    // Add event listeners
+    renderer.domElement.addEventListener('mousemove', handleMouseMove);
+    renderer.domElement.addEventListener('click', handleClick);
+    renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
+    renderer.domElement.addEventListener('contextmenu', handleContextMenu);
+    controls?.addEventListener('change', updateHover);
 
     return () => {
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('click', handleMouseClick);
+      // Cleanup event listeners
+      renderer.domElement.removeEventListener('mousemove', handleMouseMove);
+      renderer.domElement.removeEventListener('click', handleClick);
+      renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
+      renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
+      controls?.removeEventListener('change', updateHover);
+      
+      // Cleanup hover effects
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
+      }
+      
+      // Cleanup tools
+      measureTool.cleanup();
+      
+      // Cleanup material manager
+      cleanupMaterialManager();
     };
-  }, [renderer, handleMouseMove, handleMouseClick]);
+  }, [
+    renderer, 
+    camera, 
+    scene, 
+    hoveredObject, 
+    activeTool, 
+    controls, 
+    selectTool, 
+    pointTool, 
+    measureTool, 
+    throttledMouseMove, 
+    updateMousePosition, 
+    handleRaycastHover,
+    initializeMaterialManager,
+    cleanupMaterialManager,
+    setHoveredObject,
+    setObjectData
+  ]);
 
-  return {
-    objectData,
-    mousePosition,
-    isHovering
+  // Invalidate intersection cache when scene changes
+  useEffect(() => {
+    if (scene) {
+      invalidateIntersectableCache();
+    }
+  }, [scene, targetObject]);
+
+  return { 
+    objectData, 
+    mousePosition, 
+    isHovering: !!hoveredObject 
   };
 };

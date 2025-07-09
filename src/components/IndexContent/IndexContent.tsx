@@ -2,7 +2,7 @@
 import React from 'react';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useMeasurements } from '../../hooks/useMeasurements';
-import { useUIState } from '../../hooks/store/useUIState';
+import { useUIState } from '../../store/useAppStore';
 import { useToolHandlers } from '../../hooks/useToolHandlers';
 import { useZoomHandlers } from '../../hooks/useZoomHandlers';
 import ModelViewerContainerWrapper from '../../containers/ModelViewerContainer';
@@ -47,7 +47,7 @@ const IndexContent = () => {
       <ErrorBoundary>
         {/* Full-screen canvas */}
         <div className="absolute inset-0">
-          <ErrorBoundary fallback={<div className="w-full h-full bg-slate-900 text-white flex items-center justify-center">Model Viewer Loading...</div>}>
+          <ErrorBoundary fallback={<div className="w-full h-full bg-red-500 text-white flex items-center justify-center">Model Viewer Error</div>}>
             <ModelViewerContainerWrapper
               onPointCreate={handlePointCreate}
               onMeasureCreate={handleMeasureCreate}
@@ -56,7 +56,7 @@ const IndexContent = () => {
         </div>
 
         {/* UI Overlay */}
-        <ErrorBoundary fallback={<div className="fixed top-4 left-4 bg-slate-800 text-white p-2 rounded text-sm">UI Loading...</div>}>
+        <ErrorBoundary fallback={<div className="fixed top-4 left-4 bg-red-500 text-white p-4 rounded">UI Error</div>}>
           <UIContainer />
         </ErrorBoundary>
       </ErrorBoundary>
@@ -64,10 +64,10 @@ const IndexContent = () => {
   } catch (error) {
     console.error('Error in IndexContent:', error);
     return (
-      <div className="w-full h-full bg-slate-900 text-white flex items-center justify-center">
+      <div className="w-full h-full bg-red-500 text-white flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">Application Loading</h2>
-          <p className="mb-4">Please wait while the 3D viewer initializes...</p>
+          <h2 className="text-xl font-bold mb-2">IndexContent Error</h2>
+          <p className="mb-4">Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
         </div>
       </div>
     );

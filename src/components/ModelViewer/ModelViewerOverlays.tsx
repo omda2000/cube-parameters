@@ -1,5 +1,6 @@
 
 import React, { memo } from 'react';
+import * as THREE from 'three';
 import ObjectDataOverlay from '../ObjectDataOverlay';
 import SelectionOverlay from '../SelectionOverlay/SelectionOverlay';
 
@@ -16,24 +17,16 @@ const ModelViewerOverlays = memo(({
   isHovering,
   selectedObjects
 }: ModelViewerOverlaysProps) => {
-  // Only show overlays when there's actual data to display
-  const shouldShowObjectData = isHovering && objectData && mousePosition.x > 0 && mousePosition.y > 0;
-  const shouldShowSelection = selectedObjects && selectedObjects.length > 0 && selectedObjects[0];
-
   return (
     <>
-      {shouldShowObjectData && (
-        <ObjectDataOverlay 
-          objectData={objectData}
-          mousePosition={mousePosition}
-          visible={true}
-        />
-      )}
-      {shouldShowSelection && (
-        <SelectionOverlay 
-          selectedObject={selectedObjects[0]} 
-        />
-      )}
+      <ObjectDataOverlay 
+        objectData={objectData}
+        mousePosition={mousePosition}
+        visible={isHovering && selectedObjects.length > 0}
+      />
+      <SelectionOverlay 
+        selectedObject={selectedObjects.length > 0 ? selectedObjects[0] : null} 
+      />
     </>
   );
 });

@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo, useRef, useCallback } from 'react';
+import React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
@@ -29,8 +29,8 @@ interface BottomFloatingBarProps {
   className?: string;
 }
 
-const BottomFloatingBar = memo(({
-  objectCount = 0,
+const BottomFloatingBar = ({
+  objectCount = 1,
   gridEnabled = true,
   gridSpacing = "1m",
   units = "m",
@@ -49,120 +49,62 @@ const BottomFloatingBar = memo(({
   onGridSizeChange = () => {},
   className
 }: BottomFloatingBarProps) => {
-  const { selectedObjects } = useSelectionContext();
-  const lastPositionUpdateRef = useRef<number>(0);
-  const stablePositionRef = useRef({ x: '0.00', y: '0.00' });
-
-  // Stable object count - prevent flickering by using a more reliable count
-  const stableObjectCount = useMemo(() => {
-    // Ensure we have a stable, non-zero count
-    const count = Math.max(objectCount, selectedObjects.length > 0 ? selectedObjects.length : 1);
-    return count;
-  }, [objectCount, selectedObjects.length]);
-
-  // Memoize the selected object to prevent unnecessary re-renders
-  const selectedObject = useMemo(() => {
-    return selectedObjects.length > 0 ? selectedObjects[0] : null;
-  }, [selectedObjects]);
-
-  // Heavily throttled cursor position to prevent excessive updates
-  const formattedPosition = useMemo(() => {
-    const now = Date.now();
-    const timeSinceLastUpdate = now - lastPositionUpdateRef.current;
-    
-    // Only update position every 200ms to prevent flickering
-    if (timeSinceLastUpdate > 200) {
-      lastPositionUpdateRef.current = now;
-      stablePositionRef.current = {
-        x: cursorPosition.x.toFixed(2),
-        y: cursorPosition.y.toFixed(2)
-      };
-    }
-    
-    return stablePositionRef.current;
-  }, [cursorPosition.x, cursorPosition.y]);
-
-  // Memoize static content with stable references
-  const staticContent = useMemo(() => ({
-    objectCount: stableObjectCount,
-    gridStatus: gridEnabled ? `ON (${gridSpacing})` : 'OFF',
-    units,
-    zoomLevel: Math.round(zoomLevel)
-  }), [stableObjectCount, gridEnabled, gridSpacing, units, zoomLevel]);
-
-  // Memoized handlers to prevent prop drilling re-renders
-  const zoomHandlers = useMemo(() => ({
-    onZoomAll,
-    onZoomToSelected,
-    onZoomIn,
-    onZoomOut,
-    onResetView
-  }), [onZoomAll, onZoomToSelected, onZoomIn, onZoomOut, onResetView]);
-
-  const snapHandlers = useMemo(() => ({
-    snapToGrid,
-    onSnapToGridChange,
-    gridSize,
-    onGridSizeChange
-  }), [snapToGrid, onSnapToGridChange, gridSize, onGridSizeChange]);
+  const { selectedObject } = useSelectionContext();
 
   return (
     <TooltipProvider>
       <div className={cn("fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-4 py-2 z-30 shadow-lg", className)}>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           {/* Left section - Status and coordinate information */}
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="flex items-center gap-1 whitespace-nowrap">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
               <span>Objects:</span>
-              <span className="text-foreground font-medium">{staticContent.objectCount}</span>
+              <span className="text-foreground font-medium">{objectCount}</span>
             </div>
             
-            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
+            <Separator orientation="vertical" className="h-4" />
             
-            <div className="flex items-center gap-1 whitespace-nowrap">
+            <div className="flex items-center gap-1">
               <span>Grid:</span>
               <span className="text-foreground font-medium">
-                {staticContent.gridStatus}
+                {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
               </span>
             </div>
             
-            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
+            <Separator orientation="vertical" className="h-4" />
             
-            <div className="flex items-center gap-1 whitespace-nowrap">
+            <div className="flex items-center gap-1">
               <span>Units:</span>
-              <span className="text-foreground font-medium">{staticContent.units}</span>
+              <span className="text-foreground font-medium">{units}</span>
             </div>
 
-            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
+            <Separator orientation="vertical" className="h-4" />
             
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="flex items-center gap-1 whitespace-nowrap">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
                 <span>X:</span>
-                <span className="text-foreground font-medium font-mono">{formattedPosition.x}</span>
+                <span className="text-foreground font-medium">{cursorPosition.x.toFixed(2)}</span>
                 <span className="ml-2">Y:</span>
-                <span className="text-foreground font-medium font-mono">{formattedPosition.y}</span>
+                <span className="text-foreground font-medium">{cursorPosition.y.toFixed(2)}</span>
               </div>
-            </div>
-            
-            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
-            
-            <div className="flex items-center gap-1 whitespace-nowrap">
-              <span>Zoom:</span>
-              <span className="text-foreground font-medium">{staticContent.zoomLevel}%</span>
             </div>
           </div>
           
           {/* Center section - Zoom controls */}
-          <div className="flex items-center flex-shrink-0">
+          <div className="flex items-center">
             <ExpandableZoomControls
-              {...zoomHandlers}
+              onZoomAll={onZoomAll}
+              onZoomToSelected={onZoomToSelected}
+              onZoomIn={onZoomIn}
+              onZoomOut={onZoomOut}
+              onResetView={onResetView}
               selectedObject={selectedObject}
               zoomLevel={zoomLevel}
             />
           </div>
           
           {/* Right section - Shade selector and snap controls */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2">
             <ExpandableShadeSelector
               currentShadeType={shadeType}
               onShadeTypeChange={onShadeTypeChange}
@@ -171,15 +113,16 @@ const BottomFloatingBar = memo(({
             <Separator orientation="vertical" className="h-4" />
             
             <ExpandableSnapControls
-              {...snapHandlers}
+              snapToGrid={snapToGrid}
+              onSnapToGridChange={onSnapToGridChange}
+              gridSize={gridSize}
+              onGridSizeChange={onGridSizeChange}
             />
           </div>
         </div>
       </div>
     </TooltipProvider>
   );
-});
-
-BottomFloatingBar.displayName = 'BottomFloatingBar';
+};
 
 export default BottomFloatingBar;
