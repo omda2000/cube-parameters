@@ -1,7 +1,7 @@
 
+import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronDown, Eye, EyeOff } from 'lucide-react';
-import * as THREE from 'three';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { SceneObject } from '../../../types/model';
 import NodeIcon from './NodeIcon';
@@ -16,7 +16,7 @@ interface SceneObjectNodeProps {
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
-const SceneObjectNode = ({
+const SceneObjectNode = memo(({
   sceneObject,
   level,
   expandedNodes,
@@ -40,23 +40,18 @@ const SceneObjectNode = ({
 
   const handleVisibilityToggle = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // Toggle visibility and force scene update
-    const newVisibility = !sceneObject.object.visible;
-    sceneObject.object.visible = newVisibility;
-    
-    // Recursively update all children visibility
-    sceneObject.object.traverse((child) => {
-      child.visible = newVisibility;
-    });
-    
-    // Trigger re-render by calling the parent handler
     onToggleVisibility(sceneObject);
+  };
+
+  const handleExpandToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleExpanded(sceneObject.id);
   };
 
   return (
     <div>
       <div 
-        className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer ${
+        className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer transition-colors ${
           isObjectSelected ? 'bg-blue-600/30 border border-blue-500/50' : ''
         }`}
         style={{ paddingLeft }}
@@ -68,10 +63,7 @@ const SceneObjectNode = ({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 text-slate-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleExpanded(sceneObject.id);
-              }}
+              onClick={handleExpandToggle}
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -138,6 +130,8 @@ const SceneObjectNode = ({
       )}
     </div>
   );
-};
+});
+
+SceneObjectNode.displayName = 'SceneObjectNode';
 
 export default SceneObjectNode;
