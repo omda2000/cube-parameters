@@ -2,20 +2,22 @@
 import { useRef, useCallback, useState } from 'react';
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { LoadedModel } from '../types/model';
 
 export const useFBXLoader = (scene: THREE.Scene | null) => {
   const loaderRef = useRef<FBXLoader | null>(null);
+  const gltfLoaderRef = useRef<GLTFLoader | null>(null);
   const [loadedModels, setLoadedModels] = useState<LoadedModel[]>([]);
   const [currentModel, setCurrentModel] = useState<LoadedModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadFBXModel = useCallback(async (file: File) => {
-    console.log('Starting FBX load process:', file.name);
+    console.log('Starting model load process:', file.name);
     
     if (!scene) {
-      console.error('Scene not available for FBX loading');
+      console.error('Scene not available for model loading');
       setError('3D scene not ready. Please try again.');
       return;
     }
@@ -25,17 +27,36 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
     setError(null);
 
     try {
-      if (!loaderRef.current) {
-        loaderRef.current = new FBXLoader();
-        console.log('FBX loader initialized');
-      }
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      let object: THREE.Group | null = null;
 
-      console.log('Reading file as array buffer...');
-      const arrayBuffer = await file.arrayBuffer();
-      
-      console.log('Parsing FBX data...');
-      const object = loaderRef.current.parse(arrayBuffer, '');
-      console.log('FBX parsed successfully:', object);
+      if (ext === 'fbx') {
+        if (!loaderRef.current) {
+          loaderRef.current = new FBXLoader();
+          console.log('FBX loader initialized');
+        }
+
+        console.log('Reading FBX file as array buffer...');
+        const arrayBuffer = await file.arrayBuffer();
+
+        console.log('Parsing FBX data...');
+        object = loaderRef.current.parse(arrayBuffer, '');
+        console.log('FBX parsed successfully:', object);
+      } else if (ext === 'gltf' || ext === 'glb') {
+        if (!gltfLoaderRef.current) {
+          gltfLoaderRef.current = new GLTFLoader();
+          console.log('GLTF loader initialized');
+        }
+
+        console.log('Loading GLTF model...');
+        const url = URL.createObjectURL(file);
+        const gltf = await gltfLoaderRef.current.loadAsync(url);
+        URL.revokeObjectURL(url);
+        object = gltf.scene;
+        console.log('GLTF loaded successfully:', object);
+      } else {
+        throw new Error('Unsupported file format');
+      }
       
       // Process the object in a single batch to prevent multiple re-renders
       const processedObject = processObjectBatch(object, file.name);
@@ -55,7 +76,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       setCurrentModel(processedObject);
       
     } catch (err) {
-      console.error('Failed to load FBX model:', err);
+      console.error('Failed to load model:', err);
       setError('Failed to load model. Please check the file format.');
     } finally {
       // Always clear loading state
@@ -100,7 +121,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
     return {
       id: Date.now().toString(),
-      name: fileName.replace('.fbx', ''),
+      name: fileName.replace(/\.(fbx|gltf|glb)$/i, ''),
       object,
       boundingBox: new THREE.Box3().setFromObject(object),
       size: 0 // We don't need the file size for counting
