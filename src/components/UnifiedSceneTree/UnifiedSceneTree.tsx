@@ -27,6 +27,7 @@ const UnifiedSceneTree = ({
     expandedNodes,
     sceneObjects,
     selectedObjects,
+    isLoading,
     toggleExpanded,
     toggleVisibility,
     handleObjectSelect,
@@ -41,8 +42,14 @@ const UnifiedSceneTree = ({
         onClearSelection={clearSelection}
       />
       <div className="flex-1 overflow-y-auto bg-slate-800/30 border border-slate-600 rounded">
+        {isLoading && (
+          <div className="p-4 text-center text-slate-400">
+            <div className="animate-spin h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p className="text-xs">Loading scene objects...</p>
+          </div>
+        )}
         <div className="p-2">
-          {sceneObjects.length === 0 ? (
+          {sceneObjects.length === 0 && !isLoading ? (
             <EmptySceneState />
           ) : (
             <SceneObjectGroups
