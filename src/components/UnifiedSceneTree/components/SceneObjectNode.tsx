@@ -1,4 +1,5 @@
 
+import React, { memo, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import * as THREE from 'three';
@@ -16,7 +17,7 @@ interface SceneObjectNodeProps {
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
-const SceneObjectNode = ({
+const SceneObjectNode = memo(({
   sceneObject,
   level,
   expandedNodes,
@@ -25,12 +26,18 @@ const SceneObjectNode = ({
   onObjectSelect,
   onDelete
 }: SceneObjectNodeProps) => {
-  const { isSelected } = useSelectionContext();
+  const { selectedObjects } = useSelectionContext();
+  
+  // Memoize selection check to prevent unnecessary re-renders
+  const isObjectSelected = useMemo(() => {
+    return selectedObjects.some(obj => 
+      obj.id === sceneObject.id || obj.object === sceneObject.object
+    );
+  }, [selectedObjects, sceneObject.id, sceneObject.object]);
   
   const isExpanded = expandedNodes.has(sceneObject.id);
   const hasChildren = sceneObject.children.length > 0;
   const paddingLeft = level * 16;
-  const isObjectSelected = isSelected(sceneObject);
   const isDeletable = sceneObject.type === 'point' || sceneObject.type === 'measurement';
 
   const handleClick = (event: React.MouseEvent) => {
@@ -40,23 +47,23 @@ const SceneObjectNode = ({
 
   const handleVisibilityToggle = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // Toggle visibility and force scene update
-    const newVisibility = !sceneObject.object.visible;
-    sceneObject.object.visible = newVisibility;
-    
-    // Recursively update all children visibility
-    sceneObject.object.traverse((child) => {
-      child.visible = newVisibility;
-    });
-    
-    // Trigger re-render by calling the parent handler
     onToggleVisibility(sceneObject);
+  };
+
+  const handleExpandToggle = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onToggleExpanded(sceneObject.id);
+  };
+
+  const handleDeleteClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onDelete(sceneObject, event);
   };
 
   return (
     <div>
       <div 
-        className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer ${
+        className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer transition-colors ${
           isObjectSelected ? 'bg-blue-600/30 border border-blue-500/50' : ''
         }`}
         style={{ paddingLeft }}
@@ -67,11 +74,8 @@ const SceneObjectNode = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleExpanded(sceneObject.id);
-              }}
+              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
+              onClick={handleExpandToggle}
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -85,7 +89,9 @@ const SceneObjectNode = ({
           
           <NodeIcon type={sceneObject.type} />
           
-          <span className={`truncate flex-1 ${isObjectSelected ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
+          <span className={`truncate flex-1 transition-colors ${
+            isObjectSelected ? 'text-blue-300 font-medium' : 'text-slate-200'
+          }`}>
             {sceneObject.name}
           </span>
           
@@ -93,8 +99,9 @@ const SceneObjectNode = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
+              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200 transition-colors"
               onClick={handleVisibilityToggle}
+              title={sceneObject.object.visible ? 'Hide object' : 'Show object'}
             >
               {sceneObject.object.visible ? (
                 <Eye className="h-3 w-3" />
@@ -107,8 +114,8 @@ const SceneObjectNode = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
-                onClick={(e) => onDelete(sceneObject, e)}
+                className="h-6 w-6 p-0 text-slate-400 hover:text-red-400 transition-colors"
+                onClick={handleDeleteClick}
                 title="Delete"
               >
                 <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,6 +145,8 @@ const SceneObjectNode = ({
       )}
     </div>
   );
-};
+});
+
+SceneObjectNode.displayName = 'SceneObjectNode';
 
 export default SceneObjectNode;
