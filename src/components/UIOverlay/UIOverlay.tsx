@@ -1,3 +1,4 @@
+
 import React from 'react';
 import AidToolsBar from '../AidToolsBar/AidToolsBar';
 import ControlPanelTabs from '../ControlPanelTabs/ControlPanelTabs';
@@ -62,7 +63,11 @@ const UIOverlay = ({
   onShadeTypeChange,
   modelCount
 }: UIOverlayProps) => {
+  console.log('UIOverlay: Starting render...');
+  
   const { isMobile, isTablet } = useResponsiveMode();
+
+  console.log('UIOverlay: Responsive mode loaded, rendering components...');
 
   return (
     <>
@@ -88,7 +93,7 @@ const UIOverlay = ({
         />
       </div>
 
-      {/* Fixed Control Panel - now draggable, no need for responsive positioning classes */}
+      {/* Fixed Control Panel */}
       <FixedControlPanel
         title="Control Panel"
         isOpen={showControlPanel}
