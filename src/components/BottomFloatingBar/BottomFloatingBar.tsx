@@ -30,7 +30,7 @@ interface BottomFloatingBarProps {
 }
 
 const BottomFloatingBar = memo(({
-  objectCount = 1,
+  objectCount = 0,
   gridEnabled = true,
   gridSpacing = "1m",
   units = "m",
@@ -50,36 +50,45 @@ const BottomFloatingBar = memo(({
   className
 }: BottomFloatingBarProps) => {
   const { selectedObjects } = useSelectionContext();
-  const lastUpdateRef = useRef<number>(0);
+  const lastPositionUpdateRef = useRef<number>(0);
+  const stablePositionRef = useRef({ x: '0.00', y: '0.00' });
+
+  // Stable object count - prevent flickering by using a more reliable count
+  const stableObjectCount = useMemo(() => {
+    // Ensure we have a stable, non-zero count
+    const count = Math.max(objectCount, selectedObjects.length > 0 ? selectedObjects.length : 1);
+    return count;
+  }, [objectCount, selectedObjects.length]);
 
   // Memoize the selected object to prevent unnecessary re-renders
   const selectedObject = useMemo(() => {
     return selectedObjects.length > 0 ? selectedObjects[0] : null;
   }, [selectedObjects]);
 
-  // Throttled cursor position formatting to prevent excessive updates
+  // Heavily throttled cursor position to prevent excessive updates
   const formattedPosition = useMemo(() => {
     const now = Date.now();
-    if (now - lastUpdateRef.current < 100) { // Throttle to 10fps for position updates
-      return lastUpdateRef.current > 0 ? {
+    const timeSinceLastUpdate = now - lastPositionUpdateRef.current;
+    
+    // Only update position every 200ms to prevent flickering
+    if (timeSinceLastUpdate > 200) {
+      lastPositionUpdateRef.current = now;
+      stablePositionRef.current = {
         x: cursorPosition.x.toFixed(2),
         y: cursorPosition.y.toFixed(2)
-      } : { x: '0.00', y: '0.00' };
+      };
     }
-    lastUpdateRef.current = now;
     
-    return {
-      x: cursorPosition.x.toFixed(2),
-      y: cursorPosition.y.toFixed(2)
-    };
+    return stablePositionRef.current;
   }, [cursorPosition.x, cursorPosition.y]);
 
-  // Memoize static content to prevent re-renders
+  // Memoize static content with stable references
   const staticContent = useMemo(() => ({
-    objectCount,
+    objectCount: stableObjectCount,
     gridStatus: gridEnabled ? `ON (${gridSpacing})` : 'OFF',
-    units
-  }), [objectCount, gridEnabled, gridSpacing, units]);
+    units,
+    zoomLevel: Math.round(zoomLevel)
+  }), [stableObjectCount, gridEnabled, gridSpacing, units, zoomLevel]);
 
   // Memoized handlers to prevent prop drilling re-renders
   const zoomHandlers = useMemo(() => ({
@@ -133,6 +142,13 @@ const BottomFloatingBar = memo(({
                 <span className="ml-2">Y:</span>
                 <span className="text-foreground font-medium font-mono">{formattedPosition.y}</span>
               </div>
+            </div>
+            
+            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
+            
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <span>Zoom:</span>
+              <span className="text-foreground font-medium">{staticContent.zoomLevel}%</span>
             </div>
           </div>
           

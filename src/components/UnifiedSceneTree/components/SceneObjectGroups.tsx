@@ -26,8 +26,24 @@ const SceneObjectGroups = memo(({
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
   
-  // Memoize grouped objects to prevent unnecessary recalculation
-  const groupedObjects = useMemo(() => groupSceneObjects(sceneObjects), [sceneObjects]);
+  // Stable grouped objects with proper memoization
+  const groupedObjects = useMemo(() => {
+    const grouped = groupSceneObjects(sceneObjects);
+    
+    // Sort groups by object count for better UX with large models
+    const sortedGrouped = {
+      models: grouped.models.sort((a, b) => a.name.localeCompare(b.name)),
+      meshes: grouped.meshes.sort((a, b) => a.name.localeCompare(b.name)),
+      groups: grouped.groups.sort((a, b) => a.name.localeCompare(b.name)),
+      primitives: grouped.primitives.sort((a, b) => a.name.localeCompare(b.name)),
+      points: grouped.points.sort((a, b) => a.name.localeCompare(b.name)),
+      measurements: grouped.measurements.sort((a, b) => a.name.localeCompare(b.name)),
+      lights: grouped.lights.sort((a, b) => a.name.localeCompare(b.name)),
+      environment: grouped.environment.sort((a, b) => a.name.localeCompare(b.name))
+    };
+    
+    return sortedGrouped;
+  }, [sceneObjects]);
 
   const toggleGroupCollapse = useCallback((groupName: string) => {
     setCollapsedGroups(prev => {
@@ -52,11 +68,13 @@ const SceneObjectGroups = memo(({
         newHidden.add(groupName);
       }
       
-      // Toggle visibility for all objects in the category
-      objects.forEach(obj => {
-        obj.object.visible = isCurrentlyHidden;
-        obj.object.traverse((child) => {
-          child.visible = isCurrentlyHidden;
+      // Batch visibility changes to prevent excessive re-renders
+      requestAnimationFrame(() => {
+        objects.forEach(obj => {
+          obj.object.visible = isCurrentlyHidden;
+          obj.object.traverse((child) => {
+            child.visible = isCurrentlyHidden;
+          });
         });
       });
       
@@ -119,10 +137,16 @@ const SceneObjectGroups = memo(({
     );
   }, [collapsedGroups, hiddenCategories, expandedNodes, onToggleExpanded, onToggleVisibility, onObjectSelect, onDelete, toggleGroupCollapse, toggleCategoryVisibility]);
 
+  // Calculate total object count for display
+  const totalObjects = useMemo(() => {
+    return Object.values(groupedObjects).reduce((total, group) => total + group.length, 0);
+  }, [groupedObjects]);
+
   return (
     <div className="space-y-1">
-      <div className="text-xs text-slate-400 mb-2 px-2">
-        Hold Ctrl+Click to select multiple objects
+      <div className="text-xs text-slate-400 mb-2 px-2 flex justify-between">
+        <span>Hold Ctrl+Click to select multiple objects</span>
+        <span>Total: {totalObjects}</span>
       </div>
       
       {renderGroup("Models", groupedObjects.models)}

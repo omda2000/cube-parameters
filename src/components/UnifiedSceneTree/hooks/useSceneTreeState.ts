@@ -14,71 +14,94 @@ export const useSceneTreeState = (
 ) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
-  const [lastSceneVersion, setLastSceneVersion] = useState(0);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
   
-  // Use refs to track previous values and prevent unnecessary rebuilds
-  const prevSearchQueryRef = useRef(searchQuery);
-  const prevShowSelectedOnlyRef = useRef(showSelectedOnly);
+  // Stable refs to prevent unnecessary rebuilds
+  const sceneObjectsRef = useRef<SceneObject[]>([]);
+  const lastBuildParamsRef = useRef<string>('');
   const rebuildTimeoutRef = useRef<NodeJS.Timeout>();
+  const isRebuildingRef = useRef(false);
 
-  // Create a stable scene version to track actual changes
-  const sceneVersion = useMemo(() => {
-    if (!scene) return 0;
-    let version = 0;
-    scene.traverse(() => {
-      version++;
-    });
-    return version + loadedModels.length;
-  }, [scene, loadedModels.length]);
+  // Create a stable hash of build parameters to detect actual changes
+  const buildParamsHash = useMemo(() => {
+    const params = {
+      sceneUuid: scene?.uuid || '',
+      modelCount: loadedModels.length,
+      modelIds: loadedModels.map(m => m.id).sort().join(','),
+      showPrimitives,
+      searchQuery: searchQuery.trim().toLowerCase(),
+      showSelectedOnly,
+      selectedIds: selectedObjects.map(obj => obj.id).sort().join(',')
+    };
+    return JSON.stringify(params);
+  }, [scene?.uuid, loadedModels, showPrimitives, searchQuery, showSelectedOnly, selectedObjects]);
 
-  // Debounced scene rebuild to prevent excessive updates
+  // Debounced and optimized scene rebuild
   const debouncedRebuild = useCallback(() => {
+    // Prevent multiple simultaneous rebuilds
+    if (isRebuildingRef.current) return;
+    
     if (rebuildTimeoutRef.current) {
       clearTimeout(rebuildTimeoutRef.current);
     }
 
     rebuildTimeoutRef.current = setTimeout(() => {
-      let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
-      
-      // Apply selected-only filter FIRST
-      if (showSelectedOnly) {
-        const selectedIds = new Set(selectedObjects.map(obj => obj.id));
-        objects = objects.filter(obj => {
-          const checkSelected = (sceneObj: SceneObject): boolean => {
-            if (selectedIds.has(sceneObj.id)) return true;
-            return sceneObj.children.some(child => checkSelected(child));
-          };
-          return checkSelected(obj);
-        });
+      // Double-check if rebuild is still needed
+      if (buildParamsHash === lastBuildParamsRef.current) {
+        return;
       }
-      
-      // Apply search filter
-      if (searchQuery.trim()) {
-        objects = objects.filter(obj => 
-          obj.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      setSceneObjects(objects);
-      setLastSceneVersion(sceneVersion);
-    }, 50); // 50ms debounce
-  }, [scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly, sceneVersion, selectedObjects]);
 
-  // Build unified scene tree only when necessary
+      isRebuildingRef.current = true;
+      
+      try {
+        let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
+        
+        // Apply selected-only filter FIRST (most restrictive)
+        if (showSelectedOnly && selectedObjects.length > 0) {
+          const selectedIds = new Set(selectedObjects.map(obj => obj.id));
+          objects = objects.filter(obj => {
+            const checkSelected = (sceneObj: SceneObject): boolean => {
+              if (selectedIds.has(sceneObj.id)) return true;
+              return sceneObj.children.some(child => checkSelected(child));
+            };
+            return checkSelected(obj);
+          });
+        }
+        
+        // Apply search filter (less expensive)
+        if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          objects = objects.filter(obj => 
+            obj.name.toLowerCase().includes(query)
+          );
+        }
+        
+        // Only update if objects actually changed
+        const objectsChanged = JSON.stringify(objects.map(o => o.id)) !== 
+                              JSON.stringify(sceneObjectsRef.current.map(o => o.id));
+        
+        if (objectsChanged) {
+          sceneObjectsRef.current = objects;
+          setSceneObjects(objects);
+        }
+        
+        lastBuildParamsRef.current = buildParamsHash;
+      } catch (error) {
+        console.error('Error rebuilding scene objects:', error);
+      } finally {
+        isRebuildingRef.current = false;
+      }
+    }, 150); // Increased debounce for better stability
+  }, [scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly, selectedObjects, buildParamsHash]);
+
+  // Only rebuild when parameters actually change
   useEffect(() => {
-    const searchChanged = searchQuery !== prevSearchQueryRef.current;
-    const showSelectedOnlyChanged = showSelectedOnly !== prevShowSelectedOnlyRef.current;
-    const sceneChanged = sceneVersion !== lastSceneVersion;
-
-    if (sceneChanged || searchChanged || showSelectedOnlyChanged) {
+    if (buildParamsHash !== lastBuildParamsRef.current) {
       debouncedRebuild();
-      
-      prevSearchQueryRef.current = searchQuery;
-      prevShowSelectedOnlyRef.current = showSelectedOnly;
     }
-  }, [searchQuery, showSelectedOnly, sceneVersion, lastSceneVersion, debouncedRebuild]);
+  }, [buildParamsHash, debouncedRebuild]);
 
+  // Optimized toggle functions with minimal re-renders
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedNodes(prev => {
       const newExpanded = new Set(prev);
@@ -92,25 +115,27 @@ export const useSceneTreeState = (
   }, []);
 
   const toggleVisibility = useCallback((sceneObject: SceneObject) => {
-    // Toggle the object's visibility
-    sceneObject.object.visible = !sceneObject.object.visible;
+    // Batch visibility changes to prevent multiple renders
+    const newVisibility = !sceneObject.object.visible;
     
-    // Force renderer update by marking materials as needing update
-    if (scene) {
-      sceneObject.object.traverse((obj) => {
-        if (obj instanceof THREE.Mesh && obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach(mat => mat.needsUpdate = true);
-          } else {
-            obj.material.needsUpdate = true;
-          }
+    // Update object visibility
+    sceneObject.object.visible = newVisibility;
+    
+    // Update children visibility
+    sceneObject.object.traverse((obj) => {
+      obj.visible = newVisibility;
+      if (obj instanceof THREE.Mesh && obj.material) {
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach(mat => mat.needsUpdate = true);
+        } else {
+          obj.material.needsUpdate = true;
         }
-      });
-    }
+      }
+    });
     
-    // Trigger a minimal re-render by updating expanded nodes
+    // Force minimal re-render by updating only expanded nodes
     setExpandedNodes(prev => new Set(prev));
-  }, [scene]);
+  }, []);
 
   const handleObjectSelect = useCallback((sceneObject: SceneObject, isMultiSelect?: boolean) => {
     if (isMultiSelect) {
@@ -127,35 +152,29 @@ export const useSceneTreeState = (
       // Remove from scene
       scene?.remove(sceneObject.object);
       
-      // Dispose geometry and material for measurement groups
-      if (sceneObject.type === 'measurement' && sceneObject.object instanceof THREE.Group) {
-        sceneObject.object.children.forEach(child => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry?.dispose();
-            if (Array.isArray(child.material)) {
-              child.material.forEach(mat => mat.dispose());
-            } else {
-              child.material?.dispose();
-            }
-          } else if (child instanceof THREE.Line) {
-            child.geometry?.dispose();
-            (child.material as THREE.Material)?.dispose();
+      // Dispose resources properly
+      const disposeObject = (obj: THREE.Object3D) => {
+        if (obj instanceof THREE.Mesh) {
+          obj.geometry?.dispose();
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(mat => mat.dispose());
+          } else {
+            obj.material?.dispose();
           }
-        });
-      }
-      
-      // Dispose geometry and material for points
-      if (sceneObject.type === 'point' && sceneObject.object instanceof THREE.Mesh) {
-        sceneObject.object.geometry?.dispose();
-        if (Array.isArray(sceneObject.object.material)) {
-          sceneObject.object.material.forEach(mat => mat.dispose());
-        } else {
-          sceneObject.object.material?.dispose();
+        } else if (obj instanceof THREE.Line) {
+          obj.geometry?.dispose();
+          (obj.material as THREE.Material)?.dispose();
         }
+      };
+
+      if (sceneObject.object instanceof THREE.Group) {
+        sceneObject.object.children.forEach(disposeObject);
+      } else {
+        disposeObject(sceneObject.object);
       }
       
-      // Trigger rebuild
-      debouncedRebuild();
+      // Trigger rebuild after deletion
+      setTimeout(() => debouncedRebuild(), 50);
     }
   }, [scene, debouncedRebuild]);
 
