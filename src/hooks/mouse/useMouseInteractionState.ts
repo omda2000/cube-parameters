@@ -1,35 +1,35 @@
 
-import { useState, useCallback } from 'react';
-
-interface MouseInteractionState {
-  objectData: any;
-  mousePosition: { x: number; y: number };
-  isHovering: boolean;
-}
+import { useState, useRef, useCallback } from 'react';
+import * as THREE from 'three';
+import { MaterialManager } from '../utils/materialManager';
 
 export const useMouseInteractionState = () => {
-  const [objectData, setObjectData] = useState<any>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
+  const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(null);
+  const materialManagerRef = useRef<MaterialManager | null>(null);
 
-  const updateObjectData = useCallback((data: any) => {
-    setObjectData(data);
+  const initializeMaterialManager = useCallback(() => {
+    if (!materialManagerRef.current) {
+      materialManagerRef.current = new MaterialManager();
+    }
+    return materialManagerRef.current;
   }, []);
 
-  const updateMousePosition = useCallback((position: { x: number; y: number }) => {
-    setMousePosition(position);
+  const cleanupMaterialManager = useCallback(() => {
+    if (materialManagerRef.current) {
+      materialManagerRef.current.dispose();
+      materialManagerRef.current = null;
+    }
   }, []);
 
-  const updateHovering = useCallback((hovering: boolean) => {
-    setIsHovering(hovering);
+  const setHoveredObjectSafe = useCallback((object: THREE.Object3D | null) => {
+    setHoveredObject(object);
   }, []);
 
   return {
-    objectData,
-    mousePosition,
-    isHovering,
-    updateObjectData,
-    updateMousePosition,
-    updateHovering
+    hoveredObject,
+    setHoveredObject: setHoveredObjectSafe,
+    materialManagerRef,
+    initializeMaterialManager,
+    cleanupMaterialManager
   };
 };

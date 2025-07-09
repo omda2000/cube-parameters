@@ -43,11 +43,6 @@ const UIContainer = () => {
 
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
 
-  // Only show UI if scene is properly initialized
-  if (!scene) {
-    return null;
-  }
-
   const controlsPanelProps = {
     loadedModels: sceneState.loadedModels,
     currentModel: sceneState.currentModel,

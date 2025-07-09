@@ -69,35 +69,23 @@ export const useModelViewerEffects = ({
     onMeasureCreate
   );
 
-  // Mouse interaction - only initialize if all required dependencies are available
-  const mouseInteractionProps = renderer && camera && scene ? {
+  // Mouse interaction
+  const { objectData, mousePosition, isHovering } = useMouseInteraction(
     renderer,
     camera,
-    targetObject: currentModel ? currentModel.object : boxRef.current,
+    currentModel ? currentModel.object : boxRef.current,
     scene,
-    onObjectSelect: handleObjectSelect,
+    handleObjectSelect,
     activeTool,
     controls,
-    onPointCreate: handlePointCreate,
-    onMeasureCreate: handleMeasureCreate
-  } : null;
-
-  const { objectData, mousePosition, isHovering } = useMouseInteraction(
-    mouseInteractionProps || {
-      renderer: null,
-      camera: null,
-      targetObject: null,
-      scene: null,
-      onObjectSelect: () => {},
-      activeTool: 'select',
-      controls: null
-    }
+    handlePointCreate,
+    handleMeasureCreate
   );
 
   return {
-    objectData: mouseInteractionProps ? objectData : null,
-    mousePosition: mouseInteractionProps ? mousePosition : { x: 0, y: 0 },
-    isHovering: mouseInteractionProps ? isHovering : false,
+    objectData,
+    mousePosition,
+    isHovering,
     selectedObjects
   };
 };
