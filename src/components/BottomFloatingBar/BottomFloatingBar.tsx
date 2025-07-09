@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
@@ -29,7 +29,7 @@ interface BottomFloatingBarProps {
   className?: string;
 }
 
-const BottomFloatingBar = ({
+const BottomFloatingBar = memo(({
   objectCount = 1,
   gridEnabled = true,
   gridSpacing = "1m",
@@ -49,49 +49,60 @@ const BottomFloatingBar = ({
   onGridSizeChange = () => {},
   className
 }: BottomFloatingBarProps) => {
-  const { selectedObject } = useSelectionContext();
+  const { selectedObjects } = useSelectionContext();
+
+  // Memoize the selected object to prevent unnecessary re-renders
+  const selectedObject = useMemo(() => {
+    return selectedObjects.length > 0 ? selectedObjects[0] : null;
+  }, [selectedObjects]);
+
+  // Memoize cursor position display to prevent frequent updates
+  const formattedPosition = useMemo(() => ({
+    x: cursorPosition.x.toFixed(2),
+    y: cursorPosition.y.toFixed(2)
+  }), [cursorPosition.x, cursorPosition.y]);
 
   return (
     <TooltipProvider>
       <div className={cn("fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-4 py-2 z-30 shadow-lg", className)}>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           {/* Left section - Status and coordinate information */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <span>Objects:</span>
               <span className="text-foreground font-medium">{objectCount}</span>
             </div>
             
-            <Separator orientation="vertical" className="h-4" />
+            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <span>Grid:</span>
               <span className="text-foreground font-medium">
                 {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
               </span>
             </div>
             
-            <Separator orientation="vertical" className="h-4" />
+            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <span>Units:</span>
               <span className="text-foreground font-medium">{units}</span>
             </div>
 
-            <Separator orientation="vertical" className="h-4" />
+            <Separator orientation="vertical" className="h-4 flex-shrink-0" />
             
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="flex items-center gap-1 whitespace-nowrap">
                 <span>X:</span>
-                <span className="text-foreground font-medium">{cursorPosition.x.toFixed(2)}</span>
+                <span className="text-foreground font-medium font-mono">{formattedPosition.x}</span>
                 <span className="ml-2">Y:</span>
-                <span className="text-foreground font-medium">{cursorPosition.y.toFixed(2)}</span>
+                <span className="text-foreground font-medium font-mono">{formattedPosition.y}</span>
               </div>
             </div>
           </div>
           
           {/* Center section - Zoom controls */}
-          <div className="flex items-center">
+          <div className="flex items-center flex-shrink-0">
             <ExpandableZoomControls
               onZoomAll={onZoomAll}
               onZoomToSelected={onZoomToSelected}
@@ -104,7 +115,7 @@ const BottomFloatingBar = ({
           </div>
           
           {/* Right section - Shade selector and snap controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <ExpandableShadeSelector
               currentShadeType={shadeType}
               onShadeTypeChange={onShadeTypeChange}
@@ -123,6 +134,8 @@ const BottomFloatingBar = ({
       </div>
     </TooltipProvider>
   );
-};
+});
+
+BottomFloatingBar.displayName = 'BottomFloatingBar';
 
 export default BottomFloatingBar;
