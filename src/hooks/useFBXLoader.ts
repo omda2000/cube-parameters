@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { LoadedModel } from '../types/model';
+import { disposeObject3D } from './utils/disposeObject3D';
 
 export const useFBXLoader = (scene: THREE.Scene | null) => {
   const loaderRef = useRef<FBXLoader | null>(null);
@@ -186,7 +187,11 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
     if (currentModel?.id === modelId) {
       scene.remove(model.object);
+      disposeObject3D(model.object);
       setCurrentModel(null);
+    } else {
+      scene.remove(model.object);
+      disposeObject3D(model.object);
     }
 
     setLoadedModels(prev => prev.filter(m => m.id !== modelId));
