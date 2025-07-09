@@ -14,10 +14,10 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadFBXModel = useCallback(async (file: File) => {
-    console.log('Starting model load process:', file.name);
+    console.log('FBXLoader: Starting model load process for:', file.name);
     
     if (!scene) {
-      console.error('Scene not available for model loading');
+      console.error('FBXLoader: Scene not available for model loading');
       setError('3D scene not ready. Please try again.');
       return;
     }
@@ -25,6 +25,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
     // Set loading state immediately and clear any errors
     setIsLoading(true);
     setError(null);
+    console.log('FBXLoader: Loading state set to true');
 
     try {
       const ext = file.name.split('.').pop()?.toLowerCase();
@@ -33,59 +34,77 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       if (ext === 'fbx') {
         if (!loaderRef.current) {
           loaderRef.current = new FBXLoader();
-          console.log('FBX loader initialized');
+          console.log('FBXLoader: FBX loader initialized');
         }
 
-        console.log('Reading FBX file as array buffer...');
+        console.log('FBXLoader: Reading FBX file as array buffer...');
         const arrayBuffer = await file.arrayBuffer();
 
-        console.log('Parsing FBX data...');
+        console.log('FBXLoader: Parsing FBX data...');
         object = loaderRef.current.parse(arrayBuffer, '');
-        console.log('FBX parsed successfully:', object);
+        console.log('FBXLoader: FBX parsed successfully');
       } else if (ext === 'gltf' || ext === 'glb') {
         if (!gltfLoaderRef.current) {
           gltfLoaderRef.current = new GLTFLoader();
-          console.log('GLTF loader initialized');
+          console.log('FBXLoader: GLTF loader initialized');
         }
 
-        console.log('Loading GLTF model...');
+        console.log('FBXLoader: Loading GLTF model...');
         const url = URL.createObjectURL(file);
         const gltf = await gltfLoaderRef.current.loadAsync(url);
         URL.revokeObjectURL(url);
         object = gltf.scene;
-        console.log('GLTF loaded successfully:', object);
+        console.log('FBXLoader: GLTF loaded successfully');
       } else {
-        throw new Error('Unsupported file format');
+        throw new Error('Unsupported file format. Please use FBX, GLTF, or GLB files.');
       }
       
-      // Process the object in a single batch to prevent multiple re-renders
-      const processedObject = processObjectBatch(object, file.name);
+      if (!object) {
+        throw new Error('Failed to load model object');
+      }
+
+      console.log('FBXLoader: Processing loaded object...');
       
-      // Remove previous model if exists (do this before adding new one)
+      // Process the object in a single batch to prevent multiple re-renders
+      const processedModel = processModelBatch(object, file.name);
+      
+      // Remove previous model if exists (single operation)
       if (currentModel) {
-        console.log('Removing previous model from scene');
+        console.log('FBXLoader: Removing previous model from scene');
         scene.remove(currentModel.object);
       }
 
-      console.log('Adding new model to scene');
-      scene.add(processedObject.object);
+      console.log('FBXLoader: Adding new model to scene');
+      scene.add(processedModel.object);
       
       // Update all state in a single batch at the end
-      console.log('Model loading completed successfully');
-      setLoadedModels(prev => [...prev, processedObject]);
-      setCurrentModel(processedObject);
+      console.log('FBXLoader: Model loading completed successfully');
+      
+      // Use functional updates to ensure consistency
+      setLoadedModels(prev => {
+        const newModels = [...prev, processedModel];
+        console.log('FBXLoader: Updated loaded models count:', newModels.length);
+        return newModels;
+      });
+      
+      setCurrentModel(processedModel);
+      console.log('FBXLoader: Set current model:', processedModel.name);
       
     } catch (err) {
-      console.error('Failed to load model:', err);
-      setError('Failed to load model. Please check the file format.');
+      console.error('FBXLoader: Failed to load model:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load model. Please check the file format.';
+      setError(errorMessage);
     } finally {
       // Always clear loading state
+      console.log('FBXLoader: Setting loading state to false');
       setIsLoading(false);
     }
   }, [scene, currentModel]);
 
-  // Helper function to process the object in a single batch
-  const processObjectBatch = (object: THREE.Group, fileName: string): LoadedModel => {
+  // Helper function to process the model object in a single batch
+  const processModelBatch = (object: THREE.Group, fileName: string): LoadedModel => {
+    console.log('FBXLoader: Processing model batch for:', fileName);
+    
     // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
     object.rotateX(-Math.PI / 2);
 
@@ -102,30 +121,41 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
     const scale = maxDimension > 4 ? 4 / maxDimension : 1;
     object.scale.setScalar(scale);
 
-    // Process all children in one go
+    // Process all children in one go - avoid individual traverse calls
+    const meshes: THREE.Mesh[] = [];
     object.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
-        // Improve material if it's basic
-        if (child.material instanceof THREE.MeshBasicMaterial) {
-          const newMaterial = new THREE.MeshPhongMaterial({
-            color: child.material.color,
-            map: child.material.map
-          });
-          child.material = newMaterial;
-        }
+        meshes.push(child);
       }
     });
 
-    return {
+    // Batch process all meshes
+    meshes.forEach(mesh => {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      
+      // Improve material if it's basic
+      if (mesh.material instanceof THREE.MeshBasicMaterial) {
+        const newMaterial = new THREE.MeshPhongMaterial({
+          color: mesh.material.color,
+          map: mesh.material.map
+        });
+        mesh.material = newMaterial;
+      }
+    });
+
+    console.log('FBXLoader: Processed', meshes.length, 'meshes in model');
+
+    const processedModel: LoadedModel = {
       id: Date.now().toString(),
       name: fileName.replace(/\.(fbx|gltf|glb)$/i, ''),
       object,
       boundingBox: new THREE.Box3().setFromObject(object),
       size: 0 // We don't need the file size for counting
     };
+
+    console.log('FBXLoader: Created processed model:', processedModel.name);
+    return processedModel;
   };
 
   const switchToModel = useCallback((modelId: string) => {
@@ -133,6 +163,8 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
     const model = loadedModels.find(m => m.id === modelId);
     if (!model) return;
+
+    console.log('FBXLoader: Switching to model:', model.name);
 
     // Remove current model
     if (currentModel) {
@@ -149,6 +181,8 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
     const model = loadedModels.find(m => m.id === modelId);
     if (!model) return;
+
+    console.log('FBXLoader: Removing model:', model.name);
 
     if (currentModel?.id === modelId) {
       scene.remove(model.object);

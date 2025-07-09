@@ -4,22 +4,27 @@ import type { LoadedModel, SceneObject } from '../../../types/model';
 
 // Helper function to generate consistent object IDs
 const generateObjectId = (object: THREE.Object3D): string => {
-  if (object.userData.isPrimitive) {
-    return `primitive_${object.uuid}`;
-  } else if (object.userData.isPoint) {
-    return `point_${object.uuid}`;
-  } else if (object.userData.isMeasurementGroup) {
-    return `measurement_${object.uuid}`;
-  } else if (object instanceof THREE.Group) {
-    return `group_${object.uuid}`;
-  } else if (object instanceof THREE.Mesh) {
-    return `mesh_${object.uuid}`;
+  // Use a more stable ID generation approach
+  const baseId = object.uuid.slice(0, 8);
+  
+  if (object.userData?.isPrimitive) {
+    return `primitive_${baseId}`;
+  } else if (object.userData?.isPoint) {
+    return `point_${baseId}`;
+  } else if (object.userData?.isMeasurementGroup) {
+    return `measurement_${baseId}`;
   } else if (object instanceof THREE.Light) {
-    return `light_${object.uuid}`;
-  } else if (object.type === 'GridHelper' || object.type === 'AxesHelper') {
-    return `env_${object.uuid}`;
+    return `light_${baseId}`;
+  } else if (object.type === 'GridHelper') {
+    return `grid_${baseId}`;
+  } else if (object.type === 'AxesHelper') {
+    return `axes_${baseId}`;
+  } else if (object instanceof THREE.Group) {
+    return `group_${baseId}`;
+  } else if (object instanceof THREE.Mesh) {
+    return `mesh_${baseId}`;
   }
-  return `object_${object.uuid}`;
+  return `object_${baseId}`;
 };
 
 export const buildSceneObjects = (
@@ -33,54 +38,71 @@ export const buildSceneObjects = (
     return [];
   }
 
-  console.log('buildSceneObjects: Starting build with scene children:', scene.children.length);
-  console.log('buildSceneObjects: Scene children types:', scene.children.map(child => ({ name: child.name, type: child.type, isPrimitive: child.userData.isPrimitive })));
+  console.log('buildSceneObjects: Starting with scene children:', scene.children.length);
+  console.log('buildSceneObjects: Children details:', scene.children.map(child => ({
+    name: child.name || 'unnamed',
+    type: child.type,
+    visible: child.visible,
+    isPrimitive: child.userData?.isPrimitive,
+    isHelper: child.userData?.isHelper
+  })));
   
   const sceneObjects: SceneObject[] = [];
   const selectedIds = new Set(selectedObjects.map(obj => obj.id));
 
   // Helper function to determine if object should be included
   const shouldIncludeObject = (object: THREE.Object3D): boolean => {
-    // Skip internal helpers but log them
-    if (object.userData.isHelper) {
-      console.log('Skipping helper object:', object.name, object.type);
+    // Skip objects marked as helpers (but not our environment helpers)
+    if (object.userData?.isHelper && object.type !== 'GridHelper' && object.type !== 'AxesHelper') {
+      console.log('Skipping helper object:', object.name);
       return false;
     }
-    if (object.name && object.name.startsWith('__')) {
+    
+    // Skip internal Three.js objects
+    if (object.name?.startsWith('__')) {
       console.log('Skipping internal object:', object.name);
       return false;
     }
     
-    // Always include primitives if showPrimitives is true, skip if false
-    if (object.userData.isPrimitive) {
-      console.log('Found primitive object:', object.name, 'showPrimitives:', showPrimitives);
+    // Handle primitives based on showPrimitives flag
+    if (object.userData?.isPrimitive) {
+      console.log('Found primitive:', object.name, 'showPrimitives:', showPrimitives);
       return showPrimitives;
     }
     
-    // Include all other objects
+    // Always include environment helpers (grid, axes)
+    if (object.type === 'GridHelper' || object.type === 'AxesHelper') {
+      console.log('Including environment object:', object.name, object.type);
+      return true;
+    }
+    
+    // Include all other objects (meshes, groups, lights, etc.)
     console.log('Including object:', object.name, object.type);
     return true;
   };
 
   // Helper function to determine object type
   const getObjectType = (object: THREE.Object3D): SceneObject['type'] => {
-    if (object.userData.isPrimitive) return 'primitive';
-    if (object.userData.isPoint) return 'point';
-    if (object.userData.isMeasurementGroup) return 'measurement';
-    if (object instanceof THREE.Light) return 'light';
-    if (object.type === 'GridHelper' || object.type === 'AxesHelper') return 'environment';
+    // Check userData first for special types
+    if (object.userData?.isPrimitive) return 'primitive';
+    if (object.userData?.isPoint) return 'point';
+    if (object.userData?.isMeasurementGroup) return 'measurement';
     
-    // Check if this is a loaded model
+    // Check if this is a loaded model (top-level object from FBX/GLTF)
     const isLoadedModel = loadedModels.some(model => model.object === object);
     if (isLoadedModel) return 'model';
     
+    // Check Three.js types
+    if (object instanceof THREE.Light) return 'light';
+    if (object.type === 'GridHelper' || object.type === 'AxesHelper') return 'environment';
     if (object instanceof THREE.Group) return 'group';
     if (object instanceof THREE.Mesh) return 'mesh';
     
-    return 'mesh'; // Default fallback
+    // Default fallback
+    return 'mesh';
   };
 
-  // Recursive function to create SceneObject
+  // Recursive function to create SceneObject hierarchy
   const createSceneObject = (object: THREE.Object3D): SceneObject | null => {
     if (!shouldIncludeObject(object)) {
       return null;
@@ -88,17 +110,29 @@ export const buildSceneObjects = (
 
     const objectId = generateObjectId(object);
     const objectType = getObjectType(object);
+    
+    // Generate a meaningful name
+    let objectName = object.name;
+    if (!objectName || objectName.trim() === '') {
+      if (objectType === 'primitive') {
+        objectName = 'Box';
+      } else if (objectType === 'environment') {
+        objectName = object.type === 'GridHelper' ? 'Grid' : 'Axes';
+      } else {
+        objectName = `${object.type}_${object.uuid.slice(0, 8)}`;
+      }
+    }
 
     console.log('Creating scene object:', { 
-      name: object.name, 
+      name: objectName, 
       type: objectType, 
       id: objectId,
-      isPrimitive: object.userData.isPrimitive 
+      hasChildren: object.children.length > 0
     });
 
     const sceneObject: SceneObject = {
       id: objectId,
-      name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
+      name: objectName,
       type: objectType,
       object: object,
       children: [],
@@ -106,7 +140,7 @@ export const buildSceneObjects = (
       selected: selectedIds.has(objectId)
     };
 
-    // Build children recursively
+    // Process children recursively
     if (object.children.length > 0) {
       const validChildren: SceneObject[] = [];
       
@@ -118,24 +152,34 @@ export const buildSceneObjects = (
       }
       
       sceneObject.children = validChildren;
-      console.log('Object has children:', sceneObject.name, 'children count:', validChildren.length);
+      console.log('Object', objectName, 'has', validChildren.length, 'valid children');
     }
 
     return sceneObject;
   };
 
-  // Process all scene children
+  // Process all direct children of the scene
   for (const child of scene.children) {
-    console.log('Processing scene child:', child.name, child.type, child.userData);
+    console.log('Processing scene child:', {
+      name: child.name || 'unnamed',
+      type: child.type,
+      isPrimitive: child.userData?.isPrimitive,
+      isHelper: child.userData?.isHelper
+    });
+    
     const sceneObject = createSceneObject(child);
     if (sceneObject) {
       sceneObjects.push(sceneObject);
-      console.log('Added scene object:', sceneObject.name, sceneObject.type);
+      console.log('Added to scene tree:', sceneObject.name, sceneObject.type);
     }
   }
 
-  console.log('buildSceneObjects: Built', sceneObjects.length, 'top-level objects');
-  console.log('buildSceneObjects: Final objects:', sceneObjects.map(obj => ({ name: obj.name, type: obj.type })));
+  console.log('buildSceneObjects: Final result -', sceneObjects.length, 'top-level objects');
+  console.log('buildSceneObjects: Objects summary:', sceneObjects.map(obj => ({ 
+    name: obj.name, 
+    type: obj.type,
+    children: obj.children.length 
+  })));
   
   return sceneObjects;
 };

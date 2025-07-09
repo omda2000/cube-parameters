@@ -65,12 +65,14 @@ export const useModelViewerSetup = ({
     showPrimitives
   );
 
-  // Mark box as primitive
+  // Ensure box is properly marked as primitive with a stable effect
   useEffect(() => {
     if (boxRef.current) {
+      console.log('ModelViewerSetup: Marking box as primitive');
       boxRef.current.userData.isPrimitive = true;
+      boxRef.current.name = objectName || 'Box';
     }
-  }, [boxRef]);
+  }, [boxRef, objectName]);
 
   // FBX model loading
   const {
@@ -101,20 +103,25 @@ export const useModelViewerSetup = ({
     gridHelperRef.current
   );
 
-  // Expose scene to parent
+  // Expose scene to parent when ready
   useEffect(() => {
     if (sceneRef.current && onSceneReady) {
+      console.log('ModelViewerSetup: Scene ready, notifying parent');
       onSceneReady(sceneRef.current);
     }
   }, [onSceneReady]);
 
-  // Expose models to parent with proper change detection
+  // Expose models to parent with stable change detection
   useEffect(() => {
     if (onModelsChange) {
-      // Use a timeout to batch updates and prevent rapid firing
+      // Use a small delay to batch updates and prevent rapid firing during model loading
       const timeoutId = setTimeout(() => {
+        console.log('ModelViewerSetup: Notifying parent of model changes -', {
+          modelsCount: loadedModels.length,
+          currentModelId: currentModel?.id || 'none'
+        });
         onModelsChange(loadedModels, currentModel);
-      }, 0);
+      }, 100); // Small delay to batch updates
 
       return () => clearTimeout(timeoutId);
     }

@@ -19,16 +19,9 @@ export const useSceneTreeState = (
     sceneObjects,
     isLoading,
     buildSceneObjectsStable,
-    buildTimeoutRef,
-    lastBuildRef,
+    forceRebuild,
     setSceneObjects
   } = useSceneTreeData(scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly);
-
-  const forceRebuild = () => {
-    console.log('Scene tree state: Force rebuild triggered');
-    lastBuildRef.current = null;
-    buildSceneObjectsStable();
-  };
 
   const {
     expandedNodes,
@@ -38,29 +31,20 @@ export const useSceneTreeState = (
     handleDelete
   } = useSceneTreeActions(scene, forceRebuild);
 
-  // Initial build and rebuild on major changes only
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log('Scene tree state: Effect triggered, building objects');
-    buildSceneObjectsStable();
-  }, [scene, loadedModels.length, showPrimitives, buildSceneObjectsStable]);
-
-  // Separate effect for search and filter changes with debouncing
-  useEffect(() => {
-    if (buildTimeoutRef.current) {
-      clearTimeout(buildTimeoutRef.current);
-    }
-
-    buildTimeoutRef.current = setTimeout(() => {
-      console.log('Scene tree state: Search/filter changed, rebuilding');
-      buildSceneObjectsStable();
-    }, 300); // Longer delay for search/filter changes
-
-    return () => {
-      if (buildTimeoutRef.current) {
-        clearTimeout(buildTimeoutRef.current);
-      }
-    };
-  }, [searchQuery, showSelectedOnly, buildSceneObjectsStable]);
+    console.log('SceneTreeState: State changed -', {
+      hasScene: !!scene,
+      sceneChildrenCount: scene?.children.length || 0,
+      loadedModelsCount: loadedModels.length,
+      showPrimitives,
+      searchQuery: searchQuery.trim(),
+      showSelectedOnly,
+      selectedObjectsCount: selectedObjects.length,
+      sceneObjectsCount: sceneObjects.length,
+      isLoading
+    });
+  }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly, selectedObjects.length, sceneObjects.length, isLoading]);
 
   const wrappedToggleVisibility = (sceneObject: any) => {
     toggleVisibility(sceneObject, setSceneObjects);

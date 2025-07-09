@@ -51,25 +51,37 @@ const BottomFloatingBar = React.memo(({
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
   const stableCountRef = useRef<number>(1);
+  const lastValidCountRef = useRef<number>(1);
   const stabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // More stable object count with proper validation
+  // Much more stable object count with better validation and longer stability period
   const stableObjectCount = useMemo(() => {
     // Validate and sanitize the input count
-    const validCount = typeof objectCount === 'number' && 
-                      !isNaN(objectCount) && 
-                      objectCount >= 0 && 
-                      objectCount < 10000 ? objectCount : 1;
+    const isValidCount = typeof objectCount === 'number' && 
+                        !isNaN(objectCount) && 
+                        isFinite(objectCount) &&
+                        objectCount >= 0 && 
+                        objectCount < 10000;
+    
+    const validCount = isValidCount ? Math.floor(objectCount) : lastValidCountRef.current;
+    
+    // Update last valid count if we have a valid input
+    if (isValidCount) {
+      lastValidCountRef.current = validCount;
+    }
     
     // Clear any existing timeout
     if (stabilityTimeoutRef.current) {
       clearTimeout(stabilityTimeoutRef.current);
     }
     
-    // Only update stable count after a longer delay to prevent flickering
+    // Only update stable count after a much longer delay to prevent flickering
     stabilityTimeoutRef.current = setTimeout(() => {
-      stableCountRef.current = validCount;
-    }, 2000); // 2 second stability period
+      if (Math.abs(validCount - stableCountRef.current) > 0) {
+        console.log('BottomFloatingBar: Updating stable count from', stableCountRef.current, 'to', validCount);
+        stableCountRef.current = validCount;
+      }
+    }, 3000); // 3 second stability period to prevent rapid changes
     
     // Return the current stable count instead of the new count
     return stableCountRef.current;
@@ -84,12 +96,14 @@ const BottomFloatingBar = React.memo(({
     };
   }, []);
 
-  // Stabilized coordinate display with proper rounding
+  // Stabilized coordinate display with proper validation and rounding
   const coordinateDisplay = useMemo(() => {
-    if (!cursorPosition) return { x: 0, y: 0 };
+    if (!cursorPosition || typeof cursorPosition !== 'object') {
+      return { x: 0, y: 0 };
+    }
     
-    const x = typeof cursorPosition.x === 'number' ? cursorPosition.x : 0;
-    const y = typeof cursorPosition.y === 'number' ? cursorPosition.y : 0;
+    const x = typeof cursorPosition.x === 'number' && isFinite(cursorPosition.x) ? cursorPosition.x : 0;
+    const y = typeof cursorPosition.y === 'number' && isFinite(cursorPosition.y) ? cursorPosition.y : 0;
     
     return {
       x: Math.round(x * 10) / 10,
@@ -99,12 +113,12 @@ const BottomFloatingBar = React.memo(({
 
   // Stable grid status
   const gridStatus = useMemo(() => {
-    return gridEnabled ? `ON (${gridSpacing})` : 'OFF';
+    return gridEnabled ? `ON (${gridSpacing || '1m'})` : 'OFF';
   }, [gridEnabled, gridSpacing]);
 
-  // Stable zoom level
+  // Stable zoom level with proper validation
   const stableZoomLevel = useMemo(() => {
-    const zoom = typeof zoomLevel === 'number' ? zoomLevel : 100;
+    const zoom = typeof zoomLevel === 'number' && isFinite(zoomLevel) ? zoomLevel : 100;
     return Math.max(1, Math.min(500, Math.round(zoom))); // Bounded and rounded
   }, [zoomLevel]);
 
