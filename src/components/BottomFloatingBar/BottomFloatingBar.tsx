@@ -88,7 +88,7 @@ const BottomFloatingBar = React.memo(({
 
   // Stabilized coordinate display with proper rounding
   const coordinateDisplay = useMemo(() => {
-    if (!cursorPosition) return { x: '0.0', y: '0.0' };
+    if (!cursorPosition) return { x: 0, y: 0 };
     
     const x = typeof cursorPosition.x === 'number' ? cursorPosition.x : 0;
     const y = typeof cursorPosition.y === 'number' ? cursorPosition.y : 0;
