@@ -15,7 +15,13 @@ export const useSceneTreeState = (
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
+  const { selectedObjects, selectObject, toggleSelection, clearSelection } =
+    useSelectionContext();
+
+  // String representation of selection to use in dependency arrays
+  const selectionKey = showSelectedOnly
+    ? selectedObjects.map((o) => o.id).join('|')
+    : '';
   
   // Use a ref to track the last scene state to avoid unnecessary rebuilds
   const lastSceneStateRef = useRef<{
@@ -24,6 +30,7 @@ export const useSceneTreeState = (
     showPrimitives: boolean;
     searchQuery: string;
     showSelectedOnly: boolean;
+    selectionKey: string;
   } | null>(null);
 
   const rebuildSceneObjects = useCallback(() => {
@@ -39,16 +46,20 @@ export const useSceneTreeState = (
       modelsLength: loadedModels.length,
       showPrimitives,
       searchQuery,
-      showSelectedOnly
+      showSelectedOnly,
+      selectionKey
     };
 
     // Only rebuild if something actually changed
-    if (lastSceneStateRef.current && 
-        lastSceneStateRef.current.sceneChildren === currentState.sceneChildren &&
-        lastSceneStateRef.current.modelsLength === currentState.modelsLength &&
-        lastSceneStateRef.current.showPrimitives === currentState.showPrimitives &&
-        lastSceneStateRef.current.searchQuery === currentState.searchQuery &&
-        lastSceneStateRef.current.showSelectedOnly === currentState.showSelectedOnly) {
+    if (
+      lastSceneStateRef.current &&
+      lastSceneStateRef.current.sceneChildren === currentState.sceneChildren &&
+      lastSceneStateRef.current.modelsLength === currentState.modelsLength &&
+      lastSceneStateRef.current.showPrimitives === currentState.showPrimitives &&
+      lastSceneStateRef.current.searchQuery === currentState.searchQuery &&
+      lastSceneStateRef.current.showSelectedOnly === currentState.showSelectedOnly &&
+      lastSceneStateRef.current.selectionKey === currentState.selectionKey
+    ) {
       return;
     }
 
@@ -86,7 +97,7 @@ export const useSceneTreeState = (
     } finally {
       setIsLoading(false);
     }
-  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
+  }, [scene, loadedModels, showPrimitives, selectionKey, searchQuery, showSelectedOnly]);
 
   // Rebuild when dependencies change, but with a small delay to batch updates
   useEffect(() => {
