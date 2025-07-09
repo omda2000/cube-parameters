@@ -28,6 +28,7 @@ const UnifiedSceneTree = ({
     sceneObjects,
     selectedObjects,
     isLoading,
+    isStable,
     toggleExpanded,
     toggleVisibility,
     handleObjectSelect,
@@ -37,19 +38,16 @@ const UnifiedSceneTree = ({
 
   console.log('UnifiedSceneTree: Render state -', { 
     isLoading, 
+    isStable,
     sceneObjectsCount: sceneObjects.length,
     hasScene: !!scene,
-    sceneChildrenCount: scene?.children.length || 0,
-    showPrimitives,
-    searchQuery: searchQuery.trim(),
-    showSelectedOnly
+    sceneChildrenCount: scene?.children.length || 0
   });
 
-  // Determine if we should show empty state
-  const shouldShowEmptyState = !isLoading && sceneObjects.length === 0 && !!scene;
-  
-  // Determine if we should show loading state (only when actually loading and no objects yet)
-  const shouldShowLoading = isLoading && sceneObjects.length === 0;
+  // Determine display state with stability check
+  const shouldShowLoading = isLoading && (!isStable || sceneObjects.length === 0);
+  const shouldShowEmpty = !isLoading && isStable && sceneObjects.length === 0 && !!scene;
+  const shouldShowObjects = sceneObjects.length > 0 && (isStable || !isLoading);
 
   return (
     <div className="h-full flex flex-col">
@@ -63,12 +61,12 @@ const UnifiedSceneTree = ({
             <div className="animate-spin h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full mx-auto mb-2"></div>
             <p className="text-xs">Loading scene objects...</p>
           </div>
-        ) : shouldShowEmptyState ? (
+        ) : shouldShowEmpty ? (
           <div className="p-2">
             <EmptySceneState />
           </div>
-        ) : sceneObjects.length > 0 ? (
-          <div className="p-2">
+        ) : shouldShowObjects ? (
+          <div className="p-2 min-h-0">
             <SceneObjectGroups
               sceneObjects={sceneObjects}
               expandedNodes={expandedNodes}
@@ -80,7 +78,7 @@ const UnifiedSceneTree = ({
           </div>
         ) : (
           <div className="p-4 text-center text-slate-400">
-            <p className="text-xs">No scene available</p>
+            <p className="text-xs">Initializing scene...</p>
           </div>
         )}
       </div>

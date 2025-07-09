@@ -3,6 +3,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import * as THREE from 'three';
 import type { LoadedModel, SceneObject } from '../../../types/model';
 import { buildSceneObjects } from '../utils/sceneObjectBuilder';
+import { useStableLoadingState } from './useStableLoadingState';
 
 export const useSceneTreeData = (
   scene: THREE.Scene | null,
@@ -13,14 +14,22 @@ export const useSceneTreeData = (
   showSelectedOnly: boolean = false
 ) => {
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, isStable, startLoading, finishLoading } = useStableLoadingState({
+    minLoadingDuration: 300,
+    debounceDelay: 100
+  });
   
-  // Track last successful build to prevent unnecessary rebuilds
+  // Track build state to prevent unnecessary rebuilds
   const lastBuildStateRef = useRef<string>('');
+  const isRebuildingRef = useRef(false);
   
-  // Create a stable build key to detect when we actually need to rebuild
+  // Create a stable build key
   const createBuildKey = useCallback(() => {
     if (!scene) return 'no-scene';
+    
+    const sceneKey = scene.children.map(child => 
+      `${child.name || 'unnamed'}_${child.type}_${child.visible}_${child.userData?.isPrimitive || false}`
+    ).join('|');
     
     return [
       scene.children.length,
@@ -28,54 +37,54 @@ export const useSceneTreeData = (
       showPrimitives,
       searchQuery.trim(),
       showSelectedOnly,
-      // Include a hash of scene children names for better change detection
-      scene.children.map(child => `${child.name || 'unnamed'}_${child.type}_${child.visible}`).join('|')
+      sceneKey
     ].join('_');
   }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly]);
 
-  const buildSceneObjectsStable = useCallback(() => {
-    console.log('SceneTreeData: Starting buildSceneObjectsStable');
+  const buildSceneObjectsStable = useCallback(async () => {
+    console.log('SceneTreeData: Starting stable build process');
     
     if (!scene) {
-      console.log('SceneTreeData: No scene available, clearing objects');
+      console.log('SceneTreeData: No scene available');
       setSceneObjects([]);
-      setIsLoading(false);
       return;
     }
 
     const currentBuildKey = createBuildKey();
     
-    // Skip rebuild if nothing has actually changed
-    if (lastBuildStateRef.current === currentBuildKey) {
-      console.log('SceneTreeData: Skipping rebuild, no changes detected');
+    // Skip rebuild if nothing changed and not during FBX loading
+    if (lastBuildStateRef.current === currentBuildKey && !isRebuildingRef.current) {
+      console.log('SceneTreeData: Skipping rebuild - no changes detected');
       return;
     }
 
-    console.log('SceneTreeData: Building objects for scene with', scene.children.length, 'children');
-    console.log('SceneTreeData: Scene children:', scene.children.map(child => ({
-      name: child.name || 'unnamed',
-      type: child.type,
-      visible: child.visible,
-      isPrimitive: child.userData?.isPrimitive || false
-    })));
+    // Prevent concurrent rebuilds
+    if (isRebuildingRef.current) {
+      console.log('SceneTreeData: Rebuild already in progress, skipping');
+      return;
+    }
 
-    setIsLoading(true);
+    isRebuildingRef.current = true;
+    startLoading();
 
     try {
-      // Build objects synchronously - no timeouts
+      console.log('SceneTreeData: Building objects for scene with', scene.children.length, 'children');
+      
+      // Add small delay to batch rapid changes during FBX loading
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // Build objects synchronously but allow UI updates
       let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
       
-      console.log('SceneTreeData: Built', objects.length, 'initial objects');
+      console.log('SceneTreeData: Built', objects.length, 'objects before filtering');
       
-      // Apply search filter if needed
+      // Apply search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const filterBySearch = (objs: SceneObject[]): SceneObject[] => {
           return objs.filter(obj => {
-            // Check if object name matches
             if (obj.name.toLowerCase().includes(query)) return true;
             
-            // Recursively check children
             const filteredChildren = filterBySearch(obj.children);
             if (filteredChildren.length > 0) {
               obj.children = filteredChildren;
@@ -85,18 +94,15 @@ export const useSceneTreeData = (
           });
         };
         objects = filterBySearch(objects);
-        console.log('SceneTreeData: After search filter:', objects.length, 'objects');
       }
       
-      // Apply selection filter if needed
+      // Apply selection filter
       if (showSelectedOnly && selectedObjects.length > 0) {
         const selectedIds = new Set(selectedObjects.map(obj => obj.id));
         const filterBySelection = (objs: SceneObject[]): SceneObject[] => {
           return objs.filter(obj => {
-            // Check if object is selected
             if (selectedIds.has(obj.id)) return true;
             
-            // Recursively check children
             const filteredChildren = filterBySelection(obj.children);
             if (filteredChildren.length > 0) {
               obj.children = filteredChildren;
@@ -106,40 +112,57 @@ export const useSceneTreeData = (
           });
         };
         objects = filterBySelection(objects);
-        console.log('SceneTreeData: After selection filter:', objects.length, 'objects');
       }
       
-      console.log('SceneTreeData: Final objects ready:', objects.map(obj => ({ name: obj.name, type: obj.type })));
+      console.log('SceneTreeData: Final objects count:', objects.length);
       
-      // Update state and mark this build as successful
-      setSceneObjects(objects);
+      // Update state only if objects actually changed
+      setSceneObjects(prevObjects => {
+        const objectsChanged = JSON.stringify(objects.map(o => ({ id: o.id, name: o.name, type: o.type }))) !== 
+                              JSON.stringify(prevObjects.map(o => ({ id: o.id, name: o.name, type: o.type })));
+        
+        if (objectsChanged) {
+          console.log('SceneTreeData: Objects changed, updating state');
+          return objects;
+        }
+        
+        console.log('SceneTreeData: Objects unchanged, keeping previous state');
+        return prevObjects;
+      });
+      
       lastBuildStateRef.current = currentBuildKey;
       
     } catch (error) {
       console.error('SceneTreeData: Error building objects:', error);
       setSceneObjects([]);
     } finally {
-      // Always clear loading state
-      setIsLoading(false);
+      isRebuildingRef.current = false;
+      finishLoading();
     }
-  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly, createBuildKey]);
+  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly, createBuildKey, startLoading, finishLoading]);
 
-  // Force rebuild for external calls (like after deletion)
+  // Force rebuild for external calls
   const forceRebuild = useCallback(() => {
     console.log('SceneTreeData: Force rebuild requested');
     lastBuildStateRef.current = '';
+    isRebuildingRef.current = false;
     buildSceneObjectsStable();
   }, [buildSceneObjectsStable]);
 
-  // Effect for scene/model changes - these should trigger immediate rebuilds
+  // Effect for scene/model changes with debouncing
   useEffect(() => {
-    console.log('SceneTreeData: Scene or models changed, rebuilding immediately');
-    buildSceneObjectsStable();
+    const timeoutId = setTimeout(() => {
+      console.log('SceneTreeData: Scene change detected, rebuilding');
+      buildSceneObjectsStable();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [buildSceneObjectsStable]);
 
   return {
     sceneObjects,
     isLoading,
+    isStable,
     buildSceneObjectsStable,
     forceRebuild,
     setSceneObjects

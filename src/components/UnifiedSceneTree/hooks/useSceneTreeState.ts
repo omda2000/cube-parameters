@@ -18,6 +18,7 @@ export const useSceneTreeState = (
   const {
     sceneObjects,
     isLoading,
+    isStable,
     buildSceneObjectsStable,
     forceRebuild,
     setSceneObjects
@@ -31,20 +32,25 @@ export const useSceneTreeState = (
     handleDelete
   } = useSceneTreeActions(scene, forceRebuild);
 
-  // Enhanced logging for debugging
+  // Optimized logging with throttling
   useEffect(() => {
-    console.log('SceneTreeState: State changed -', {
-      hasScene: !!scene,
-      sceneChildrenCount: scene?.children.length || 0,
-      loadedModelsCount: loadedModels.length,
-      showPrimitives,
-      searchQuery: searchQuery.trim(),
-      showSelectedOnly,
-      selectedObjectsCount: selectedObjects.length,
-      sceneObjectsCount: sceneObjects.length,
-      isLoading
-    });
-  }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly, selectedObjects.length, sceneObjects.length, isLoading]);
+    const logTimeout = setTimeout(() => {
+      console.log('SceneTreeState: State snapshot -', {
+        hasScene: !!scene,
+        sceneChildrenCount: scene?.children.length || 0,
+        loadedModelsCount: loadedModels.length,
+        showPrimitives,
+        searchQuery: searchQuery.trim(),
+        showSelectedOnly,
+        selectedObjectsCount: selectedObjects.length,
+        sceneObjectsCount: sceneObjects.length,
+        isLoading,
+        isStable
+      });
+    }, 200);
+
+    return () => clearTimeout(logTimeout);
+  }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly, selectedObjects.length, sceneObjects.length, isLoading, isStable]);
 
   const wrappedToggleVisibility = (sceneObject: any) => {
     toggleVisibility(sceneObject, setSceneObjects);
@@ -55,6 +61,7 @@ export const useSceneTreeState = (
     sceneObjects,
     selectedObjects,
     isLoading,
+    isStable,
     toggleExpanded,
     toggleVisibility: wrappedToggleVisibility,
     handleObjectSelect,
