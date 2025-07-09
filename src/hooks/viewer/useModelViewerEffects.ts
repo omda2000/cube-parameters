@@ -70,7 +70,7 @@ export const useModelViewerEffects = ({
   );
 
   // Mouse interaction
-  const { objectData, mousePosition, isHovering } = useMouseInteraction(
+  const { objectData, mousePosition, isHovering, clearHover } = useMouseInteraction(
     renderer,
     camera,
     currentModel ? currentModel.object : boxRef.current,
@@ -81,6 +81,13 @@ export const useModelViewerEffects = ({
     handlePointCreate,
     handleMeasureCreate
   );
+
+  // Clear any hover effects when selection is cleared
+  useEffect(() => {
+    if (selectedObjects.length === 0) {
+      clearHover();
+    }
+  }, [selectedObjects, clearHover]);
 
   return {
     objectData,

@@ -24,7 +24,7 @@ export const useMouseInteraction = (
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
   // Use extracted hooks for state management
-  const { hoveredObject, setHoveredObject, materialManagerRef, initializeMaterialManager, cleanupMaterialManager } = useMouseInteractionState();
+  const { hoveredObject, setHoveredObject, clearHover, materialManagerRef, initializeMaterialManager, cleanupMaterialManager } = useMouseInteractionState();
   const { mousePosition, mousePositionRef, throttledMouseMove, updateMousePosition } = useMouseTracking();
   const { objectData, setObjectData, extractObjectData } = useObjectData();
 
@@ -159,9 +159,10 @@ export const useMouseInteraction = (
     }
   }, [scene, targetObject]);
 
-  return { 
-    objectData, 
-    mousePosition, 
-    isHovering: !!hoveredObject 
+  return {
+    objectData,
+    mousePosition,
+    isHovering: !!hoveredObject,
+    clearHover
   };
 };
