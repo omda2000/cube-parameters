@@ -25,6 +25,7 @@ export const useSceneTreeState = (
   } = useSceneTreeData(scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly);
 
   const forceRebuild = () => {
+    console.log('Scene tree state: Force rebuild triggered');
     lastBuildRef.current = null;
     buildSceneObjectsStable();
   };
@@ -37,22 +38,29 @@ export const useSceneTreeState = (
     handleDelete
   } = useSceneTreeActions(scene, forceRebuild);
 
-  // Debounced rebuild with longer delay to prevent flickering
+  // Initial build and rebuild on major changes only
+  useEffect(() => {
+    console.log('Scene tree state: Effect triggered, building objects');
+    buildSceneObjectsStable();
+  }, [scene, loadedModels.length, showPrimitives, buildSceneObjectsStable]);
+
+  // Separate effect for search and filter changes with debouncing
   useEffect(() => {
     if (buildTimeoutRef.current) {
       clearTimeout(buildTimeoutRef.current);
     }
 
     buildTimeoutRef.current = setTimeout(() => {
+      console.log('Scene tree state: Search/filter changed, rebuilding');
       buildSceneObjectsStable();
-    }, 500); // Increased delay to prevent rapid rebuilds
+    }, 300); // Longer delay for search/filter changes
 
     return () => {
       if (buildTimeoutRef.current) {
         clearTimeout(buildTimeoutRef.current);
       }
     };
-  }, [buildSceneObjectsStable]);
+  }, [searchQuery, showSelectedOnly, buildSceneObjectsStable]);
 
   const wrappedToggleVisibility = (sceneObject: any) => {
     toggleVisibility(sceneObject, setSceneObjects);

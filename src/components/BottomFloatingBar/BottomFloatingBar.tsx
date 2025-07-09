@@ -51,29 +51,27 @@ const BottomFloatingBar = React.memo(({
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
   const stableCountRef = useRef<number>(1);
-  const lastValidCountRef = useRef<number>(1);
   const stabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Highly stabilized object count with validation and fallback
+  // More stable object count with proper validation
   const stableObjectCount = useMemo(() => {
     // Validate and sanitize the input count
-    const inputCount = typeof objectCount === 'number' && objectCount >= 0 ? objectCount : 1;
-    
-    // If the count seems reasonable, update the last valid count
-    if (inputCount > 0 && inputCount < 10000) { // Reasonable bounds
-      lastValidCountRef.current = inputCount;
-    }
+    const validCount = typeof objectCount === 'number' && 
+                      !isNaN(objectCount) && 
+                      objectCount >= 0 && 
+                      objectCount < 10000 ? objectCount : 1;
     
     // Clear any existing timeout
     if (stabilityTimeoutRef.current) {
       clearTimeout(stabilityTimeoutRef.current);
     }
     
-    // Only update stable count after a delay to prevent flickering
+    // Only update stable count after a longer delay to prevent flickering
     stabilityTimeoutRef.current = setTimeout(() => {
-      stableCountRef.current = lastValidCountRef.current;
-    }, 1000); // 1 second stability period
+      stableCountRef.current = validCount;
+    }, 2000); // 2 second stability period
     
+    // Return the current stable count instead of the new count
     return stableCountRef.current;
   }, [objectCount]);
 

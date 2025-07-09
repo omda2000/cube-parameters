@@ -34,19 +34,31 @@ export const buildSceneObjects = (
   }
 
   console.log('buildSceneObjects: Starting build with scene children:', scene.children.length);
+  console.log('buildSceneObjects: Scene children types:', scene.children.map(child => ({ name: child.name, type: child.type, isPrimitive: child.userData.isPrimitive })));
   
   const sceneObjects: SceneObject[] = [];
   const selectedIds = new Set(selectedObjects.map(obj => obj.id));
 
   // Helper function to determine if object should be included
   const shouldIncludeObject = (object: THREE.Object3D): boolean => {
-    // Always exclude helpers and internal objects
-    if (object.userData.isHelper) return false;
-    if (object.name && object.name.startsWith('__')) return false;
+    // Skip internal helpers but log them
+    if (object.userData.isHelper) {
+      console.log('Skipping helper object:', object.name, object.type);
+      return false;
+    }
+    if (object.name && object.name.startsWith('__')) {
+      console.log('Skipping internal object:', object.name);
+      return false;
+    }
     
-    // Handle primitives based on showPrimitives flag
-    if (object.userData.isPrimitive && !showPrimitives) return false;
+    // Always include primitives if showPrimitives is true, skip if false
+    if (object.userData.isPrimitive) {
+      console.log('Found primitive object:', object.name, 'showPrimitives:', showPrimitives);
+      return showPrimitives;
+    }
     
+    // Include all other objects
+    console.log('Including object:', object.name, object.type);
     return true;
   };
 
@@ -77,6 +89,13 @@ export const buildSceneObjects = (
     const objectId = generateObjectId(object);
     const objectType = getObjectType(object);
 
+    console.log('Creating scene object:', { 
+      name: object.name, 
+      type: objectType, 
+      id: objectId,
+      isPrimitive: object.userData.isPrimitive 
+    });
+
     const sceneObject: SceneObject = {
       id: objectId,
       name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
@@ -99,6 +118,7 @@ export const buildSceneObjects = (
       }
       
       sceneObject.children = validChildren;
+      console.log('Object has children:', sceneObject.name, 'children count:', validChildren.length);
     }
 
     return sceneObject;
@@ -106,13 +126,16 @@ export const buildSceneObjects = (
 
   // Process all scene children
   for (const child of scene.children) {
+    console.log('Processing scene child:', child.name, child.type, child.userData);
     const sceneObject = createSceneObject(child);
     if (sceneObject) {
       sceneObjects.push(sceneObject);
+      console.log('Added scene object:', sceneObject.name, sceneObject.type);
     }
   }
 
   console.log('buildSceneObjects: Built', sceneObjects.length, 'top-level objects');
+  console.log('buildSceneObjects: Final objects:', sceneObjects.map(obj => ({ name: obj.name, type: obj.type })));
   
   return sceneObjects;
 };
