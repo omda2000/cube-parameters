@@ -20,6 +20,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       return;
     }
 
+    // Set loading state immediately and clear any errors
     setIsLoading(true);
     setError(null);
 
@@ -36,67 +37,75 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       const object = loaderRef.current.parse(arrayBuffer, '');
       console.log('FBX parsed successfully:', object);
       
-      // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
-      object.rotateX(-Math.PI / 2);
-
-      // Calculate bounding box after rotation
-      const boundingBox = new THREE.Box3().setFromObject(object);
-      const center = boundingBox.getCenter(new THREE.Vector3());
-      const size = boundingBox.getSize(new THREE.Vector3());
-
-      // Center the model at origin
-      object.position.sub(center);
-
-      // Scale model to fit in view (max size of 4 units to give more room)
-      const maxDimension = Math.max(size.x, size.y, size.z);
-      const scale = maxDimension > 4 ? 4 / maxDimension : 1;
-      object.scale.setScalar(scale);
-
-      // Process objects synchronously to prevent UI instability
-      object.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          
-          // Improve material if it's basic
-          if (child.material instanceof THREE.MeshBasicMaterial) {
-            const newMaterial = new THREE.MeshPhongMaterial({
-              color: child.material.color,
-              map: child.material.map
-            });
-            child.material = newMaterial;
-          }
-        }
-      });
-
-      const modelData: LoadedModel = {
-        id: Date.now().toString(),
-        name: file.name.replace('.fbx', ''),
-        object,
-        boundingBox: new THREE.Box3().setFromObject(object),
-        size: file.size
-      };
-
-      // Remove previous model if exists
+      // Process the object in a single batch to prevent multiple re-renders
+      const processedObject = processObjectBatch(object, file.name);
+      
+      // Remove previous model if exists (do this before adding new one)
       if (currentModel) {
         console.log('Removing previous model from scene');
         scene.remove(currentModel.object);
       }
 
       console.log('Adding new model to scene');
-      scene.add(object);
+      scene.add(processedObject.object);
       
-      // Update state synchronously
-      setLoadedModels(prev => [...prev, modelData]);
-      setCurrentModel(modelData);
+      // Update all state in a single batch at the end
+      console.log('Model loading completed successfully');
+      setLoadedModels(prev => [...prev, processedObject]);
+      setCurrentModel(processedObject);
       
     } catch (err) {
       console.error('Failed to load FBX model:', err);
       setError('Failed to load model. Please check the file format.');
     } finally {
+      // Always clear loading state
       setIsLoading(false);
     }
   }, [scene, currentModel]);
+
+  // Helper function to process the object in a single batch
+  const processObjectBatch = (object: THREE.Group, fileName: string): LoadedModel => {
+    // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
+    object.rotateX(-Math.PI / 2);
+
+    // Calculate bounding box after rotation
+    const boundingBox = new THREE.Box3().setFromObject(object);
+    const center = boundingBox.getCenter(new THREE.Vector3());
+    const size = boundingBox.getSize(new THREE.Vector3());
+
+    // Center the model at origin
+    object.position.sub(center);
+
+    // Scale model to fit in view (max size of 4 units)
+    const maxDimension = Math.max(size.x, size.y, size.z);
+    const scale = maxDimension > 4 ? 4 / maxDimension : 1;
+    object.scale.setScalar(scale);
+
+    // Process all children in one go
+    object.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        
+        // Improve material if it's basic
+        if (child.material instanceof THREE.MeshBasicMaterial) {
+          const newMaterial = new THREE.MeshPhongMaterial({
+            color: child.material.color,
+            map: child.material.map
+          });
+          child.material = newMaterial;
+        }
+      }
+    });
+
+    return {
+      id: Date.now().toString(),
+      name: fileName.replace('.fbx', ''),
+      object,
+      boundingBox: new THREE.Box3().setFromObject(object),
+      size: 0 // We don't need the file size for counting
+    };
+  };
 
   const switchToModel = useCallback((modelId: string) => {
     if (!scene) return;
