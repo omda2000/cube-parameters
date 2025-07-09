@@ -40,16 +40,6 @@ const SceneObjectNode = ({
 
   const handleVisibilityToggle = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // Toggle visibility and force scene update
-    const newVisibility = !sceneObject.object.visible;
-    sceneObject.object.visible = newVisibility;
-    
-    // Recursively update all children visibility
-    sceneObject.object.traverse((child) => {
-      child.visible = newVisibility;
-    });
-    
-    // Trigger re-render by calling the parent handler
     onToggleVisibility(sceneObject);
   };
 

@@ -95,7 +95,15 @@ export const useSceneTreeState = (
     }, 50); // Small delay to batch rapid changes
 
     return () => clearTimeout(timeoutId);
-  }, [rebuildSceneObjects]);
+  }, [
+    rebuildSceneObjects,
+    scene ? scene.children.length : 0,
+    loadedModels.length,
+    showPrimitives,
+    searchQuery,
+    showSelectedOnly,
+    selectedObjects.length
+  ]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedNodes(prev => {
