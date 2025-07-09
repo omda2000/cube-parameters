@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useRef, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
@@ -50,17 +50,52 @@ const BottomFloatingBar = memo(({
   className
 }: BottomFloatingBarProps) => {
   const { selectedObjects } = useSelectionContext();
+  const lastUpdateRef = useRef<number>(0);
 
   // Memoize the selected object to prevent unnecessary re-renders
   const selectedObject = useMemo(() => {
     return selectedObjects.length > 0 ? selectedObjects[0] : null;
   }, [selectedObjects]);
 
-  // Memoize cursor position display to prevent frequent updates
-  const formattedPosition = useMemo(() => ({
-    x: cursorPosition.x.toFixed(2),
-    y: cursorPosition.y.toFixed(2)
-  }), [cursorPosition.x, cursorPosition.y]);
+  // Throttled cursor position formatting to prevent excessive updates
+  const formattedPosition = useMemo(() => {
+    const now = Date.now();
+    if (now - lastUpdateRef.current < 100) { // Throttle to 10fps for position updates
+      return lastUpdateRef.current > 0 ? {
+        x: cursorPosition.x.toFixed(2),
+        y: cursorPosition.y.toFixed(2)
+      } : { x: '0.00', y: '0.00' };
+    }
+    lastUpdateRef.current = now;
+    
+    return {
+      x: cursorPosition.x.toFixed(2),
+      y: cursorPosition.y.toFixed(2)
+    };
+  }, [cursorPosition.x, cursorPosition.y]);
+
+  // Memoize static content to prevent re-renders
+  const staticContent = useMemo(() => ({
+    objectCount,
+    gridStatus: gridEnabled ? `ON (${gridSpacing})` : 'OFF',
+    units
+  }), [objectCount, gridEnabled, gridSpacing, units]);
+
+  // Memoized handlers to prevent prop drilling re-renders
+  const zoomHandlers = useMemo(() => ({
+    onZoomAll,
+    onZoomToSelected,
+    onZoomIn,
+    onZoomOut,
+    onResetView
+  }), [onZoomAll, onZoomToSelected, onZoomIn, onZoomOut, onResetView]);
+
+  const snapHandlers = useMemo(() => ({
+    snapToGrid,
+    onSnapToGridChange,
+    gridSize,
+    onGridSizeChange
+  }), [snapToGrid, onSnapToGridChange, gridSize, onGridSizeChange]);
 
   return (
     <TooltipProvider>
@@ -70,7 +105,7 @@ const BottomFloatingBar = memo(({
           <div className="flex items-center gap-4 min-w-0">
             <div className="flex items-center gap-1 whitespace-nowrap">
               <span>Objects:</span>
-              <span className="text-foreground font-medium">{objectCount}</span>
+              <span className="text-foreground font-medium">{staticContent.objectCount}</span>
             </div>
             
             <Separator orientation="vertical" className="h-4 flex-shrink-0" />
@@ -78,7 +113,7 @@ const BottomFloatingBar = memo(({
             <div className="flex items-center gap-1 whitespace-nowrap">
               <span>Grid:</span>
               <span className="text-foreground font-medium">
-                {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
+                {staticContent.gridStatus}
               </span>
             </div>
             
@@ -86,7 +121,7 @@ const BottomFloatingBar = memo(({
             
             <div className="flex items-center gap-1 whitespace-nowrap">
               <span>Units:</span>
-              <span className="text-foreground font-medium">{units}</span>
+              <span className="text-foreground font-medium">{staticContent.units}</span>
             </div>
 
             <Separator orientation="vertical" className="h-4 flex-shrink-0" />
@@ -104,11 +139,7 @@ const BottomFloatingBar = memo(({
           {/* Center section - Zoom controls */}
           <div className="flex items-center flex-shrink-0">
             <ExpandableZoomControls
-              onZoomAll={onZoomAll}
-              onZoomToSelected={onZoomToSelected}
-              onZoomIn={onZoomIn}
-              onZoomOut={onZoomOut}
-              onResetView={onResetView}
+              {...zoomHandlers}
               selectedObject={selectedObject}
               zoomLevel={zoomLevel}
             />
@@ -124,10 +155,7 @@ const BottomFloatingBar = memo(({
             <Separator orientation="vertical" className="h-4" />
             
             <ExpandableSnapControls
-              snapToGrid={snapToGrid}
-              onSnapToGridChange={onSnapToGridChange}
-              gridSize={gridSize}
-              onGridSizeChange={onGridSizeChange}
+              {...snapHandlers}
             />
           </div>
         </div>

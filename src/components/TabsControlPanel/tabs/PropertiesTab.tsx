@@ -1,4 +1,5 @@
 
+import React, { memo, useCallback, useMemo } from 'react';
 import { Box, Palette, Tag, Ruler, Sparkles, Eye, Globe, Droplets, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +19,7 @@ interface PropertiesTabProps {
   setObjectName: (name: string) => void;
 }
 
-const PropertiesTab = ({
+const PropertiesTab = memo(({
   dimensions,
   setDimensions,
   boxColor,
@@ -29,12 +30,53 @@ const PropertiesTab = ({
   const { selectedObjects } = useSelectionContext();
   const { materialProps, updateMaterialProperty } = useMaterialProperties(selectedObjects);
 
+  // Memoize selection state to prevent unnecessary re-renders
+  const selectionState = useMemo(() => ({
+    hasSelection: selectedObjects.length > 0,
+    selectedObject: selectedObjects[0] || null,
+    selectedObjectName: selectedObjects[0]?.name || ''
+  }), [selectedObjects]);
+
   // Use material properties from selected object or fallback to box properties
-  const hasSelectedObject = selectedObjects.length > 0;
-  const displayColor = hasSelectedObject ? materialProps.color : boxColor;
-  const setDisplayColor = hasSelectedObject 
-    ? (color: string) => updateMaterialProperty('color', color)
+  const displayColor = selectionState.hasSelection ? materialProps.color : boxColor;
+  const setDisplayColor = selectionState.hasSelection 
+    ? useCallback((color: string) => updateMaterialProperty('color', color), [updateMaterialProperty])
     : setBoxColor;
+
+  // Memoized material property handlers
+  const handleMetalnessChange = useCallback(([value]: number[]) => {
+    updateMaterialProperty('metalness', value / 100);
+  }, [updateMaterialProperty]);
+
+  const handleRoughnessChange = useCallback(([value]: number[]) => {
+    updateMaterialProperty('roughness', value / 100);
+  }, [updateMaterialProperty]);
+
+  const handleEnvMapChange = useCallback(([value]: number[]) => {
+    updateMaterialProperty('envMapIntensity', value / 100);
+  }, [updateMaterialProperty]);
+
+  const handleOpacityChange = useCallback(([value]: number[]) => {
+    updateMaterialProperty('opacity', value / 100);
+  }, [updateMaterialProperty]);
+
+  const handleColorInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDisplayColor(e.target.value);
+  }, [setDisplayColor]);
+
+  const handleColorPickerChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDisplayColor(e.target.value);
+  }, [setDisplayColor]);
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectionState.selectedObject) {
+      const newName = e.target.value;
+      selectionState.selectedObject.name = newName;
+      if (selectionState.selectedObject.object) {
+        selectionState.selectedObject.object.name = newName;
+      }
+    }
+  }, [selectionState.selectedObject]);
 
   // Safe fallbacks for material properties
   const metalness = materialProps?.metalness ?? 0.1;
@@ -51,7 +93,7 @@ const PropertiesTab = ({
           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Properties</span>
         </div>
 
-        {hasSelectedObject ? (
+        {selectionState.hasSelection ? (
           <>
             {/* Object name - Only show when object is selected */}
             <div className="space-y-1">
@@ -60,16 +102,8 @@ const PropertiesTab = ({
                 <Label className="text-xs text-slate-600 dark:text-slate-400">Name</Label>
               </div>
               <Input
-                value={selectedObjects[0]?.name || ''}
-                onChange={(e) => {
-                  // Update the selected object's name
-                  if (selectedObjects[0]) {
-                    selectedObjects[0].name = e.target.value;
-                    if (selectedObjects[0].object) {
-                      selectedObjects[0].object.name = e.target.value;
-                    }
-                  }
-                }}
+                value={selectionState.selectedObjectName}
+                onChange={handleNameChange}
                 className="h-7 text-xs"
                 placeholder="Object name"
               />
@@ -91,12 +125,12 @@ const PropertiesTab = ({
                   <input
                     type="color"
                     value={displayColor}
-                    onChange={(e) => setDisplayColor(e.target.value)}
+                    onChange={handleColorPickerChange}
                     className="w-7 h-7 rounded border border-slate-600/50 bg-transparent cursor-pointer"
                   />
                   <Input
                     value={displayColor}
-                    onChange={(e) => setDisplayColor(e.target.value)}
+                    onChange={handleColorInputChange}
                     className="h-7 text-xs flex-1"
                     placeholder="#808080"
                   />
@@ -115,7 +149,7 @@ const PropertiesTab = ({
                   max={100}
                   step={1}
                   className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('opacity', value / 100)}
+                  onValueChange={handleOpacityChange}
                 />
               </div>
 
@@ -131,7 +165,7 @@ const PropertiesTab = ({
                   max={100}
                   step={1}
                   className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('metalness', value / 100)}
+                  onValueChange={handleMetalnessChange}
                 />
               </div>
 
@@ -147,7 +181,7 @@ const PropertiesTab = ({
                   max={100}
                   step={1}
                   className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('roughness', value / 100)}
+                  onValueChange={handleRoughnessChange}
                 />
               </div>
 
@@ -163,7 +197,7 @@ const PropertiesTab = ({
                   max={100}
                   step={1}
                   className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('envMapIntensity', value / 100)}
+                  onValueChange={handleEnvMapChange}
                 />
               </div>
             </div>
@@ -180,6 +214,8 @@ const PropertiesTab = ({
       </div>
     </TooltipProvider>
   );
-};
+});
+
+PropertiesTab.displayName = 'PropertiesTab';
 
 export default PropertiesTab;

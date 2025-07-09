@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { LoadedModel, SceneObject } from '../../../types/model';
@@ -16,6 +16,11 @@ export const useSceneTreeState = (
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const [lastSceneVersion, setLastSceneVersion] = useState(0);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
+  
+  // Use refs to track previous values and prevent unnecessary rebuilds
+  const prevSearchQueryRef = useRef(searchQuery);
+  const prevShowSelectedOnlyRef = useRef(showSelectedOnly);
+  const rebuildTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Create a stable scene version to track actual changes
   const sceneVersion = useMemo(() => {
@@ -27,9 +32,13 @@ export const useSceneTreeState = (
     return version + loadedModels.length;
   }, [scene, loadedModels.length]);
 
-  // Build unified scene tree only when scene structure actually changes
-  useEffect(() => {
-    if (sceneVersion !== lastSceneVersion) {
+  // Debounced scene rebuild to prevent excessive updates
+  const debouncedRebuild = useCallback(() => {
+    if (rebuildTimeoutRef.current) {
+      clearTimeout(rebuildTimeoutRef.current);
+    }
+
+    rebuildTimeoutRef.current = setTimeout(() => {
       let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
       
       // Apply selected-only filter FIRST
@@ -53,8 +62,22 @@ export const useSceneTreeState = (
       
       setSceneObjects(objects);
       setLastSceneVersion(sceneVersion);
+    }, 50); // 50ms debounce
+  }, [scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly, sceneVersion, selectedObjects]);
+
+  // Build unified scene tree only when necessary
+  useEffect(() => {
+    const searchChanged = searchQuery !== prevSearchQueryRef.current;
+    const showSelectedOnlyChanged = showSelectedOnly !== prevShowSelectedOnlyRef.current;
+    const sceneChanged = sceneVersion !== lastSceneVersion;
+
+    if (sceneChanged || searchChanged || showSelectedOnlyChanged) {
+      debouncedRebuild();
+      
+      prevSearchQueryRef.current = searchQuery;
+      prevShowSelectedOnlyRef.current = showSelectedOnly;
     }
-  }, [scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly, sceneVersion, lastSceneVersion, selectedObjects]);
+  }, [searchQuery, showSelectedOnly, sceneVersion, lastSceneVersion, debouncedRebuild]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedNodes(prev => {
@@ -131,10 +154,19 @@ export const useSceneTreeState = (
         }
       }
       
-      // Update scene version to trigger rebuild
-      setLastSceneVersion(prev => prev + 1);
+      // Trigger rebuild
+      debouncedRebuild();
     }
-  }, [scene]);
+  }, [scene, debouncedRebuild]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (rebuildTimeoutRef.current) {
+        clearTimeout(rebuildTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     expandedNodes,
