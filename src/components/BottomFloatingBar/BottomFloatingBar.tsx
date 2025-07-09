@@ -50,45 +50,64 @@ const BottomFloatingBar = React.memo(({
   className
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
-  const stableObjectCountRef = useRef(1);
-  const lastUpdateTimeRef = useRef(0);
+  const stableCountRef = useRef<number>(1);
+  const lastValidCountRef = useRef<number>(1);
+  const stabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Stabilize object count with debouncing to prevent flickering
+  // Highly stabilized object count with validation and fallback
   const stableObjectCount = useMemo(() => {
-    const now = Date.now();
-    const validCount = Math.max(1, objectCount || 1);
+    // Validate and sanitize the input count
+    const inputCount = typeof objectCount === 'number' && objectCount >= 0 ? objectCount : 1;
     
-    // Only update if the count has been stable for at least 500ms
-    if (now - lastUpdateTimeRef.current > 500) {
-      stableObjectCountRef.current = validCount;
-      lastUpdateTimeRef.current = now;
+    // If the count seems reasonable, update the last valid count
+    if (inputCount > 0 && inputCount < 10000) { // Reasonable bounds
+      lastValidCountRef.current = inputCount;
     }
     
-    return stableObjectCountRef.current;
+    // Clear any existing timeout
+    if (stabilityTimeoutRef.current) {
+      clearTimeout(stabilityTimeoutRef.current);
+    }
+    
+    // Only update stable count after a delay to prevent flickering
+    stabilityTimeoutRef.current = setTimeout(() => {
+      stableCountRef.current = lastValidCountRef.current;
+    }, 1000); // 1 second stability period
+    
+    return stableCountRef.current;
   }, [objectCount]);
 
-  // Prevent coordinate flickering with proper rounding and stability
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (stabilityTimeoutRef.current) {
+        clearTimeout(stabilityTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Stabilized coordinate display with proper rounding
   const coordinateDisplay = useMemo(() => {
-    if (!cursorPosition) return { x: '0.00', y: '0.00' };
+    if (!cursorPosition) return { x: '0.0', y: '0.0' };
     
-    // Round to prevent micro-movement updates and add stability threshold
-    const roundedX = Math.round((cursorPosition.x || 0) * 10) / 10;
-    const roundedY = Math.round((cursorPosition.y || 0) * 10) / 10;
+    const x = typeof cursorPosition.x === 'number' ? cursorPosition.x : 0;
+    const y = typeof cursorPosition.y === 'number' ? cursorPosition.y : 0;
     
     return {
-      x: roundedX.toFixed(1),
-      y: roundedY.toFixed(1)
+      x: Math.round(x * 10) / 10,
+      y: Math.round(y * 10) / 10
     };
   }, [cursorPosition?.x, cursorPosition?.y]);
 
-  // Stable grid status to prevent unnecessary re-renders
+  // Stable grid status
   const gridStatus = useMemo(() => {
     return gridEnabled ? `ON (${gridSpacing})` : 'OFF';
   }, [gridEnabled, gridSpacing]);
 
-  // Stable zoom level display
+  // Stable zoom level
   const stableZoomLevel = useMemo(() => {
-    return Math.round(zoomLevel || 100);
+    const zoom = typeof zoomLevel === 'number' ? zoomLevel : 100;
+    return Math.max(1, Math.min(500, Math.round(zoom))); // Bounded and rounded
   }, [zoomLevel]);
 
   return (
@@ -121,9 +140,9 @@ const BottomFloatingBar = React.memo(({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <span>X:</span>
-                <span className="text-foreground font-medium">{coordinateDisplay.x}</span>
+                <span className="text-foreground font-medium">{coordinateDisplay.x.toFixed(1)}</span>
                 <span className="ml-2">Y:</span>
-                <span className="text-foreground font-medium">{coordinateDisplay.y}</span>
+                <span className="text-foreground font-medium">{coordinateDisplay.y.toFixed(1)}</span>
               </div>
             </div>
           </div>
