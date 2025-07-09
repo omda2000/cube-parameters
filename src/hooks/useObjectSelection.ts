@@ -1,5 +1,5 @@
 
-import { useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { SceneObject } from '../types/model';
 import { useSelectionContext } from '../contexts/SelectionContext';
@@ -18,7 +18,7 @@ const generateObjectId = (object: THREE.Object3D): string => {
     return `mesh_${object.uuid}`;
   } else if (object instanceof THREE.Light) {
     return `light_${object.uuid}`;
-  } else if (object.type === 'GridHelper' or object.type === 'AxesHelper') {
+  } else if (object.type === 'GridHelper' || object.type === 'AxesHelper') {
     return `env_${object.uuid}`;
   }
   return `object_${object.uuid}`;
@@ -28,12 +28,9 @@ export const useObjectSelection = () => {
   const { selectObject, selectedObjects, clearSelection, toggleSelection } = useSelectionContext();
 
   // Memoize object selection handler to prevent recreating on each render
-  const handleObjectSelect = useCallback((object: THREE.Object3D | null, isMultiSelect = false) => {
-    console.log('handleObjectSelect called with:', object?.name, object?.uuid, 'isMultiSelect:', isMultiSelect);
-    
+  const handleObjectSelect = useMemo(() => (object: THREE.Object3D | null, isMultiSelect = false) => {
     if (object) {
       const objectId = generateObjectId(object);
-      console.log('Generated object ID:', objectId);
       
       const sceneObject: SceneObject = {
         id: objectId,
@@ -51,15 +48,12 @@ export const useObjectSelection = () => {
         selected: true
       };
       
-      console.log('Created scene object:', sceneObject);
-      
       if (isMultiSelect) {
         toggleSelection(sceneObject);
       } else {
         selectObject(sceneObject);
       }
     } else if (!isMultiSelect) {
-      console.log('Clearing selection');
       clearSelection();
     }
   }, [selectObject, clearSelection, toggleSelection]);

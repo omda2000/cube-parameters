@@ -1,5 +1,5 @@
 
-import React, { useState, memo, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SceneObject } from '../../../types/model';
@@ -15,62 +15,46 @@ interface SceneObjectGroupsProps {
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
-const SceneObjectGroups = memo<SceneObjectGroupsProps>(({
+const SceneObjectGroups = ({
   sceneObjects,
   expandedNodes,
   onToggleExpanded,
   onToggleVisibility,
   onObjectSelect,
   onDelete
-}) => {
+}: SceneObjectGroupsProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
-  
-  // Memoize the grouped objects to prevent recalculation
-  const groupedObjects = useMemo(() => {
-    return groupSceneObjects(sceneObjects);
-  }, [sceneObjects]);
+  const groupedObjects = groupSceneObjects(sceneObjects);
 
-  // Memoize the toggle functions to prevent recreating on each render
-  const toggleGroupCollapse = useCallback((groupName: string) => {
-    setCollapsedGroups(prev => {
-      const newCollapsed = new Set(prev);
-      if (newCollapsed.has(groupName)) {
-        newCollapsed.delete(groupName);
-      } else {
-        newCollapsed.add(groupName);
-      }
-      return newCollapsed;
+  const toggleGroupCollapse = (groupName: string) => {
+    const newCollapsed = new Set(collapsedGroups);
+    if (newCollapsed.has(groupName)) {
+      newCollapsed.delete(groupName);
+    } else {
+      newCollapsed.add(groupName);
+    }
+    setCollapsedGroups(newCollapsed);
+  };
+
+  const toggleCategoryVisibility = (groupName: string, objects: SceneObject[]) => {
+    const newHidden = new Set(hiddenCategories);
+    const isCurrentlyHidden = newHidden.has(groupName);
+    
+    if (isCurrentlyHidden) {
+      newHidden.delete(groupName);
+    } else {
+      newHidden.add(groupName);
+    }
+    setHiddenCategories(newHidden);
+
+    // Toggle visibility for all objects in the category
+    objects.forEach(obj => {
+      obj.object.visible = isCurrentlyHidden;
     });
-  }, []);
+  };
 
-  const toggleCategoryVisibility = useCallback((groupName: string, objects: SceneObject[]) => {
-    setHiddenCategories(prev => {
-      const newHidden = new Set(prev);
-      const isCurrentlyHidden = newHidden.has(groupName);
-      
-      if (isCurrentlyHidden) {
-        newHidden.delete(groupName);
-      } else {
-        newHidden.add(groupName);
-      }
-      
-      // Toggle visibility for all objects in the category
-      objects.forEach(obj => {
-        if (obj.object) {
-          obj.object.visible = isCurrentlyHidden;
-          obj.object.traverse((child) => {
-            child.visible = isCurrentlyHidden;
-          });
-        }
-      });
-      
-      return newHidden;
-    });
-  }, []);
-
-  // Memoize the render group function
-  const renderGroup = useCallback((title: string, objects: SceneObject[]) => {
+  const renderGroup = (title: string, objects: SceneObject[]) => {
     if (objects.length === 0) return null;
     
     const isCollapsed = collapsedGroups.has(title);
@@ -78,7 +62,9 @@ const SceneObjectGroups = memo<SceneObjectGroupsProps>(({
     
     return (
       <div key={title} className="mb-2">
-        <div className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded">
+        <div 
+          className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded"
+        >
           <Button
             variant="ghost"
             size="sm"
@@ -123,7 +109,7 @@ const SceneObjectGroups = memo<SceneObjectGroupsProps>(({
         )}
       </div>
     );
-  }, [collapsedGroups, hiddenCategories, expandedNodes, onToggleExpanded, onToggleVisibility, onObjectSelect, onDelete, toggleGroupCollapse, toggleCategoryVisibility]);
+  };
 
   return (
     <div className="space-y-1">
@@ -141,8 +127,6 @@ const SceneObjectGroups = memo<SceneObjectGroupsProps>(({
       {renderGroup("Environment", groupedObjects.environment)}
     </div>
   );
-});
-
-SceneObjectGroups.displayName = 'SceneObjectGroups';
+};
 
 export default SceneObjectGroups;
