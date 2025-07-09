@@ -17,87 +17,53 @@ export const useSceneTreeState = (
   const [isLoading, setIsLoading] = useState(false);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
   
-  // Refs to track loading state and prevent excessive updates
-  const lastObjectCountRef = useRef(0);
-  const rebuildTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isRebuildingRef = useRef(false);
-
-  // Stable object count calculation
-  const stableObjectCount = useMemo(() => {
-    if (!scene) return 0;
-    let count = 0;
-    scene.traverse(() => count++);
-    return count;
-  }, [scene, loadedModels.length]);
-
-  // Debounced scene rebuild to prevent excessive updates during loading
-  const debouncedRebuildScene = useCallback(() => {
-    if (rebuildTimeoutRef.current) {
-      clearTimeout(rebuildTimeoutRef.current);
-    }
-    
-    rebuildTimeoutRef.current = setTimeout(() => {
-      if (isRebuildingRef.current) return;
-      
-      isRebuildingRef.current = true;
-      setIsLoading(true);
-      
-      try {
-        let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
-        
-        // Apply selected-only filter FIRST
-        if (showSelectedOnly) {
-          const selectedIds = new Set(selectedObjects.map(obj => obj.id));
-          objects = objects.filter(obj => {
-            const checkSelected = (sceneObj: SceneObject): boolean => {
-              if (selectedIds.has(sceneObj.id)) return true;
-              return sceneObj.children.some(child => checkSelected(child));
-            };
-            return checkSelected(obj);
-          });
-        }
-        
-        // Apply search filter
-        if (searchQuery.trim()) {
-          objects = objects.filter(obj => 
-            obj.name.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-        }
-        
-        setSceneObjects(objects);
-        lastObjectCountRef.current = stableObjectCount;
-      } catch (error) {
-        console.error('Error rebuilding scene objects:', error);
-      } finally {
-        setIsLoading(false);
-        isRebuildingRef.current = false;
-      }
-    }, 150); // 150ms debounce to allow loading to complete
-  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly, stableObjectCount]);
-
-  // Rebuild scene objects with loading detection
-  useEffect(() => {
+  // Simple rebuild without debouncing to prevent infinite loops
+  const rebuildSceneObjects = useCallback(() => {
     if (!scene) {
       setSceneObjects([]);
+      setIsLoading(false);
       return;
     }
 
-    // Detect if we're in a loading state (object count is changing rapidly)
-    const currentCount = stableObjectCount;
-    const isCountChanging = Math.abs(currentCount - lastObjectCountRef.current) > 0;
-    
-    if (isCountChanging) {
-      setIsLoading(true);
-    }
+    console.log('Building scene objects...');
+    setIsLoading(true);
 
-    debouncedRebuildScene();
-
-    return () => {
-      if (rebuildTimeoutRef.current) {
-        clearTimeout(rebuildTimeoutRef.current);
+    try {
+      // Build objects synchronously
+      let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
+      
+      // Apply filters
+      if (showSelectedOnly) {
+        const selectedIds = new Set(selectedObjects.map(obj => obj.id));
+        objects = objects.filter(obj => {
+          const checkSelected = (sceneObj: SceneObject): boolean => {
+            if (selectedIds.has(sceneObj.id)) return true;
+            return sceneObj.children.some(child => checkSelected(child));
+          };
+          return checkSelected(obj);
+        });
       }
-    };
-  }, [debouncedRebuildScene]);
+      
+      if (searchQuery.trim()) {
+        objects = objects.filter(obj => 
+          obj.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      console.log('Scene objects built:', objects.length);
+      setSceneObjects(objects);
+    } catch (error) {
+      console.error('Error building scene objects:', error);
+      setSceneObjects([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
+
+  // Rebuild when dependencies change
+  useEffect(() => {
+    rebuildSceneObjects();
+  }, [rebuildSceneObjects]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedNodes(prev => {
@@ -112,18 +78,13 @@ export const useSceneTreeState = (
   }, []);
 
   const toggleVisibility = useCallback((sceneObject: SceneObject) => {
-    // Batch visibility updates to prevent excessive re-renders
     sceneObject.object.visible = !sceneObject.object.visible;
-    
-    // Update children visibility recursively
     sceneObject.object.traverse((child) => {
       child.visible = sceneObject.object.visible;
     });
     
-    // Force a single re-render after a short delay
-    setTimeout(() => {
-      setSceneObjects(prev => [...prev]);
-    }, 50);
+    // Trigger re-render
+    setSceneObjects(prev => [...prev]);
   }, []);
 
   const handleObjectSelect = useCallback((sceneObject: SceneObject, isMultiSelect?: boolean) => {
@@ -138,7 +99,6 @@ export const useSceneTreeState = (
     event.stopPropagation();
     
     if (sceneObject.type === 'point' || sceneObject.type === 'measurement') {
-      // Remove from scene
       scene?.remove(sceneObject.object);
       
       // Dispose resources
@@ -167,19 +127,10 @@ export const useSceneTreeState = (
         }
       }
       
-      // Trigger rebuild after deletion
-      debouncedRebuildScene();
+      // Trigger rebuild
+      rebuildSceneObjects();
     }
-  }, [scene, debouncedRebuildScene]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (rebuildTimeoutRef.current) {
-        clearTimeout(rebuildTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [scene, rebuildSceneObjects]);
 
   return {
     expandedNodes,

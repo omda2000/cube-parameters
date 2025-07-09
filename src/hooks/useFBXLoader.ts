@@ -52,55 +52,22 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
       object.scale.setScalar(scale);
 
-      // Optimize object loading to prevent UI flickering
-      let processedCount = 0;
-      const totalObjects = (() => {
-        let count = 0;
-        object.traverse(() => count++);
-        return count;
-      })();
-
-      // Process objects in batches to prevent UI blocking
-      const processObjectsInBatches = (obj: THREE.Object3D, batchSize = 50) => {
-        return new Promise<void>((resolve) => {
-          const processBatch = () => {
-            let batchCount = 0;
-            
-            obj.traverse((child) => {
-              if (batchCount >= batchSize) return;
-              
-              if (child instanceof THREE.Mesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-                
-                // Improve material if it's basic
-                if (child.material instanceof THREE.MeshBasicMaterial) {
-                  const newMaterial = new THREE.MeshPhongMaterial({
-                    color: child.material.color,
-                    map: child.material.map
-                  });
-                  child.material = newMaterial;
-                }
-                
-                batchCount++;
-                processedCount++;
-              }
-            });
-            
-            if (processedCount < totalObjects && batchCount > 0) {
-              // Use requestAnimationFrame for smooth processing
-              requestAnimationFrame(processBatch);
-            } else {
-              resolve();
-            }
-          };
+      // Process objects synchronously to prevent UI instability
+      object.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
           
-          processBatch();
-        });
-      };
-
-      // Process objects in batches
-      await processObjectsInBatches(object);
+          // Improve material if it's basic
+          if (child.material instanceof THREE.MeshBasicMaterial) {
+            const newMaterial = new THREE.MeshPhongMaterial({
+              color: child.material.color,
+              map: child.material.map
+            });
+            child.material = newMaterial;
+          }
+        }
+      });
 
       const modelData: LoadedModel = {
         id: Date.now().toString(),
@@ -119,7 +86,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       console.log('Adding new model to scene');
       scene.add(object);
       
-      // Update state in a single batch to prevent multiple re-renders
+      // Update state synchronously
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
       
