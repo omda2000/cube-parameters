@@ -25,17 +25,9 @@ export const useMouseInteractionState = () => {
     setHoveredObject(object);
   }, []);
 
-  const clearHover = useCallback(() => {
-    if (hoveredObject && materialManagerRef.current) {
-      materialManagerRef.current.setHoverEffect(hoveredObject, false);
-    }
-    setHoveredObject(null);
-  }, [hoveredObject]);
-
   return {
     hoveredObject,
     setHoveredObject: setHoveredObjectSafe,
-    clearHover,
     materialManagerRef,
     initializeMaterialManager,
     cleanupMaterialManager
