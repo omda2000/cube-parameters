@@ -133,9 +133,16 @@ export const useSceneTreeData = (
 
   // Effect for scene/model changes - these should trigger immediate rebuilds
   useEffect(() => {
-    console.log('SceneTreeData: Scene or models changed, rebuilding immediately');
+    console.log('SceneTreeData: Scene or models changed, rebuilding');
     buildSceneObjectsStable();
-  }, [buildSceneObjectsStable]);
+  }, [
+    scene,
+    loadedModels.length,
+    showPrimitives,
+    selectedObjects,
+    searchQuery,
+    showSelectedOnly
+  ]);
 
   return {
     sceneObjects,
