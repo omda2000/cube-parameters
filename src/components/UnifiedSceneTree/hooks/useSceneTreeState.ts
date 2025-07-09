@@ -17,49 +17,61 @@ export const useSceneTreeState = (
   const [isLoading, setIsLoading] = useState(false);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
   
-  // Use a ref to track the last scene state to avoid unnecessary rebuilds
+  // Enhanced debouncing and stability tracking
+  const rebuildTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSceneStateRef = useRef<{
     sceneChildren: number;
     modelsLength: number;
     showPrimitives: boolean;
     searchQuery: string;
     showSelectedOnly: boolean;
+    timestamp: number;
+  } | null>(null);
+  const stableStateRef = useRef<{
+    objects: SceneObject[];
+    timestamp: number;
   } | null>(null);
 
   const rebuildSceneObjects = useCallback(() => {
     if (!scene) {
+      console.log('Scene tree: No scene available');
       setSceneObjects([]);
       setIsLoading(false);
       return;
     }
 
-    // Check if we actually need to rebuild
     const currentState = {
       sceneChildren: scene.children.length,
       modelsLength: loadedModels.length,
       showPrimitives,
       searchQuery,
-      showSelectedOnly
+      showSelectedOnly,
+      timestamp: Date.now()
     };
 
-    // Only rebuild if something actually changed
+    // Enhanced stability check - only rebuild if significant changes occurred
     if (lastSceneStateRef.current && 
         lastSceneStateRef.current.sceneChildren === currentState.sceneChildren &&
         lastSceneStateRef.current.modelsLength === currentState.modelsLength &&
         lastSceneStateRef.current.showPrimitives === currentState.showPrimitives &&
         lastSceneStateRef.current.searchQuery === currentState.searchQuery &&
-        lastSceneStateRef.current.showSelectedOnly === currentState.showSelectedOnly) {
+        lastSceneStateRef.current.showSelectedOnly === currentState.showSelectedOnly &&
+        (currentState.timestamp - lastSceneStateRef.current.timestamp) < 1000) { // Minimum 1 second between rebuilds
+      console.log('Scene tree: State stable, skipping rebuild');
       return;
     }
 
-    console.log('Building scene objects - state changed:', currentState);
+    console.log('Scene tree: Building objects due to state change:', {
+      children: currentState.sceneChildren,
+      models: currentState.modelsLength
+    });
+    
     setIsLoading(true);
 
     try {
-      // Build objects
       let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
       
-      // Apply filters
+      // Apply filters efficiently
       if (showSelectedOnly) {
         const selectedIds = new Set(selectedObjects.map(obj => obj.id));
         objects = objects.filter(obj => {
@@ -72,29 +84,52 @@ export const useSceneTreeState = (
       }
       
       if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
         objects = objects.filter(obj => 
-          obj.name.toLowerCase().includes(searchQuery.toLowerCase())
+          obj.name.toLowerCase().includes(query)
         );
       }
       
-      console.log('Scene objects built successfully:', objects.length);
+      // Store stable state
+      stableStateRef.current = {
+        objects,
+        timestamp: currentState.timestamp
+      };
+      
+      console.log('Scene tree: Objects built successfully:', objects.length);
       setSceneObjects(objects);
       lastSceneStateRef.current = currentState;
     } catch (error) {
-      console.error('Error building scene objects:', error);
-      setSceneObjects([]);
+      console.error('Scene tree: Error building objects:', error);
+      // Fallback to previous stable state if available
+      if (stableStateRef.current) {
+        console.log('Scene tree: Using previous stable state');
+        setSceneObjects(stableStateRef.current.objects);
+      } else {
+        setSceneObjects([]);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
 
-  // Rebuild when dependencies change, but with a small delay to batch updates
+  // Enhanced debounced rebuild with proper cleanup
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      rebuildSceneObjects();
-    }, 50); // Small delay to batch rapid changes
+    // Clear existing timeout
+    if (rebuildTimeoutRef.current) {
+      clearTimeout(rebuildTimeoutRef.current);
+    }
 
-    return () => clearTimeout(timeoutId);
+    // Set new timeout with longer delay to prevent flickering
+    rebuildTimeoutRef.current = setTimeout(() => {
+      rebuildSceneObjects();
+    }, 200); // Increased delay to prevent rapid rebuilds
+
+    return () => {
+      if (rebuildTimeoutRef.current) {
+        clearTimeout(rebuildTimeoutRef.current);
+      }
+    };
   }, [rebuildSceneObjects]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
@@ -115,7 +150,7 @@ export const useSceneTreeState = (
       child.visible = sceneObject.object.visible;
     });
     
-    // Force a minimal re-render without full rebuild
+    // Use minimal update without triggering full rebuild
     setSceneObjects(prev => [...prev]);
   }, []);
 
@@ -159,8 +194,9 @@ export const useSceneTreeState = (
         }
       }
       
-      // Clear the last state to force rebuild
+      // Force rebuild after deletion
       lastSceneStateRef.current = null;
+      stableStateRef.current = null;
       rebuildSceneObjects();
     }
   }, [scene, rebuildSceneObjects]);

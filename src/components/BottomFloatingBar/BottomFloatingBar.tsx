@@ -1,5 +1,5 @@
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
@@ -50,26 +50,38 @@ const BottomFloatingBar = React.memo(({
   className
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
+  const stableObjectCountRef = useRef(1);
+  const lastUpdateTimeRef = useRef(0);
 
-  // Stable object count to prevent flickering
+  // Stabilize object count with debouncing to prevent flickering
   const stableObjectCount = useMemo(() => {
-    // Ensure we always return a stable number, minimum 1 for the base scene
-    return Math.max(1, objectCount || 1);
+    const now = Date.now();
+    const validCount = Math.max(1, objectCount || 1);
+    
+    // Only update if the count has been stable for at least 500ms
+    if (now - lastUpdateTimeRef.current > 500) {
+      stableObjectCountRef.current = validCount;
+      lastUpdateTimeRef.current = now;
+    }
+    
+    return stableObjectCountRef.current;
   }, [objectCount]);
 
-  // Memoized coordinate display to prevent excessive updates
+  // Prevent coordinate flickering with proper rounding and stability
   const coordinateDisplay = useMemo(() => {
-    // Round coordinates to prevent micro-movement updates
-    const roundedX = Math.round((cursorPosition?.x || 0) * 100) / 100;
-    const roundedY = Math.round((cursorPosition?.y || 0) * 100) / 100;
+    if (!cursorPosition) return { x: '0.00', y: '0.00' };
+    
+    // Round to prevent micro-movement updates and add stability threshold
+    const roundedX = Math.round((cursorPosition.x || 0) * 10) / 10;
+    const roundedY = Math.round((cursorPosition.y || 0) * 10) / 10;
     
     return {
-      x: roundedX.toFixed(2),
-      y: roundedY.toFixed(2)
+      x: roundedX.toFixed(1),
+      y: roundedY.toFixed(1)
     };
   }, [cursorPosition?.x, cursorPosition?.y]);
 
-  // Memoized grid status to prevent unnecessary re-renders
+  // Stable grid status to prevent unnecessary re-renders
   const gridStatus = useMemo(() => {
     return gridEnabled ? `ON (${gridSpacing})` : 'OFF';
   }, [gridEnabled, gridSpacing]);
