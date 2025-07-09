@@ -1,5 +1,5 @@
 
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useMemo, useCallback } from 'react';
 import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SceneObject } from '../../../types/model';
@@ -15,20 +15,24 @@ interface SceneObjectGroupsProps {
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
-const SceneObjectGroups = memo(({
+const SceneObjectGroups = memo<SceneObjectGroupsProps>(({
   sceneObjects,
   expandedNodes,
   onToggleExpanded,
   onToggleVisibility,
   onObjectSelect,
   onDelete
-}: SceneObjectGroupsProps) => {
+}) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
   
-  const groupedObjects = React.useMemo(() => groupSceneObjects(sceneObjects), [sceneObjects]);
+  // Memoize the grouped objects to prevent recalculation
+  const groupedObjects = useMemo(() => {
+    return groupSceneObjects(sceneObjects);
+  }, [sceneObjects]);
 
-  const toggleGroupCollapse = (groupName: string) => {
+  // Memoize the toggle functions to prevent recreating on each render
+  const toggleGroupCollapse = useCallback((groupName: string) => {
     setCollapsedGroups(prev => {
       const newCollapsed = new Set(prev);
       if (newCollapsed.has(groupName)) {
@@ -38,9 +42,9 @@ const SceneObjectGroups = memo(({
       }
       return newCollapsed;
     });
-  };
+  }, []);
 
-  const toggleCategoryVisibility = (groupName: string, objects: SceneObject[]) => {
+  const toggleCategoryVisibility = useCallback((groupName: string, objects: SceneObject[]) => {
     setHiddenCategories(prev => {
       const newHidden = new Set(prev);
       const isCurrentlyHidden = newHidden.has(groupName);
@@ -53,17 +57,20 @@ const SceneObjectGroups = memo(({
       
       // Toggle visibility for all objects in the category
       objects.forEach(obj => {
-        obj.object.visible = isCurrentlyHidden;
-        obj.object.traverse((child) => {
-          child.visible = isCurrentlyHidden;
-        });
+        if (obj.object) {
+          obj.object.visible = isCurrentlyHidden;
+          obj.object.traverse((child) => {
+            child.visible = isCurrentlyHidden;
+          });
+        }
       });
       
       return newHidden;
     });
-  };
+  }, []);
 
-  const renderGroup = (title: string, objects: SceneObject[]) => {
+  // Memoize the render group function
+  const renderGroup = useCallback((title: string, objects: SceneObject[]) => {
     if (objects.length === 0) return null;
     
     const isCollapsed = collapsedGroups.has(title);
@@ -71,9 +78,7 @@ const SceneObjectGroups = memo(({
     
     return (
       <div key={title} className="mb-2">
-        <div 
-          className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded"
-        >
+        <div className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded">
           <Button
             variant="ghost"
             size="sm"
@@ -118,7 +123,7 @@ const SceneObjectGroups = memo(({
         )}
       </div>
     );
-  };
+  }, [collapsedGroups, hiddenCategories, expandedNodes, onToggleExpanded, onToggleVisibility, onObjectSelect, onDelete, toggleGroupCollapse, toggleCategoryVisibility]);
 
   return (
     <div className="space-y-1">

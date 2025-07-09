@@ -1,4 +1,5 @@
 
+import React, { memo } from 'react';
 import { Box, Palette, Tag, Ruler, Sparkles, Eye, Globe, Droplets, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,23 +19,43 @@ interface PropertiesTabProps {
   setObjectName: (name: string) => void;
 }
 
-const PropertiesTab = ({
+const PropertiesTab = memo<PropertiesTabProps>(({
   dimensions,
   setDimensions,
   boxColor,
   setBoxColor,
   objectName,
   setObjectName
-}: PropertiesTabProps) => {
+}) => {
   const { selectedObjects } = useSelectionContext();
   const { materialProps, updateMaterialProperty } = useMaterialProperties(selectedObjects);
 
   // Use material properties from selected object or fallback to box properties
   const hasSelectedObject = selectedObjects.length > 0;
-  const displayColor = hasSelectedObject ? materialProps.color : boxColor;
-  const setDisplayColor = hasSelectedObject 
-    ? (color: string) => updateMaterialProperty('color', color)
-    : setBoxColor;
+  
+  if (!hasSelectedObject) {
+    return (
+      <TooltipProvider>
+        <div className="space-y-3 p-2">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Box className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Properties</span>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center gap-1">
+              <AlertCircle className="h-3 w-3 text-slate-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">No object selected</Label>
+            </div>
+            <p className="text-xs text-slate-400">Select an object to edit its properties</p>
+          </div>
+        </div>
+      </TooltipProvider>
+    );
+  }
+
+  const displayColor = materialProps.color || boxColor;
+  const setDisplayColor = (color: string) => updateMaterialProperty('color', color);
 
   // Safe fallbacks for material properties
   const metalness = materialProps?.metalness ?? 0.1;
@@ -51,135 +72,125 @@ const PropertiesTab = ({
           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Properties</span>
         </div>
 
-        {hasSelectedObject ? (
-          <>
-            {/* Object name - Only show when object is selected */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-1">
-                <Tag className="h-3 w-3 text-slate-400" />
-                <Label className="text-xs text-slate-600 dark:text-slate-400">Name</Label>
-              </div>
+        {/* Object name */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1">
+            <Tag className="h-3 w-3 text-slate-400" />
+            <Label className="text-xs text-slate-600 dark:text-slate-400">Name</Label>
+          </div>
+          <Input
+            value={selectedObjects[0]?.name || ''}
+            onChange={(e) => {
+              // Update the selected object's name
+              if (selectedObjects[0]) {
+                selectedObjects[0].name = e.target.value;
+                if (selectedObjects[0].object) {
+                  selectedObjects[0].object.name = e.target.value;
+                }
+              }
+            }}
+            className="h-7 text-xs"
+            placeholder="Object name"
+          />
+        </div>
+
+        <Separator className="bg-slate-600/30" />
+
+        {/* Material Properties Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1">
+            <Palette className="h-3 w-3 text-blue-400" />
+            <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Material</Label>
+          </div>
+          
+          {/* Color */}
+          <div className="space-y-1">
+            <Label className="text-xs text-slate-500 dark:text-slate-500">Diffuse Color</Label>
+            <div className="flex gap-1.5">
+              <input
+                type="color"
+                value={displayColor}
+                onChange={(e) => setDisplayColor(e.target.value)}
+                className="w-7 h-7 rounded border border-slate-600/50 bg-transparent cursor-pointer"
+              />
               <Input
-                value={selectedObjects[0]?.name || ''}
-                onChange={(e) => {
-                  // Update the selected object's name
-                  if (selectedObjects[0]) {
-                    selectedObjects[0].name = e.target.value;
-                    if (selectedObjects[0].object) {
-                      selectedObjects[0].object.name = e.target.value;
-                    }
-                  }
-                }}
-                className="h-7 text-xs"
-                placeholder="Object name"
+                value={displayColor}
+                onChange={(e) => setDisplayColor(e.target.value)}
+                className="h-7 text-xs flex-1"
+                placeholder="#808080"
               />
             </div>
-
-            <Separator className="bg-slate-600/30" />
-
-            {/* Material Properties Section */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1">
-                <Palette className="h-3 w-3 text-blue-400" />
-                <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Material</Label>
-              </div>
-              
-              {/* Color */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-500 dark:text-slate-500">Diffuse Color</Label>
-                <div className="flex gap-1.5">
-                  <input
-                    type="color"
-                    value={displayColor}
-                    onChange={(e) => setDisplayColor(e.target.value)}
-                    className="w-7 h-7 rounded border border-slate-600/50 bg-transparent cursor-pointer"
-                  />
-                  <Input
-                    value={displayColor}
-                    onChange={(e) => setDisplayColor(e.target.value)}
-                    className="h-7 text-xs flex-1"
-                    placeholder="#808080"
-                  />
-                </div>
-              </div>
-
-              {/* Opacity */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Droplets className="h-2.5 w-2.5 text-blue-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Opacity</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{opacity.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[opacity * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('opacity', value / 100)}
-                />
-              </div>
-
-              {/* Metalness */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Sparkles className="h-2.5 w-2.5 text-yellow-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Metalness</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{metalness.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[metalness * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('metalness', value / 100)}
-                />
-              </div>
-
-              {/* Roughness */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Eye className="h-2.5 w-2.5 text-green-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Roughness</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{roughness.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[roughness * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('roughness', value / 100)}
-                />
-              </div>
-
-              {/* Environment Intensity */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Globe className="h-2.5 w-2.5 text-cyan-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Reflection</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{envMapIntensity.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[envMapIntensity * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('envMapIntensity', value / 100)}
-                />
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1">
-              <AlertCircle className="h-3 w-3 text-slate-400" />
-              <Label className="text-xs text-slate-500 dark:text-slate-500">No object selected</Label>
-            </div>
-            <p className="text-xs text-slate-400">Select an object to edit its properties</p>
           </div>
-        )}
+
+          {/* Opacity */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Droplets className="h-2.5 w-2.5 text-blue-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Opacity</Label>
+              <span className="text-xs text-slate-400 ml-auto">{opacity.toFixed(2)}</span>
+            </div>
+            <Slider
+              value={[opacity * 100]}
+              max={100}
+              step={1}
+              className="w-full"
+              onValueChange={([value]) => updateMaterialProperty('opacity', value / 100)}
+            />
+          </div>
+
+          {/* Metalness */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Sparkles className="h-2.5 w-2.5 text-yellow-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Metalness</Label>
+              <span className="text-xs text-slate-400 ml-auto">{metalness.toFixed(2)}</span>
+            </div>
+            <Slider
+              value={[metalness * 100]}
+              max={100}
+              step={1}
+              className="w-full"
+              onValueChange={([value]) => updateMaterialProperty('metalness', value / 100)}
+            />
+          </div>
+
+          {/* Roughness */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Eye className="h-2.5 w-2.5 text-green-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Roughness</Label>
+              <span className="text-xs text-slate-400 ml-auto">{roughness.toFixed(2)}</span>
+            </div>
+            <Slider
+              value={[roughness * 100]}
+              max={100}
+              step={1}
+              className="w-full"
+              onValueChange={([value]) => updateMaterialProperty('roughness', value / 100)}
+            />
+          </div>
+
+          {/* Environment Intensity */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Globe className="h-2.5 w-2.5 text-cyan-400" />
+              <Label className="text-xs text-slate-500 dark:text-slate-500">Reflection</Label>
+              <span className="text-xs text-slate-400 ml-auto">{envMapIntensity.toFixed(2)}</span>
+            </div>
+            <Slider
+              value={[envMapIntensity * 100]}
+              max={100}
+              step={1}
+              className="w-full"
+              onValueChange={([value]) => updateMaterialProperty('envMapIntensity', value / 100)}
+            />
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   );
-};
+});
+
+PropertiesTab.displayName = 'PropertiesTab';
 
 export default PropertiesTab;
