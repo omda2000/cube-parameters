@@ -50,24 +50,53 @@ const BottomFloatingBar = React.memo(({
   className
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
-  
-  // Improved stable object count with better validation
+  const stableCountRef = useRef<number>(1);
+  const lastValidCountRef = useRef<number>(1);
+  const stabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Much more stable object count with better validation and longer stability period
   const stableObjectCount = useMemo(() => {
-    // Validate input
-    const isValid = typeof objectCount === 'number' && 
-                   !isNaN(objectCount) && 
-                   isFinite(objectCount) &&
-                   objectCount >= 0;
+    // Validate and sanitize the input count
+    const isValidCount = typeof objectCount === 'number' && 
+                        !isNaN(objectCount) && 
+                        isFinite(objectCount) &&
+                        objectCount >= 0 && 
+                        objectCount < 10000;
     
-    if (!isValid) {
-      console.warn('BottomFloatingBar: Invalid object count received:', objectCount);
-      return 1; // Default fallback
+    const validCount = isValidCount ? Math.floor(objectCount) : lastValidCountRef.current;
+    
+    // Update last valid count if we have a valid input
+    if (isValidCount) {
+      lastValidCountRef.current = validCount;
     }
     
-    return Math.floor(objectCount);
+    // Clear any existing timeout
+    if (stabilityTimeoutRef.current) {
+      clearTimeout(stabilityTimeoutRef.current);
+    }
+    
+    // Only update stable count after a much longer delay to prevent flickering
+    stabilityTimeoutRef.current = setTimeout(() => {
+      if (Math.abs(validCount - stableCountRef.current) > 0) {
+        console.log('BottomFloatingBar: Updating stable count from', stableCountRef.current, 'to', validCount);
+        stableCountRef.current = validCount;
+      }
+    }, 3000); // 3 second stability period to prevent rapid changes
+    
+    // Return the current stable count instead of the new count
+    return stableCountRef.current;
   }, [objectCount]);
 
-  // Stable coordinate display
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (stabilityTimeoutRef.current) {
+        clearTimeout(stabilityTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Stabilized coordinate display with proper validation and rounding
   const coordinateDisplay = useMemo(() => {
     if (!cursorPosition || typeof cursorPosition !== 'object') {
       return { x: 0, y: 0 };
@@ -80,24 +109,24 @@ const BottomFloatingBar = React.memo(({
       x: Math.round(x * 10) / 10,
       y: Math.round(y * 10) / 10
     };
-  }, [cursorPosition]);
+  }, [cursorPosition?.x, cursorPosition?.y]);
 
   // Stable grid status
   const gridStatus = useMemo(() => {
     return gridEnabled ? `ON (${gridSpacing || '1m'})` : 'OFF';
   }, [gridEnabled, gridSpacing]);
 
-  // Stable zoom level
+  // Stable zoom level with proper validation
   const stableZoomLevel = useMemo(() => {
     const zoom = typeof zoomLevel === 'number' && isFinite(zoomLevel) ? zoomLevel : 100;
-    return Math.max(1, Math.min(500, Math.round(zoom)));
+    return Math.max(1, Math.min(500, Math.round(zoom))); // Bounded and rounded
   }, [zoomLevel]);
 
   return (
     <TooltipProvider>
       <div className={cn("fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-4 py-2 z-30 shadow-lg", className)}>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          {/* Left section */}
+          {/* Left section - Status and coordinate information */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <span>Objects:</span>
@@ -130,7 +159,7 @@ const BottomFloatingBar = React.memo(({
             </div>
           </div>
           
-          {/* Center section */}
+          {/* Center section - Zoom controls */}
           <div className="flex items-center">
             <ExpandableZoomControls
               onZoomAll={onZoomAll}
@@ -143,7 +172,7 @@ const BottomFloatingBar = React.memo(({
             />
           </div>
           
-          {/* Right section */}
+          {/* Right section - Shade selector and snap controls */}
           <div className="flex items-center gap-2">
             <ExpandableShadeSelector
               currentShadeType={shadeType}
