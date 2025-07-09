@@ -1,5 +1,5 @@
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import type { SceneObject } from '../types/model';
 import { useSelectionContext } from '../contexts/SelectionContext';
@@ -28,7 +28,7 @@ export const useObjectSelection = () => {
   const { selectObject, selectedObjects, clearSelection, toggleSelection } = useSelectionContext();
 
   // Memoize object selection handler to prevent recreating on each render
-  const handleObjectSelect = useMemo(() => (object: THREE.Object3D | null, isMultiSelect = false) => {
+  const handleObjectSelect = useCallback((object: THREE.Object3D | null, isMultiSelect = false) => {
     if (object) {
       const objectId = generateObjectId(object);
       

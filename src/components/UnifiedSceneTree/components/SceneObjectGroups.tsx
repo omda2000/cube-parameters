@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SceneObject } from '../../../types/model';
@@ -15,7 +15,7 @@ interface SceneObjectGroupsProps {
   onDelete: (sceneObject: SceneObject, event: React.MouseEvent) => void;
 }
 
-const SceneObjectGroups = ({
+const SceneObjectGroups = memo(({
   sceneObjects,
   expandedNodes,
   onToggleExpanded,
@@ -25,32 +25,41 @@ const SceneObjectGroups = ({
 }: SceneObjectGroupsProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
-  const groupedObjects = groupSceneObjects(sceneObjects);
+  
+  const groupedObjects = React.useMemo(() => groupSceneObjects(sceneObjects), [sceneObjects]);
 
   const toggleGroupCollapse = (groupName: string) => {
-    const newCollapsed = new Set(collapsedGroups);
-    if (newCollapsed.has(groupName)) {
-      newCollapsed.delete(groupName);
-    } else {
-      newCollapsed.add(groupName);
-    }
-    setCollapsedGroups(newCollapsed);
+    setCollapsedGroups(prev => {
+      const newCollapsed = new Set(prev);
+      if (newCollapsed.has(groupName)) {
+        newCollapsed.delete(groupName);
+      } else {
+        newCollapsed.add(groupName);
+      }
+      return newCollapsed;
+    });
   };
 
   const toggleCategoryVisibility = (groupName: string, objects: SceneObject[]) => {
-    const newHidden = new Set(hiddenCategories);
-    const isCurrentlyHidden = newHidden.has(groupName);
-    
-    if (isCurrentlyHidden) {
-      newHidden.delete(groupName);
-    } else {
-      newHidden.add(groupName);
-    }
-    setHiddenCategories(newHidden);
-
-    // Toggle visibility for all objects in the category
-    objects.forEach(obj => {
-      obj.object.visible = isCurrentlyHidden;
+    setHiddenCategories(prev => {
+      const newHidden = new Set(prev);
+      const isCurrentlyHidden = newHidden.has(groupName);
+      
+      if (isCurrentlyHidden) {
+        newHidden.delete(groupName);
+      } else {
+        newHidden.add(groupName);
+      }
+      
+      // Toggle visibility for all objects in the category
+      objects.forEach(obj => {
+        obj.object.visible = isCurrentlyHidden;
+        obj.object.traverse((child) => {
+          child.visible = isCurrentlyHidden;
+        });
+      });
+      
+      return newHidden;
     });
   };
 
@@ -127,6 +136,8 @@ const SceneObjectGroups = ({
       {renderGroup("Environment", groupedObjects.environment)}
     </div>
   );
-};
+});
+
+SceneObjectGroups.displayName = 'SceneObjectGroups';
 
 export default SceneObjectGroups;

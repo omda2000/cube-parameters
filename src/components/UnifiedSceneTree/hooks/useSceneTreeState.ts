@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { LoadedModel, SceneObject } from '../../../types/model';
@@ -13,11 +13,10 @@ export const useSceneTreeState = (
   showSelectedOnly: boolean = false
 ) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
-  const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
 
-  // Build unified scene tree with filtering
-  useEffect(() => {
+  // Memoize scene objects to prevent frequent recalculations
+  const sceneObjects = useMemo(() => {
     let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
     
     // Apply selected-only filter FIRST
@@ -40,26 +39,33 @@ export const useSceneTreeState = (
       );
     }
     
-    setSceneObjects(objects);
+    return objects;
   }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
 
-  const toggleExpanded = (nodeId: string) => {
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(nodeId)) {
-      newExpanded.delete(nodeId);
-    } else {
-      newExpanded.add(nodeId);
-    }
-    setExpandedNodes(newExpanded);
-  };
+  const toggleExpanded = useCallback((nodeId: string) => {
+    setExpandedNodes(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(nodeId)) {
+        newExpanded.delete(nodeId);
+      } else {
+        newExpanded.add(nodeId);
+      }
+      return newExpanded;
+    });
+  }, []);
 
-  const toggleVisibility = (sceneObject: SceneObject) => {
-    // Force a re-render by updating the scene objects array
-    setSceneObjects([...sceneObjects]);
+  const toggleVisibility = useCallback((sceneObject: SceneObject) => {
+    // Toggle visibility directly on the object
+    const newVisibility = !sceneObject.object.visible;
+    sceneObject.object.visible = newVisibility;
     
-    // If scene exists, trigger a render update
+    // Recursively update all children visibility
+    sceneObject.object.traverse((child) => {
+      child.visible = newVisibility;
+    });
+    
+    // Force renderer update without causing state re-render
     if (scene) {
-      // Force the renderer to update by marking the scene as needing update
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh && obj.material) {
           if (Array.isArray(obj.material)) {
@@ -70,17 +76,17 @@ export const useSceneTreeState = (
         }
       });
     }
-  };
+  }, [scene]);
 
-  const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
+  const handleObjectSelect = useCallback((sceneObject: SceneObject, isMultiSelect?: boolean) => {
     if (isMultiSelect) {
       toggleSelection(sceneObject);
     } else {
       selectObject(sceneObject);
     }
-  };
+  }, [selectObject, toggleSelection]);
 
-  const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
+  const handleDelete = useCallback((sceneObject: SceneObject, event: React.MouseEvent) => {
     event.stopPropagation();
     
     if (sceneObject.type === 'point' || sceneObject.type === 'measurement') {
@@ -113,11 +119,8 @@ export const useSceneTreeState = (
           sceneObject.object.material?.dispose();
         }
       }
-      
-      // Force re-render
-      setSceneObjects([...sceneObjects]);
     }
-  };
+  }, [scene]);
 
   return {
     expandedNodes,

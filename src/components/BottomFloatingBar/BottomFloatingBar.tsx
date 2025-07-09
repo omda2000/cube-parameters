@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
@@ -29,7 +29,7 @@ interface BottomFloatingBarProps {
   className?: string;
 }
 
-const BottomFloatingBar = ({
+const BottomFloatingBar = memo(({
   objectCount = 1,
   gridEnabled = true,
   gridSpacing = "1m",
@@ -123,6 +123,8 @@ const BottomFloatingBar = ({
       </div>
     </TooltipProvider>
   );
-};
+});
+
+BottomFloatingBar.displayName = 'BottomFloatingBar';
 
 export default BottomFloatingBar;
