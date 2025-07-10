@@ -7,6 +7,7 @@ import { useLighting } from '../useLighting';
 import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
 import { useDefaultMaterials } from '../useDefaultMaterials';
+import { useModelsExposure } from '../useModelsExposure';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -66,7 +67,7 @@ export const useModelViewerSetup = ({
     false  // Disable box creation
   );
 
-  // FBX model loading
+  // FBX model loading with direct connection
   const {
     loadedModels,
     currentModel,
@@ -76,6 +77,9 @@ export const useModelViewerSetup = ({
     switchToModel,
     removeModel
   } = useFBXLoader(sceneRef.current);
+
+  // Simplified models exposure without global handlers
+  useModelsExposure(loadedModels, currentModel, onModelsChange);
 
   // Apply default materials using the centralized hook
   useDefaultMaterials(sceneRef.current, loadedModels);
@@ -102,22 +106,6 @@ export const useModelViewerSetup = ({
       onSceneReady(sceneRef.current);
     }
   }, [onSceneReady]);
-
-  // Expose models to parent with stable change detection
-  useEffect(() => {
-    if (onModelsChange) {
-      // Use a small delay to batch updates and prevent rapid firing during model loading
-      const timeoutId = setTimeout(() => {
-        console.log('ModelViewerSetup: Notifying parent of model changes -', {
-          modelsCount: loadedModels.length,
-          currentModelId: currentModel?.id || 'none'
-        });
-        onModelsChange(loadedModels, currentModel);
-      }, 100); // Small delay to batch updates
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [loadedModels.length, currentModel?.id, onModelsChange]);
 
   return {
     mountRef,
