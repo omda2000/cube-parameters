@@ -3,6 +3,11 @@ import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+};
+
 export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const labelRendererRef = useRef<CSS2DRenderer | null>(null);
@@ -12,28 +17,32 @@ export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
 
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
+    const mobile = isMobile();
 
-    // Enhanced WebGL renderer with latest optimizations
+    // Enhanced WebGL renderer with mobile optimizations
     const renderer = new THREE.WebGLRenderer({ 
-      antialias: true,
+      antialias: !mobile, // Disable antialiasing on mobile for performance
       alpha: true,
       logarithmicDepthBuffer: true,
-      powerPreference: "high-performance",
-      stencil: false, // Disable stencil buffer for better performance
+      powerPreference: mobile ? "default" : "high-performance",
+      stencil: false,
       depth: true,
-      preserveDrawingBuffer: false // Better memory management
+      preserveDrawingBuffer: false
     });
     
     rendererRef.current = renderer;
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     
-    // Enhanced shadow settings
+    // Mobile-optimized pixel ratio
+    const pixelRatio = mobile ? Math.min(window.devicePixelRatio, 2) : Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(pixelRatio);
+    
+    // Enhanced shadow settings with mobile optimization
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = mobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
     renderer.shadowMap.autoUpdate = true;
     
-    // Improved tone mapping and color management
+    // Tone mapping and color management
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -41,9 +50,15 @@ export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
     // Performance optimizations
     renderer.sortObjects = true;
     renderer.info.autoReset = false;
-    
-    // Enable occlusion culling for better performance
     renderer.setScissorTest(false);
+    
+    // Mobile-specific optimizations
+    if (mobile) {
+      renderer.capabilities.maxTextures = Math.min(renderer.capabilities.maxTextures, 16);
+      
+      // Reduce precision for mobile
+      renderer.capabilities.precision = 'mediump';
+    }
     
     mountRef.current.appendChild(renderer.domElement);
 
@@ -55,6 +70,13 @@ export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
     labelRenderer.domElement.style.top = '0';
     labelRenderer.domElement.style.pointerEvents = 'none';
     labelRenderer.domElement.style.zIndex = '1';
+    
+    // Mobile-specific label renderer settings
+    if (mobile) {
+      labelRenderer.domElement.style.webkitTransform = 'translate3d(0,0,0)';
+      labelRenderer.domElement.style.transform = 'translate3d(0,0,0)';
+    }
+    
     mountRef.current.appendChild(labelRenderer.domElement);
 
     return () => {

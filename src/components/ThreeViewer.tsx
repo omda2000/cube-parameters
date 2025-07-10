@@ -3,6 +3,7 @@ import React, { memo } from 'react';
 import { useModelViewerSetup } from '../hooks/viewer/useModelViewerSetup';
 import { useModelViewerEffects } from '../hooks/viewer/useModelViewerEffects';
 import { useOptimizedRenderer } from '../hooks/viewer/useOptimizedRenderer';
+import { useMobileMouseInteraction } from '../hooks/mouse/useMobileMouseInteraction';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
 import * as THREE from 'three';
 import type { 
@@ -65,11 +66,26 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   // Renderer optimization
   useOptimizedRenderer(renderer);
 
-  // Effects and interactions
+  // Mobile-optimized mouse interaction
   const {
     objectData,
     mousePosition,
     isHovering,
+    isMobile
+  } = useMobileMouseInteraction(
+    renderer,
+    camera,
+    currentModel ? currentModel.object : boxRef.current,
+    scene,
+    undefined, // onObjectSelect handled in effects
+    props.activeTool,
+    controls,
+    props.onPointCreate,
+    props.onMeasureCreate
+  );
+
+  // Effects and interactions
+  const {
     selectedObjects
   } = useModelViewerEffects({
     renderer,
@@ -93,8 +109,9 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log('ThreeViewer Performance Metrics:', performanceMetrics);
+      console.log('Mobile Device:', isMobile);
     }
-  }, [performanceMetrics]);
+  }, [performanceMetrics, isMobile]);
 
   if (error) {
     return (
@@ -104,7 +121,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
           <p>{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 min-h-[44px] min-w-[44px]"
           >
             Reload Application
           </button>
@@ -115,7 +132,16 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mountRef} className="w-full h-full" />
+      <div 
+        ref={mountRef} 
+        className="w-full h-full"
+        style={{
+          touchAction: 'none',
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none'
+        }}
+      />
       <ModelViewerOverlays
         objectData={objectData}
         mousePosition={mousePosition}
@@ -128,6 +154,11 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
             Loading 3D model...
           </div>
+        </div>
+      )}
+      {isMobile && (
+        <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded pointer-events-none">
+          Touch: Rotate • Pinch: Zoom • Double-tap: Fit • 3-finger: Reset
         </div>
       )}
     </div>
