@@ -61,6 +61,12 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     showPrimitives: props.showPrimitives
   });
 
+  console.log('useModelViewerCore: Setup returned:', {
+    camera: camera ? 'Available' : 'Null',
+    controls: controls ? 'Available' : 'Null',
+    scene: scene ? 'Available' : 'Null'
+  });
+
   // Renderer optimization
   useOptimizedRenderer(renderer);
 
@@ -97,6 +103,9 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     isLoading,
     error,
     performanceMetrics,
+    // Expose camera and controls for TouchGestureHandler
+    camera,
+    controls,
     // Expose the FBX handlers directly for UI components
     loadFBXModel,
     switchToModel,
