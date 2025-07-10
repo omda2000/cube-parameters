@@ -1,8 +1,8 @@
 
 import { useCallback } from 'react';
 import * as THREE from 'three';
-import { performRaycast } from './raycastPerformance';
-import { MaterialManager } from '../utils/materialManager';
+import { createRaycaster, getIntersectableObjects } from '../utils/raycastUtils';
+import { EnhancedMaterialManager } from '../utils/enhancedMaterialManager';
 
 interface UseRaycastHandlingProps {
   renderer: THREE.WebGLRenderer | null;
@@ -10,7 +10,7 @@ interface UseRaycastHandlingProps {
   scene: THREE.Scene | null;
   hoveredObject: THREE.Object3D | null;
   setHoveredObject: (object: THREE.Object3D | null) => void;
-  materialManager: MaterialManager | null;
+  materialManager: EnhancedMaterialManager | null;
   extractObjectData: (object: THREE.Object3D) => any;
   setObjectData: (data: any) => void;
 }
@@ -25,33 +25,47 @@ export const useRaycastHandling = ({
   extractObjectData,
   setObjectData
 }: UseRaycastHandlingProps) => {
-  const handleRaycastHover = useCallback((x: number, y: number) => {
+  const handleRaycastHover = useCallback((clientX: number, clientY: number) => {
     if (!renderer || !camera || !scene || !materialManager) return;
 
-    try {
-      const intersectedObject = performRaycast(x, y, renderer, camera, scene);
+    const { raycaster, mouse } = createRaycaster();
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
-      if (intersectedObject !== hoveredObject) {
-        if (hoveredObject) {
-          materialManager.setHoverEffect(hoveredObject, false);
-        }
+    raycaster.setFromCamera(mouse, camera);
+    const intersectableObjects = getIntersectableObjects(scene);
+    const intersects = raycaster.intersectObjects(intersectableObjects, true);
 
-        if (intersectedObject) {
-          materialManager.setHoverEffect(intersectedObject, true);
-          const data = extractObjectData(intersectedObject);
-          setObjectData(data);
-        } else {
-          setObjectData(null);
-        }
+    let newHoveredObject: THREE.Object3D | null = null;
 
-        setHoveredObject(intersectedObject);
+    if (intersects.length > 0) {
+      newHoveredObject = intersects[0].object;
+      
+      // If clicked on a child of a measurement group, hover the group
+      if (newHoveredObject.parent && newHoveredObject.parent.userData.isMeasurementGroup) {
+        newHoveredObject = newHoveredObject.parent;
       }
-    } catch (error) {
-      console.warn('Raycast handling error:', error);
-      setObjectData(null);
-      setHoveredObject(null);
     }
-  }, [renderer, camera, scene, hoveredObject, materialManager, extractObjectData, setObjectData, setHoveredObject]);
+
+    // Update hover state only if it changed
+    if (newHoveredObject !== hoveredObject) {
+      // Remove hover from previous object
+      if (hoveredObject) {
+        materialManager.setHoverEffect(hoveredObject, false);
+        setObjectData(null);
+      }
+
+      // Add hover to new object
+      if (newHoveredObject) {
+        materialManager.setHoverEffect(newHoveredObject, true);
+        const data = extractObjectData(newHoveredObject);
+        setObjectData(data);
+      }
+
+      setHoveredObject(newHoveredObject);
+    }
+  }, [renderer, camera, scene, hoveredObject, setHoveredObject, materialManager, extractObjectData, setObjectData]);
 
   return { handleRaycastHover };
 };

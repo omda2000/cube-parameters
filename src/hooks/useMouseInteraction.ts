@@ -11,6 +11,7 @@ import { useObjectData } from './mouse/useObjectData';
 import { useMouseInteractionState } from './mouse/useMouseInteractionState';
 import { useRaycastHandling } from './mouse/useRaycastHandling';
 import { getCursorForTool, setCursor } from './mouse/cursorUtils';
+import { useMaterialManager } from './useMaterialManager';
 
 export const useMouseInteraction = (
   renderer: THREE.WebGLRenderer | null,
@@ -23,8 +24,11 @@ export const useMouseInteraction = (
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
+  // Use enhanced material manager
+  const { materialManager, setHoverEffect, setSelectionEffect } = useMaterialManager();
+  
   // Use extracted hooks for state management
-  const { hoveredObject, setHoveredObject, materialManagerRef, initializeMaterialManager, cleanupMaterialManager } = useMouseInteractionState();
+  const { hoveredObject, setHoveredObject } = useMouseInteractionState();
   const { mousePosition, mousePositionRef, throttledMouseMove, updateMousePosition } = useMouseTracking();
   const { objectData, setObjectData, extractObjectData } = useObjectData();
 
@@ -33,22 +37,20 @@ export const useMouseInteraction = (
   const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
   const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
 
-  // Raycast handling
+  // Enhanced raycast handling with material manager
   const { handleRaycastHover } = useRaycastHandling({
     renderer,
     camera,
     scene,
     hoveredObject,
     setHoveredObject,
-    materialManager: materialManagerRef.current,
+    materialManager,
     extractObjectData,
     setObjectData
   });
 
   useEffect(() => {
     if (!renderer || !camera || !scene) return;
-
-    const materialManager = initializeMaterialManager();
 
     const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
       updateMousePosition(event.clientX, event.clientY);
@@ -74,8 +76,8 @@ export const useMouseInteraction = (
 
     const handleClick = (event: MouseEvent) => {
       // Clear any existing hover effects before selection
-      if (materialManager) {
-        materialManager.clearAllHoverEffects();
+      if (hoveredObject) {
+        setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
 
@@ -94,8 +96,8 @@ export const useMouseInteraction = (
 
     const handleTouchEnd = (event: TouchEvent) => {
       // Clear any existing hover effects before selection
-      if (materialManager) {
-        materialManager.clearAllHoverEffects();
+      if (hoveredObject) {
+        setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
 
@@ -105,8 +107,8 @@ export const useMouseInteraction = (
     };
 
     const handleMouseLeave = () => {
-      if (hoveredObject && materialManager) {
-        materialManager.setHoverEffect(hoveredObject, false);
+      if (hoveredObject) {
+        setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
         setObjectData(null);
       }
@@ -137,15 +139,12 @@ export const useMouseInteraction = (
       controls?.removeEventListener('change', updateHover);
       
       // Cleanup hover effects
-      if (hoveredObject && materialManager) {
-        materialManager.setHoverEffect(hoveredObject, false);
+      if (hoveredObject) {
+        setHoverEffect(hoveredObject, false);
       }
       
       // Cleanup tools
       measureTool.cleanup();
-      
-      // Cleanup material manager
-      cleanupMaterialManager();
     };
   }, [
     renderer, 
@@ -160,8 +159,7 @@ export const useMouseInteraction = (
     throttledMouseMove, 
     updateMousePosition, 
     handleRaycastHover,
-    initializeMaterialManager,
-    cleanupMaterialManager,
+    setHoverEffect,
     setHoveredObject,
     setObjectData
   ]);
