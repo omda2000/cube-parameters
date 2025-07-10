@@ -64,10 +64,10 @@ export const buildSceneObjects = (
       return false;
     }
     
-    // Handle primitives based on showPrimitives flag
+    // Skip primitives since we're removing the box
     if (object.userData?.isPrimitive) {
-      console.log('Found primitive:', object.name, 'showPrimitives:', showPrimitives);
-      return showPrimitives;
+      console.log('Skipping primitive object:', object.name);
+      return false;
     }
     
     // Always include environment helpers (grid, axes)
@@ -84,7 +84,6 @@ export const buildSceneObjects = (
   // Helper function to determine object type
   const getObjectType = (object: THREE.Object3D): SceneObject['type'] => {
     // Check userData first for special types
-    if (object.userData?.isPrimitive) return 'primitive';
     if (object.userData?.isPoint) return 'point';
     if (object.userData?.isMeasurementGroup) return 'measurement';
     
@@ -114,9 +113,7 @@ export const buildSceneObjects = (
     // Generate a meaningful name
     let objectName = object.name;
     if (!objectName || objectName.trim() === '') {
-      if (objectType === 'primitive') {
-        objectName = 'Box';
-      } else if (objectType === 'environment') {
+      if (objectType === 'environment') {
         objectName = object.type === 'GridHelper' ? 'Grid' : 'Axes';
       } else {
         objectName = `${object.type}_${object.uuid.slice(0, 8)}`;
@@ -186,10 +183,7 @@ export const buildSceneObjects = (
 
 export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
   const groups = {
-    models: [] as SceneObject[],
-    meshes: [] as SceneObject[],
-    groups: [] as SceneObject[],
-    primitives: [] as SceneObject[],
+    geometry: [] as SceneObject[], // New unified geometry category
     points: [] as SceneObject[],
     measurements: [] as SceneObject[],
     lights: [] as SceneObject[],
@@ -199,16 +193,9 @@ export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
   const categorizeObject = (obj: SceneObject) => {
     switch (obj.type) {
       case 'model':
-        groups.models.push(obj);
-        break;
       case 'mesh':
-        groups.meshes.push(obj);
-        break;
       case 'group':
-        groups.groups.push(obj);
-        break;
-      case 'primitive':
-        groups.primitives.push(obj);
+        groups.geometry.push(obj); // All geometry types go into unified category
         break;
       case 'point':
         groups.points.push(obj);

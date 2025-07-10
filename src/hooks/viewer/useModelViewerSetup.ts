@@ -56,23 +56,15 @@ export const useModelViewerSetup = ({
     switchCamera
   } = useThreeScene(mountRef);
 
-  // Box mesh setup
+  // Box mesh setup - disabled by default
   const { boxRef } = useBoxMesh(
     sceneRef.current,
     dimensions,
     boxColor,
     objectName,
-    showPrimitives
+    showPrimitives,
+    false  // Disable box creation
   );
-
-  // Ensure box is properly marked as primitive with a stable effect
-  useEffect(() => {
-    if (boxRef.current) {
-      console.log('ModelViewerSetup: Marking box as primitive');
-      boxRef.current.userData.isPrimitive = true;
-      boxRef.current.name = objectName || 'Box';
-    }
-  }, [boxRef, objectName]);
 
   // FBX model loading
   const {
