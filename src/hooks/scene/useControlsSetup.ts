@@ -49,8 +49,11 @@ export const useControlsSetup = (
       // Configure canvas for mobile
       const canvas = renderer.domElement;
       canvas.style.touchAction = 'none';
-      canvas.style.webkitTouchCallout = 'none';
-      canvas.style.webkitUserSelect = 'none';
+      
+      // Use type assertion for webkit-specific properties
+      const canvasStyle = canvas.style as any;
+      canvasStyle.webkitTouchCallout = 'none';
+      canvasStyle.webkitUserSelect = 'none';
       
       // Prevent iOS Safari bounce scrolling
       const preventBounce = (e: TouchEvent) => {
