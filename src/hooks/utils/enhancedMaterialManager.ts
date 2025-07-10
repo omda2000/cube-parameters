@@ -27,6 +27,7 @@ export class EnhancedMaterialManager {
   private resourceManager = ResourceManager.getInstance();
   private hoverMaterial: THREE.MeshStandardMaterial;
   private selectionMaterial: THREE.MeshStandardMaterial;
+  private trackedObjects = new Set<THREE.Object3D>();
 
   constructor() {
     this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
@@ -53,6 +54,9 @@ export class EnhancedMaterialManager {
     if (!this.originalMaterials.has(object)) {
       this.storeOriginalMaterial(object);
     }
+
+    // Track this object
+    this.trackedObjects.add(object);
 
     // Get or create current state
     const currentState = this.objectStates.get(object) || {
@@ -228,13 +232,12 @@ export class EnhancedMaterialManager {
   }
 
   clearAllEffects() {
-    // Clear all states and restore original materials
-    this.objectStates = new WeakMap();
-    this.originalMaterials.forEach((material, object) => {
-      if (object instanceof THREE.Mesh) {
-        object.material = material;
-      }
+    // Clear all states and restore original materials for tracked objects
+    this.trackedObjects.forEach(object => {
+      this.restoreOriginalMaterial(object);
     });
+    this.objectStates = new WeakMap();
+    this.trackedObjects.clear();
   }
 
   getObjectState(object: THREE.Object3D): MaterialState | null {

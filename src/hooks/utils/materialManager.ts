@@ -8,5 +8,6 @@ export class MaterialManager extends EnhancedMaterialManager {
   }
 }
 
-// Keep backward compatibility
-export { EnhancedMaterialManager, MaterialType, MaterialParameters, MaterialState } from './enhancedMaterialManager';
+// Keep backward compatibility with proper type exports
+export { EnhancedMaterialManager } from './enhancedMaterialManager';
+export type { MaterialType, MaterialParameters, MaterialState } from './enhancedMaterialManager';
