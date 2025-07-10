@@ -16,36 +16,75 @@ export const useFileHandlers = () => {
   } = useSceneState();
 
   const handleFileUpload = async (file: File) => {
+    console.log('Starting file upload process:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      userAgent: navigator.userAgent
+    });
+
     try {
+      setUploading(true);
+      setUploadError(null);
+
       addMessage({
         type: 'info',
         title: 'Loading model...',
         description: `Processing ${file.name}`,
       });
 
-      const fbxUploadHandler = (window as any).__fbxUploadHandler;
-      if (fbxUploadHandler) {
-        await fbxUploadHandler(file);
+      // Determine file type and use appropriate loader
+      const fileName = file.name.toLowerCase();
+      let uploadHandler = null;
+
+      if (fileName.endsWith('.fbx')) {
+        uploadHandler = (window as any).__fbxUploadHandler;
+        console.log('Using FBX loader for:', file.name);
+      } else if (fileName.endsWith('.gltf') || fileName.endsWith('.glb')) {
+        uploadHandler = (window as any).__gltfUploadHandler || (window as any).__fbxUploadHandler;
+        console.log('Using GLTF/GLB loader for:', file.name);
+      } else if (fileName.endsWith('.obj')) {
+        uploadHandler = (window as any).__objUploadHandler || (window as any).__fbxUploadHandler;
+        console.log('Using OBJ loader for:', file.name);
+      } else {
+        // Fallback to FBX loader for unknown types (may work for some formats)
+        uploadHandler = (window as any).__fbxUploadHandler;
+        console.log('Using fallback FBX loader for:', file.name);
+      }
+
+      if (uploadHandler) {
+        console.log('Upload handler found, processing file...');
+        await uploadHandler(file);
+        
         addMessage({
           type: 'success',
           title: 'Model loaded successfully',
           description: `${file.name} is now ready`,
         });
+        
+        console.log('File upload completed successfully');
       } else {
-        throw new Error('FBX loader not ready');
+        throw new Error('No suitable loader found for this file type');
       }
       
     } catch (error) {
       console.error('Upload failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
+      setUploadError(`Failed to load ${file.name}: ${errorMessage}`);
+      
       addMessage({
         type: 'error',
         title: 'Upload failed',
-        description: 'Failed to load model. Please check the file format.',
+        description: `Failed to load ${file.name}. ${errorMessage}`,
       });
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleModelsChange = (models: LoadedModel[], current: LoadedModel | null) => {
+    console.log('Models changed:', { modelCount: models.length, currentModel: current?.name });
     setLoadedModels(models);
     setCurrentModel(current);
   };
@@ -53,6 +92,7 @@ export const useFileHandlers = () => {
   const handleModelSelect = (modelId: string) => {
     const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
+      console.log('Selecting model:', model.name);
       const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
       if (fbxSwitchHandler) {
         fbxSwitchHandler(modelId);
@@ -68,6 +108,7 @@ export const useFileHandlers = () => {
   const handleModelRemove = (modelId: string) => {
     const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
+      console.log('Removing model:', model.name);
       const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
       if (fbxRemoveHandler) {
         fbxRemoveHandler(modelId);
@@ -82,6 +123,7 @@ export const useFileHandlers = () => {
 
   const handlePrimitiveSelect = (type: string) => {
     if (type === 'box') {
+      console.log('Selecting box primitive');
       setCurrentModel(null);
       addMessage({
         type: 'info',
