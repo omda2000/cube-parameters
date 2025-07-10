@@ -39,14 +39,17 @@ const UnifiedSceneTree = ({
     isLoading, 
     sceneObjectsCount: sceneObjects.length,
     hasScene: !!scene,
-    sceneChildrenCount: scene?.children.length || 0
+    sceneChildrenCount: scene?.children.length || 0,
+    showPrimitives,
+    searchQuery: searchQuery.trim(),
+    showSelectedOnly
   });
 
-  // Determine what to show with stable state logic
-  const hasSceneObjects = sceneObjects.length > 0;
-  const shouldShowLoading = isLoading;
-  const shouldShowEmptyState = !isLoading && !hasSceneObjects && !!scene;
-  const shouldShowContent = !isLoading && hasSceneObjects;
+  // Determine if we should show empty state
+  const shouldShowEmptyState = !isLoading && sceneObjects.length === 0 && !!scene;
+  
+  // Determine if we should show loading state (only when actually loading and no objects yet)
+  const shouldShowLoading = isLoading && sceneObjects.length === 0;
 
   return (
     <div className="h-full flex flex-col">
@@ -54,21 +57,17 @@ const UnifiedSceneTree = ({
         selectedObjects={selectedObjects}
         onClearSelection={clearSelection}
       />
-      <div className="flex-1 overflow-y-auto bg-slate-800/30 border border-slate-600 rounded min-h-[200px]">
-        {shouldShowLoading && (
+      <div className="flex-1 overflow-y-auto bg-slate-800/30 border border-slate-600 rounded">
+        {shouldShowLoading ? (
           <div className="p-4 text-center text-slate-400">
             <div className="animate-spin h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full mx-auto mb-2"></div>
             <p className="text-xs">Loading scene objects...</p>
           </div>
-        )}
-        
-        {shouldShowEmptyState && (
+        ) : shouldShowEmptyState ? (
           <div className="p-2">
             <EmptySceneState />
           </div>
-        )}
-        
-        {shouldShowContent && (
+        ) : sceneObjects.length > 0 ? (
           <div className="p-2">
             <SceneObjectGroups
               sceneObjects={sceneObjects}
@@ -79,9 +78,7 @@ const UnifiedSceneTree = ({
               onDelete={handleDelete}
             />
           </div>
-        )}
-        
-        {!scene && !isLoading && (
+        ) : (
           <div className="p-4 text-center text-slate-400">
             <p className="text-xs">No scene available</p>
           </div>

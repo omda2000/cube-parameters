@@ -31,16 +31,20 @@ export const useSceneTreeState = (
     handleDelete
   } = useSceneTreeActions(scene, forceRebuild);
 
-  // Reduced logging for better performance
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log('SceneTreeState: State summary -', {
+    console.log('SceneTreeState: State changed -', {
       hasScene: !!scene,
       sceneChildrenCount: scene?.children.length || 0,
       loadedModelsCount: loadedModels.length,
+      showPrimitives,
+      searchQuery: searchQuery.trim(),
+      showSelectedOnly,
+      selectedObjectsCount: selectedObjects.length,
       sceneObjectsCount: sceneObjects.length,
       isLoading
     });
-  }, [scene?.children.length, loadedModels.length, sceneObjects.length, isLoading]);
+  }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly, selectedObjects.length, sceneObjects.length, isLoading]);
 
   const wrappedToggleVisibility = (sceneObject: any) => {
     toggleVisibility(sceneObject, setSceneObjects);

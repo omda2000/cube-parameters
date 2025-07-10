@@ -15,7 +15,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadFBXModel = useCallback(async (file: File) => {
-    console.log('FBXLoader: Starting stable model load process for:', file.name);
+    console.log('FBXLoader: Starting model load process for:', file.name);
     
     if (!scene) {
       console.error('FBXLoader: Scene not available for model loading');
@@ -66,25 +66,22 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
       console.log('FBXLoader: Processing loaded object...');
       
-      // Process the object in a single batch operation
+      // Process the object in a single batch to prevent multiple re-renders
       const processedModel = processModelBatch(object, file.name);
       
-      console.log('FBXLoader: Batch processing complete, updating scene...');
-      
-      // Perform all scene operations in a single batch to prevent flickering
-      // Remove previous model if exists
+      // Remove previous model if exists (single operation)
       if (currentModel) {
         console.log('FBXLoader: Removing previous model from scene');
         scene.remove(currentModel.object);
       }
 
-      // Add new model to scene
       console.log('FBXLoader: Adding new model to scene');
       scene.add(processedModel.object);
       
-      // Update state in a single synchronous batch
-      console.log('FBXLoader: Model loading completed successfully, updating state');
+      // Update all state in a single batch at the end
+      console.log('FBXLoader: Model loading completed successfully');
       
+      // Use functional updates to ensure consistency
       setLoadedModels(prev => {
         const newModels = [...prev, processedModel];
         console.log('FBXLoader: Updated loaded models count:', newModels.length);
@@ -94,27 +91,20 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       setCurrentModel(processedModel);
       console.log('FBXLoader: Set current model:', processedModel.name);
       
-      // Small delay to ensure scene updates are complete before clearing loading state
-      setTimeout(() => {
-        console.log('FBXLoader: Clearing loading state after successful completion');
-        setIsLoading(false);
-      }, 100);
-      
     } catch (err) {
       console.error('FBXLoader: Failed to load model:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load model. Please check the file format.';
       setError(errorMessage);
+    } finally {
+      // Always clear loading state
+      console.log('FBXLoader: Setting loading state to false');
       setIsLoading(false);
     }
   }, [scene, currentModel]);
 
-  // Helper function to process the model object in a stable batch
+  // Helper function to process the model object in a single batch
   const processModelBatch = (object: THREE.Group, fileName: string): LoadedModel => {
     console.log('FBXLoader: Processing model batch for:', fileName);
-    
-    // Mark as loaded model immediately for stable classification
-    object.userData.isLoadedModel = true;
-    object.userData.originalFileName = fileName;
     
     // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
     object.rotateX(-Math.PI / 2);
@@ -164,9 +154,6 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       boundingBox: new THREE.Box3().setFromObject(object),
       size: 0 // We don't need the file size for counting
     };
-
-    // Mark the processed model for stable identification
-    processedModel.object.userData.modelId = processedModel.id;
 
     console.log('FBXLoader: Created processed model:', processedModel.name);
     return processedModel;
