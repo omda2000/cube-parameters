@@ -53,13 +53,10 @@ export const useModelViewerEffects = ({
   // Camera exposure
   useCameraExposure(switchCamera);
 
-  // Models exposure with proper change detection
+  // Models exposure with corrected parameters - only pass the required arguments
   useModelsExposure(
     loadedModels,
     currentModel,
-    loadFBXModel,
-    switchToModel,
-    removeModel,
     onModelsChange
   );
 
