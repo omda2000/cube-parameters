@@ -2,7 +2,6 @@
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
-import MaterialsTab from './tabs/MaterialsTab';
 import ViewTab from './tabs/ViewTab';
 import SettingsTab from './tabs/SettingsTab';
 import * as THREE from 'three';
@@ -61,12 +60,6 @@ const TabsControlPanel = ({
   setAmbientLight,
   shadowQuality,
   setShadowQuality,
-  dimensions,
-  setDimensions,
-  boxColor,
-  setBoxColor,
-  objectName,
-  setObjectName,
   environment,
   setEnvironment,
   shadeType = 'shaded',
@@ -105,17 +98,6 @@ const TabsControlPanel = ({
             setShadowQuality={setShadowQuality}
             environment={environment}
             setEnvironment={setEnvironment}
-          />
-        );
-      case 'materials':
-        return (
-          <MaterialsTab
-            dimensions={dimensions}
-            setDimensions={setDimensions}
-            boxColor={boxColor}
-            setBoxColor={setBoxColor}
-            objectName={objectName}
-            setObjectName={setObjectName}
           />
         );
       case 'environment':

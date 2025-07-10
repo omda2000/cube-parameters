@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Box, Globe, Palette, Eye, Settings } from 'lucide-react';
+import { Box, Globe, Eye, Settings } from 'lucide-react';
 
 interface ControlPanelTabsProps {
   activeTab: string;
@@ -13,9 +13,8 @@ interface ControlPanelTabsProps {
 const ControlPanelTabs = ({ activeTab, onTabChange, isPanelOpen }: ControlPanelTabsProps) => {
   const tabs = [
     { id: 'scene', label: 'Scene Objects', icon: Box },
-    { id: 'properties', label: 'Properties', icon: Settings },
+    { id: 'properties', label: 'Properties & Materials', icon: Settings },
     { id: 'lighting', label: 'Lighting & Environment', icon: Globe },
-    { id: 'materials', label: 'Materials', icon: Palette },
     { id: 'environment', label: 'View Settings', icon: Eye },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

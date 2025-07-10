@@ -6,6 +6,7 @@ export class MaterialManager {
   private originalMaterials = new WeakMap<THREE.Object3D, THREE.Material | THREE.Material[]>();
   private resourceManager = ResourceManager.getInstance();
   private hoverMaterial: THREE.MeshStandardMaterial;
+  private hoveredObjects = new Set<THREE.Object3D>();
 
   constructor() {
     this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
@@ -19,50 +20,74 @@ export class MaterialManager {
   }
 
   setHoverEffect(object: THREE.Object3D, hover: boolean) {
-    if (object instanceof THREE.Mesh) {
-      if (hover) {
-        if (!this.originalMaterials.has(object)) {
-          this.originalMaterials.set(object, object.material);
-        }
-        object.material = this.hoverMaterial;
-      } else {
-        this.clearHoverEffect(object);
+    if (hover) {
+      this.applyHoverEffect(object);
+    } else {
+      this.removeHoverEffect(object);
+    }
+  }
+
+  private applyHoverEffect(object: THREE.Object3D) {
+    if (object instanceof THREE.Mesh && !this.hoveredObjects.has(object)) {
+      // Store original material before applying hover
+      if (!this.originalMaterials.has(object)) {
+        this.originalMaterials.set(object, object.material);
       }
+      object.material = this.hoverMaterial;
+      this.hoveredObjects.add(object);
     }
 
-    // Batch process children to reduce function calls
-    const meshChildren = object.children.filter(child => 
-      child instanceof THREE.Mesh && !child.userData.isHelper
-    ) as THREE.Mesh[];
-
-    for (const child of meshChildren) {
-      if (hover) {
+    // Apply to mesh children
+    object.children.forEach(child => {
+      if (child instanceof THREE.Mesh && !child.userData.isHelper && !this.hoveredObjects.has(child)) {
         if (!this.originalMaterials.has(child)) {
           this.originalMaterials.set(child, child.material);
         }
         child.material = this.hoverMaterial;
-      } else {
-        const originalMaterial = this.originalMaterials.get(child);
-        if (originalMaterial) {
-          child.material = originalMaterial;
-          this.originalMaterials.delete(child);
-        }
+        this.hoveredObjects.add(child);
       }
-    }
+    });
   }
 
-  clearHoverEffect(object: THREE.Object3D) {
-    if (object instanceof THREE.Mesh) {
+  private removeHoverEffect(object: THREE.Object3D) {
+    if (object instanceof THREE.Mesh && this.hoveredObjects.has(object)) {
       const originalMaterial = this.originalMaterials.get(object);
       if (originalMaterial) {
         object.material = originalMaterial;
         this.originalMaterials.delete(object);
       }
+      this.hoveredObjects.delete(object);
     }
+
+    // Remove from mesh children
+    object.children.forEach(child => {
+      if (child instanceof THREE.Mesh && this.hoveredObjects.has(child)) {
+        const originalMaterial = this.originalMaterials.get(child);
+        if (originalMaterial) {
+          child.material = originalMaterial;
+          this.originalMaterials.delete(child);
+        }
+        this.hoveredObjects.delete(child);
+      }
+    });
+  }
+
+  clearAllHoverEffects() {
+    // Clear all hover effects before applying selection
+    this.hoveredObjects.forEach(object => {
+      if (object instanceof THREE.Mesh) {
+        const originalMaterial = this.originalMaterials.get(object);
+        if (originalMaterial) {
+          object.material = originalMaterial;
+          this.originalMaterials.delete(object);
+        }
+      }
+    });
+    this.hoveredObjects.clear();
   }
 
   dispose() {
-    // Don't dispose shared materials, let ResourceManager handle it
+    this.clearAllHoverEffects();
     this.originalMaterials = new WeakMap();
   }
 }

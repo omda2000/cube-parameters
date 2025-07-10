@@ -74,8 +74,8 @@ export const useMouseInteraction = (
 
     const handleClick = (event: MouseEvent) => {
       // Clear any existing hover effects before selection
-      if (hoveredObject && materialManager) {
-        materialManager.setHoverEffect(hoveredObject, false);
+      if (materialManager) {
+        materialManager.clearAllHoverEffects();
         setHoveredObject(null);
       }
 
@@ -89,6 +89,18 @@ export const useMouseInteraction = (
         case 'measure':
           measureTool.handleClick(event);
           break;
+      }
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      // Clear any existing hover effects before selection
+      if (materialManager) {
+        materialManager.clearAllHoverEffects();
+        setHoveredObject(null);
+      }
+
+      if (activeTool === 'select') {
+        selectTool.handleTouch(event);
       }
     };
 
@@ -110,6 +122,7 @@ export const useMouseInteraction = (
     // Add event listeners
     renderer.domElement.addEventListener('mousemove', handleMouseMove);
     renderer.domElement.addEventListener('click', handleClick);
+    renderer.domElement.addEventListener('touchend', handleTouchEnd);
     renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
     renderer.domElement.addEventListener('contextmenu', handleContextMenu);
     controls?.addEventListener('change', updateHover);
@@ -118,6 +131,7 @@ export const useMouseInteraction = (
       // Cleanup event listeners
       renderer.domElement.removeEventListener('mousemove', handleMouseMove);
       renderer.domElement.removeEventListener('click', handleClick);
+      renderer.domElement.removeEventListener('touchend', handleTouchEnd);
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
       controls?.removeEventListener('change', updateHover);
