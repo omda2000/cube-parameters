@@ -35,25 +35,10 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
   };
 
   const handleFileSelection = (file: File) => {
-    console.log('File selected:', file.name, 'Type:', file.type, 'Size:', file.size);
+    const validTypes = ['.fbx', '.obj', '.gltf', '.glb'];
+    const isValid = validTypes.some(type => file.name.toLowerCase().endsWith(type));
     
-    // More flexible file type checking for mobile browsers
-    const fileName = file.name.toLowerCase();
-    const validExtensions = ['.fbx', '.obj', '.gltf', '.glb'];
-    const isValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-    
-    // iOS Safari might not set correct MIME types, so we rely more on file extension
-    const validMimeTypes = [
-      'application/octet-stream', // Common for .fbx files
-      'text/plain', // Sometimes used for .obj files
-      'model/gltf+json', // GLTF files
-      'model/gltf-binary', // GLB files
-      '', // Empty mime type (iOS Safari sometimes doesn't set it)
-    ];
-    
-    const isValidMimeType = validMimeTypes.includes(file.type) || file.type === '';
-    
-    if (!isValidExtension) {
+    if (!isValid) {
       alert('Please select a valid 3D model file (.fbx, .obj, .gltf, .glb)');
       return;
     }
@@ -63,29 +48,17 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
       return;
     }
 
-    console.log('File validation passed, setting selected file');
     setSelectedFile(file);
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('File input changed, files:', e.target.files);
     if (e.target.files && e.target.files[0]) {
       handleFileSelection(e.target.files[0]);
     }
   };
 
-  const handleBrowseClick = () => {
-    console.log('Browse button clicked');
-    if (fileInputRef.current) {
-      // Reset the input value to allow selecting the same file again
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
-    }
-  };
-
   const handleUpload = () => {
     if (selectedFile) {
-      console.log('Uploading file:', selectedFile.name);
       onFileSelect(selectedFile);
       setSelectedFile(null);
     }
@@ -106,7 +79,7 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
       >
         <Upload className="h-8 w-8 mx-auto mb-3 text-slate-400" />
         <p className="text-slate-300 mb-2 text-sm">
-          Tap to select your 3D model file
+          Drag and drop your 3D model here, or click to browse
         </p>
         <p className="text-xs text-slate-500 mb-3">
           Supported formats: FBX, OBJ, GLTF, GLB (Max 50MB)
@@ -115,19 +88,16 @@ const FileUploadDialog = ({ onFileSelect, isLoading }: FileUploadDialogProps) =>
           variant="outline"
           size="sm"
           className="text-slate-300 border-slate-600"
-          onClick={handleBrowseClick}
+          onClick={() => fileInputRef.current?.click()}
         >
-          Select File
+          Browse Files
         </Button>
-        {/* Enhanced file input for better mobile support */}
         <input
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".fbx,.obj,.gltf,.glb,application/octet-stream,text/plain,model/gltf+json,model/gltf-binary"
+          accept=".fbx,.obj,.gltf,.glb"
           onChange={handleFileInputChange}
-          capture={false}
-          multiple={false}
         />
       </div>
 

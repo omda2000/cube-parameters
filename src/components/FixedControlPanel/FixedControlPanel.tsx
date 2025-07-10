@@ -2,22 +2,19 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface FixedControlPanelProps {
   title?: string;
   children: React.ReactNode;
   isOpen: boolean;
   onClose?: () => void;
-  className?: string;
 }
 
 const FixedControlPanel = ({
   title,
   children,
   isOpen,
-  onClose,
-  className
+  onClose
 }: FixedControlPanelProps) => {
   if (!isOpen) {
     return null;
@@ -25,11 +22,12 @@ const FixedControlPanel = ({
 
   return (
     <div
-      className={cn(
-        "fixed left-20 top-16 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-40",
-        "w-80 h-[500px] max-h-[85vh]",
-        className
-      )}
+      className="fixed left-20 top-16 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-40"
+      style={{
+        width: 320,
+        height: 500,
+        maxHeight: '85vh'
+      }}
     >
       {/* Header */}
       {title && (

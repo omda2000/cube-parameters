@@ -1,3 +1,4 @@
+
 import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useSceneState } from '../store/useAppStore';
@@ -15,59 +16,32 @@ export const useFileHandlers = () => {
   } = useSceneState();
 
   const handleFileUpload = async (file: File) => {
-    console.log('handleFileUpload called with file:', file.name, 'size:', file.size, 'type:', file.type);
-    
     try {
-      setUploading(true);
-      setUploadError(null);
-      
       addMessage({
         type: 'info',
         title: 'Loading model...',
         description: `Processing ${file.name}`,
       });
 
-      // Check if file is accessible
-      if (!file || file.size === 0) {
-        throw new Error('File is empty or not accessible');
-      }
-
-      console.log('Checking for FBX upload handler...');
       const fbxUploadHandler = (window as any).__fbxUploadHandler;
-      
       if (fbxUploadHandler) {
-        console.log('FBX upload handler found, calling with file');
         await fbxUploadHandler(file);
-        
         addMessage({
           type: 'success',
           title: 'Model loaded successfully',
           description: `${file.name} is now ready`,
         });
       } else {
-        console.error('FBX loader not ready');
-        throw new Error('3D viewer not ready. Please wait a moment and try again.');
+        throw new Error('FBX loader not ready');
       }
       
     } catch (error) {
       console.error('Upload failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      setUploadError(errorMessage);
-      
       addMessage({
         type: 'error',
         title: 'Upload failed',
-        description: `Failed to load ${file.name}: ${errorMessage}`,
+        description: 'Failed to load model. Please check the file format.',
       });
-      
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: errorMessage,
-      });
-    } finally {
-      setUploading(false);
     }
   };
 

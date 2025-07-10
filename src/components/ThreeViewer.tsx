@@ -1,10 +1,9 @@
 
 import React, { memo } from 'react';
 import { useModelViewerSetup } from '../hooks/viewer/useModelViewerSetup';
+import { useModelViewerEffects } from '../hooks/viewer/useModelViewerEffects';
 import { useOptimizedRenderer } from '../hooks/viewer/useOptimizedRenderer';
-import ThreeViewerCore from './ThreeViewer/ThreeViewerCore';
-import ThreeViewerOverlays from './ThreeViewer/ThreeViewerOverlays';
-import { useThreeViewerHandlers } from './ThreeViewer/ThreeViewerHandlers';
+import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
 import * as THREE from 'three';
 import type { 
   SunlightSettings, 
@@ -35,11 +34,21 @@ interface ThreeViewerProps {
 const ThreeViewer = memo((props: ThreeViewerProps) => {
   // Core setup
   const {
+    mountRef,
     scene,
     camera,
     renderer,
     controls,
-    currentModel
+    currentModel,
+    boxRef,
+    isLoading,
+    error,
+    loadFBXModel,
+    switchToModel,
+    removeModel,
+    performanceMetrics,
+    isOrthographic,
+    switchCamera
   } = useModelViewerSetup({
     dimensions: props.dimensions,
     boxColor: props.boxColor,
@@ -56,39 +65,71 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   // Renderer optimization
   useOptimizedRenderer(renderer);
 
-  // Event handlers
+  // Effects and interactions
   const {
-    handleDoubleTap,
-    handlePinchZoom,
-    handleZoomIn,
-    handleZoomOut,
-    handleZoomAll,
-    handleResetView
-  } = useThreeViewerHandlers({ controls, camera, scene });
+    objectData,
+    mousePosition,
+    isHovering,
+    selectedObjects
+  } = useModelViewerEffects({
+    renderer,
+    camera,
+    scene,
+    controls,
+    currentModel,
+    boxRef,
+    activeTool: props.activeTool,
+    onPointCreate: props.onPointCreate,
+    onMeasureCreate: props.onMeasureCreate,
+    loadedModels: currentModel ? [currentModel] : [],
+    loadFBXModel,
+    switchToModel,
+    removeModel,
+    onModelsChange: props.onModelsChange,
+    switchCamera
+  });
+
+  // Debug performance in development
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('ThreeViewer Performance Metrics:', performanceMetrics);
+    }
+  }, [performanceMetrics]);
+
+  if (error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-red-500">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2">Model Viewer Error</h2>
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Reload Application
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">
-      <ThreeViewerCore
-        {...props}
-        camera={camera}
-        controls={controls}
-        onDoubleTap={handleDoubleTap}
-        onPinchZoom={handlePinchZoom}
-        onThreeFingerTap={handleZoomAll}
+      <div ref={mountRef} className="w-full h-full" />
+      <ModelViewerOverlays
+        objectData={objectData}
+        mousePosition={mousePosition}
+        isHovering={isHovering}
+        selectedObjects={selectedObjects}
       />
-      
-      <ThreeViewerOverlays
-        objectData={null}
-        mousePosition={{ x: 0, y: 0 }}
-        isHovering={false}
-        selectedObjects={[]}
-        camera={camera}
-        controls={controls}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onZoomAll={handleZoomAll}
-        onResetView={handleResetView}
-      />
+      {isLoading && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="text-white flex items-center gap-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+            Loading 3D model...
+          </div>
+        </div>
+      )}
     </div>
   );
 });

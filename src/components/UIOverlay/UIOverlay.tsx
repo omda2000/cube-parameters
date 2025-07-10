@@ -7,7 +7,6 @@ import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
 import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
 import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
 import NotificationBell from '../NotificationBell/NotificationBell';
-import { useResponsiveMode } from '../../hooks/useResponsiveMode';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -63,8 +62,6 @@ const UIOverlay = ({
   onShadeTypeChange,
   modelCount
 }: UIOverlayProps) => {
-  const { isMobile, isTablet } = useResponsiveMode();
-
   return (
     <>
       {/* Notification bell - top right corner */}
@@ -72,81 +69,58 @@ const UIOverlay = ({
         <NotificationBell />
       </div>
 
-      {/* Aid Tools Bar - responsive positioning */}
-      <div className={`fixed z-50 ${isMobile ? 'top-4 left-4 right-16' : 'top-4 left-4'}`}>
-        <AidToolsBar
-          onToolSelect={onToolSelect}
-          activeTool={activeTool}
-        />
-      </div>
+      {/* Aid Tools Bar - centered at top */}
+      <AidToolsBar
+        onToolSelect={onToolSelect}
+        activeTool={activeTool}
+      />
 
-      {/* Control Panel Tabs - always visible but responsive */}
-      <div className={`${isMobile ? 'fixed top-16 left-4 z-50' : ''}`}>
-        <ControlPanelTabs
-          activeTab={activeControlTab}
-          onTabChange={onTabChange}
-          isPanelOpen={showControlPanel}
-        />
-      </div>
+      {/* Control Panel Tabs - left side, positioned to avoid overlap */}
+      <ControlPanelTabs
+        activeTab={activeControlTab}
+        onTabChange={onTabChange}
+        isPanelOpen={showControlPanel}
+      />
 
-      {/* Fixed Control Panel - responsive sizing and positioning */}
-      <div className={`${isMobile ? 'fixed inset-x-4 top-28 z-40' : ''}`}>
-        <FixedControlPanel
-          isOpen={showControlPanel}
-          onClose={onCloseControlPanel}
-          className={`${
-            isMobile 
-              ? 'w-full max-w-none h-[60vh] max-h-none' 
-              : isTablet 
-                ? 'w-80 h-96'
-                : 'w-96 h-[32rem]'
-          }`}
-        >
-          <TabsControlPanel {...controlsPanelProps} />
-        </FixedControlPanel>
-      </div>
+      {/* Fixed Control Panel - positioned next to tabs with proper spacing */}
+      <FixedControlPanel
+        isOpen={showControlPanel}
+        onClose={onCloseControlPanel}
+      >
+        <TabsControlPanel {...controlsPanelProps} />
+      </FixedControlPanel>
 
-      {/* Measure Tools Panel - responsive positioning */}
-      <div className={`fixed z-40 ${
-        isMobile 
-          ? 'left-4 right-4 bottom-32'
-          : isTablet
-            ? 'left-4 bottom-24'
-            : 'left-4 bottom-28'
-      }`}>
+      {/* Measure Tools Panel - positioned on the bottom left to avoid overlap */}
+      <div className="fixed left-4 bottom-28 z-40">
         <MeasureToolsPanel
           measurements={measurements}
           onClearAll={onClearAllMeasurements}
           onRemoveMeasurement={onRemoveMeasurement}
           visible={showMeasurePanel}
           onClose={onCloseMeasurePanel}
-          className={isMobile ? 'w-full' : ''}
         />
       </div>
 
-      {/* Bottom Floating Bar - hidden on mobile, responsive on tablet/desktop */}
-      {!isMobile && (
-        <BottomFloatingBar
-          objectCount={modelCount}
-          gridEnabled={true}
-          gridSpacing="1m"
-          units="m"
-          cursorPosition={{ x: 0, y: 0 }}
-          zoomLevel={100}
-          shadeType={shadeType}
-          onShadeTypeChange={onShadeTypeChange}
-          onZoomAll={onZoomAll}
-          onZoomToSelected={onZoomToSelected}
-          onZoomIn={onZoomIn}
-          onZoomOut={onZoomOut}
-          onResetView={onResetView}
-          snapToGrid={false}
-          onSnapToGridChange={() => {}}
-          gridSize={1}
-          onGridSizeChange={() => {}}
-          className={isTablet ? 'scale-90' : ''}
-        />
-      )}
+      {/* Bottom Floating Bar - stays at bottom */}
+      <BottomFloatingBar
+        objectCount={modelCount}
+        gridEnabled={true}
+        gridSpacing="1m"
+        units="m"
+        cursorPosition={{ x: 0, y: 0 }}
+        zoomLevel={100}
+        shadeType={shadeType}
+        onShadeTypeChange={onShadeTypeChange}
+        onZoomAll={onZoomAll}
+        onZoomToSelected={onZoomToSelected}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        onResetView={onResetView}
+        snapToGrid={false}
+        onSnapToGridChange={() => {}}
+        gridSize={1}
+        onGridSizeChange={() => {}}
+      />
     </>
   );
 };

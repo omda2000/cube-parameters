@@ -6,7 +6,6 @@ import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
 import ExpandableSnapControls from '../ExpandableSnapControls/ExpandableSnapControls';
-import { cn } from '@/lib/utils';
 
 interface BottomFloatingBarProps {
   objectCount?: number;
@@ -26,7 +25,6 @@ interface BottomFloatingBarProps {
   onSnapToGridChange?: (enabled: boolean) => void;
   gridSize?: number;
   onGridSizeChange?: (size: number) => void;
-  className?: string;
 }
 
 const BottomFloatingBar = ({
@@ -46,14 +44,13 @@ const BottomFloatingBar = ({
   snapToGrid = false,
   onSnapToGridChange = () => {},
   gridSize = 1,
-  onGridSizeChange = () => {},
-  className
+  onGridSizeChange = () => {}
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
 
   return (
     <TooltipProvider>
-      <div className={cn("fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-4 py-2 z-30 shadow-lg", className)}>
+      <div className="fixed bottom-4 left-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-4 py-2 z-30 shadow-lg">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           {/* Left section - Status and coordinate information */}
           <div className="flex items-center gap-4">

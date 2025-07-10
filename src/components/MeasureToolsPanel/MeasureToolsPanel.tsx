@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUnits } from '@/contexts/UnitsContext';
-import { cn } from '@/lib/utils';
 
 interface MeasureData {
   id: string;
@@ -21,7 +20,6 @@ interface MeasureToolsPanelProps {
   onRemoveMeasurement: (id: string) => void;
   visible: boolean;
   onClose: () => void;
-  className?: string;
 }
 
 const MeasureToolsPanel = ({
@@ -29,15 +27,14 @@ const MeasureToolsPanel = ({
   onClearAll,
   onRemoveMeasurement,
   visible,
-  onClose,
-  className
+  onClose
 }: MeasureToolsPanelProps) => {
   const { formatValue, convertValue } = useUnits();
 
   if (!visible) return null;
 
   return (
-    <div className={cn("bg-card/95 backdrop-blur-sm border border-border rounded-lg p-4 z-40 w-80", className)}>
+    <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-4 z-40 w-80">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-card-foreground flex items-center gap-2">
           <Ruler className="h-4 w-4" />
