@@ -16,14 +16,19 @@ export const useZoomControls = (
   sceneRef: React.RefObject<THREE.Scene | null>,
   cameraRef: React.RefObject<THREE.PerspectiveCamera | null>,
   controlsRef: React.RefObject<OrbitControls | null>,
-  selectedObject: SceneObject | null
+  selectedObject: SceneObject | null,
+  rendererRef?: React.RefObject<THREE.WebGLRenderer | null>
 ): ZoomControlsHook => {
   const controlsRefInternal = useRef<ZoomControlsHook | null>(null);
 
   useEffect(() => {
     const zoomControls: ZoomControlsHook = {
       zoomAll: () => {
-        if (!sceneRef.current || !cameraRef.current || !controlsRef.current) return;
+        console.log('Executing zoomAll');
+        if (!sceneRef.current || !cameraRef.current || !controlsRef.current) {
+          console.log('Missing refs for zoomAll');
+          return;
+        }
         
         const allObjects: THREE.Object3D[] = [];
         sceneRef.current.traverse((object) => {
@@ -32,7 +37,10 @@ export const useZoomControls = (
           }
         });
         
-        if (allObjects.length === 0) return;
+        if (allObjects.length === 0) {
+          console.log('No objects found for zoomAll');
+          return;
+        }
         
         const box = new THREE.Box3();
         allObjects.forEach(obj => {
@@ -42,7 +50,10 @@ export const useZoomControls = (
           }
         });
         
-        if (box.isEmpty()) return;
+        if (box.isEmpty()) {
+          console.log('Bounding box is empty');
+          return;
+        }
         
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
@@ -66,6 +77,11 @@ export const useZoomControls = (
           controlsRef.current!.target.lerpVectors(startTarget, center, easedProgress);
           controlsRef.current!.update();
           
+          // Force render update
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
@@ -75,7 +91,11 @@ export const useZoomControls = (
       },
       
       zoomToSelected: () => {
-        if (!selectedObject || !cameraRef.current || !controlsRef.current) return;
+        console.log('Executing zoomToSelected', selectedObject);
+        if (!selectedObject || !cameraRef.current || !controlsRef.current) {
+          console.log('No selected object or missing refs');
+          return;
+        }
         
         const object = selectedObject.object;
         const box = new THREE.Box3().setFromObject(object);
@@ -101,6 +121,11 @@ export const useZoomControls = (
           controlsRef.current!.target.lerpVectors(startTarget, center, easedProgress);
           controlsRef.current!.update();
           
+          // Force render update
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
@@ -110,7 +135,11 @@ export const useZoomControls = (
       },
 
       zoomIn: () => {
-        if (!cameraRef.current || !controlsRef.current) return;
+        console.log('Executing zoomIn');
+        if (!cameraRef.current || !controlsRef.current) {
+          console.log('Missing refs for zoomIn');
+          return;
+        }
         
         const target = controlsRef.current.target;
         const direction = cameraRef.current.position.clone().sub(target).normalize();
@@ -131,6 +160,11 @@ export const useZoomControls = (
           cameraRef.current!.position.lerpVectors(startPosition, newPosition, easedProgress);
           controlsRef.current!.update();
           
+          // Force render update
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
@@ -140,7 +174,11 @@ export const useZoomControls = (
       },
 
       zoomOut: () => {
-        if (!cameraRef.current || !controlsRef.current) return;
+        console.log('Executing zoomOut');
+        if (!cameraRef.current || !controlsRef.current) {
+          console.log('Missing refs for zoomOut');
+          return;
+        }
         
         const target = controlsRef.current.target;
         const direction = cameraRef.current.position.clone().sub(target).normalize();
@@ -161,6 +199,11 @@ export const useZoomControls = (
           cameraRef.current!.position.lerpVectors(startPosition, newPosition, easedProgress);
           controlsRef.current!.update();
           
+          // Force render update
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
@@ -170,7 +213,11 @@ export const useZoomControls = (
       },
 
       resetView: () => {
-        if (!cameraRef.current || !controlsRef.current) return;
+        console.log('Executing resetView');
+        if (!cameraRef.current || !controlsRef.current) {
+          console.log('Missing refs for resetView');
+          return;
+        }
         
         const targetPosition = new THREE.Vector3(5, 5, 5);
         const targetLookAt = new THREE.Vector3(0, 0, 0);
@@ -190,6 +237,11 @@ export const useZoomControls = (
           controlsRef.current!.target.lerpVectors(startTarget, targetLookAt, easedProgress);
           controlsRef.current!.update();
           
+          // Force render update
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
@@ -207,13 +259,13 @@ export const useZoomControls = (
     return () => {
       delete (window as any).__zoomControls;
     };
-  }, [sceneRef, cameraRef, controlsRef, selectedObject]);
+  }, [sceneRef, cameraRef, controlsRef, selectedObject, rendererRef]);
 
   return controlsRefInternal.current || {
-    zoomAll: () => {},
-    zoomToSelected: () => {},
-    zoomIn: () => {},
-    zoomOut: () => {},
-    resetView: () => {}
+    zoomAll: () => { console.log('zoomAll not ready'); },
+    zoomToSelected: () => { console.log('zoomToSelected not ready'); },
+    zoomIn: () => { console.log('zoomIn not ready'); },
+    zoomOut: () => { console.log('zoomOut not ready'); },
+    resetView: () => { console.log('resetView not ready'); }
   };
 };

@@ -6,6 +6,8 @@ import { useBoxMesh } from '../useBoxMesh';
 import { useLighting } from '../useLighting';
 import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
+import { useZoomControls } from '../useZoomControls';
+import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -41,6 +43,7 @@ export const useModelViewerSetup = ({
   showPrimitives = true
 }: UseModelViewerSetupProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const { selectedObject } = useSelectionContext();
 
   // Core Three.js setup
   const {
@@ -81,6 +84,15 @@ export const useModelViewerSetup = ({
     switchToModel,
     removeModel
   } = useFBXLoader(sceneRef.current);
+
+  // Zoom controls integration
+  const zoomControls = useZoomControls(
+    sceneRef,
+    perspectiveCameraRef,
+    controlsRef,
+    selectedObject,
+    rendererRef
+  );
 
   // Lighting setup
   useLighting(
@@ -131,6 +143,7 @@ export const useModelViewerSetup = ({
     removeModel,
     performanceMetrics,
     isOrthographic,
-    switchCamera
+    switchCamera,
+    zoomControls
   };
 };

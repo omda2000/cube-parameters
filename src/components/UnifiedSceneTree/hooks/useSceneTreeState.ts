@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { LoadedModel, SceneObject } from '../../../types/model';
@@ -14,34 +14,74 @@ export const useSceneTreeState = (
 ) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
+  const [forceUpdate, setForceUpdate] = useState(0);
   const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
+
+  // Force update function to trigger re-renders
+  const triggerUpdate = useCallback(() => {
+    console.log('Triggering scene tree update');
+    setForceUpdate(prev => prev + 1);
+  }, []);
 
   // Build unified scene tree with filtering
   useEffect(() => {
+    console.log('Building scene objects', { showSelectedOnly, selectedObjects: selectedObjects.length, searchQuery });
+    
     let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
     
     // Apply selected-only filter FIRST
-    if (showSelectedOnly) {
+    if (showSelectedOnly && selectedObjects.length > 0) {
+      console.log('Applying selected-only filter');
       const selectedIds = new Set(selectedObjects.map(obj => obj.id));
-      objects = objects.filter(obj => {
-        // Check if object or any of its children are selected
-        const checkSelected = (sceneObj: SceneObject): boolean => {
-          if (selectedIds.has(sceneObj.id)) return true;
-          return sceneObj.children.some(child => checkSelected(child));
-        };
-        return checkSelected(obj);
-      });
+      
+      const filterSelectedObjects = (sceneObjs: SceneObject[]): SceneObject[] => {
+        return sceneObjs.filter(obj => {
+          // Check if this object is selected
+          if (selectedIds.has(obj.id)) {
+            console.log('Object is selected:', obj.name);
+            return true;
+          }
+          
+          // Check if any children are selected (recursive)
+          const hasSelectedChildren = (children: SceneObject[]): boolean => {
+            return children.some(child => {
+              if (selectedIds.has(child.id)) {
+                return true;
+              }
+              return hasSelectedChildren(child.children);
+            });
+          };
+          
+          const result = hasSelectedChildren(obj.children);
+          if (result) {
+            console.log('Object has selected children:', obj.name);
+          }
+          return result;
+        }).map(obj => ({
+          ...obj,
+          // Recursively filter children too
+          children: filterSelectedObjects(obj.children)
+        }));
+      };
+      
+      objects = filterSelectedObjects(objects);
+      console.log('Filtered objects:', objects.length);
     }
     
     // Apply search filter
     if (searchQuery.trim()) {
-      objects = objects.filter(obj => 
-        obj.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      console.log('Applying search filter:', searchQuery);
+      const filterBySearch = (sceneObjs: SceneObject[]): SceneObject[] => {
+        return sceneObjs.filter(obj => 
+          obj.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      };
+      objects = filterBySearch(objects);
+      console.log('Search filtered objects:', objects.length);
     }
     
     setSceneObjects(objects);
-  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
+  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly, forceUpdate]);
 
   const toggleExpanded = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
@@ -53,12 +93,35 @@ export const useSceneTreeState = (
     setExpandedNodes(newExpanded);
   };
 
-  const toggleVisibility = (sceneObject: SceneObject) => {
+  const toggleVisibility = useCallback((sceneObject: SceneObject) => {
+    console.log('Toggling visibility for:', sceneObject.name, 'current:', sceneObject.object.visible);
+    
+    // Toggle visibility
     sceneObject.object.visible = !sceneObject.object.visible;
-    setSceneObjects([...sceneObjects]);
-  };
+    
+    // Force scene update by traversing and updating materials if needed
+    sceneObject.object.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.visible = sceneObject.object.visible;
+        // Force material update
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => mat.needsUpdate = true);
+          } else {
+            child.material.needsUpdate = true;
+          }
+        }
+      }
+    });
+    
+    // Trigger re-render
+    triggerUpdate();
+    
+    console.log('Visibility toggled to:', sceneObject.object.visible);
+  }, [triggerUpdate]);
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
+    console.log('Selecting object:', sceneObject.name, 'multi:', isMultiSelect);
     if (isMultiSelect) {
       toggleSelection(sceneObject);
     } else {
@@ -68,6 +131,7 @@ export const useSceneTreeState = (
 
   const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
     event.stopPropagation();
+    console.log('Deleting object:', sceneObject.name, sceneObject.type);
     
     if (sceneObject.type === 'point' || sceneObject.type === 'measurement') {
       // Remove from scene
@@ -101,7 +165,7 @@ export const useSceneTreeState = (
       }
       
       // Force re-render
-      setSceneObjects([...sceneObjects]);
+      triggerUpdate();
     }
   };
 
@@ -113,6 +177,7 @@ export const useSceneTreeState = (
     toggleVisibility,
     handleObjectSelect,
     handleDelete,
-    clearSelection
+    clearSelection,
+    triggerUpdate
   };
 };

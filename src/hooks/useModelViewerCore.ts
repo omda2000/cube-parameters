@@ -47,7 +47,8 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     removeModel,
     performanceMetrics,
     isOrthographic,
-    switchCamera
+    switchCamera,
+    zoomControls
   } = useModelViewerSetup({
     dimensions: props.dimensions,
     boxColor: props.boxColor,
@@ -96,6 +97,7 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     selectedObjects,
     isLoading,
     error,
-    performanceMetrics
+    performanceMetrics,
+    zoomControls
   };
 };
