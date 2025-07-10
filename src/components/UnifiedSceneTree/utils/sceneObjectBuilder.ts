@@ -19,6 +19,8 @@ const generateObjectId = (object: THREE.Object3D): string => {
     return `grid_${baseId}`;
   } else if (object.type === 'AxesHelper') {
     return `axes_${baseId}`;
+  } else if (object.userData?.isLoadedModel) {
+    return `model_${baseId}`;
   } else if (object instanceof THREE.Group) {
     return `group_${baseId}`;
   } else if (object instanceof THREE.Mesh) {
@@ -39,12 +41,15 @@ export const buildSceneObjects = (
   }
 
   console.log('buildSceneObjects: Starting with scene children:', scene.children.length);
+  console.log('buildSceneObjects: Loaded models count:', loadedModels.length);
   console.log('buildSceneObjects: Children details:', scene.children.map(child => ({
     name: child.name || 'unnamed',
     type: child.type,
     visible: child.visible,
     isPrimitive: child.userData?.isPrimitive,
-    isHelper: child.userData?.isHelper
+    isHelper: child.userData?.isHelper,
+    isLoadedModel: child.userData?.isLoadedModel,
+    isFromLoadedModel: child.userData?.isFromLoadedModel
   })));
   
   const sceneObjects: SceneObject[] = [];
@@ -64,9 +69,9 @@ export const buildSceneObjects = (
       return false;
     }
     
-    // Skip primitives since we're removing the box
-    if (object.userData?.isPrimitive) {
-      console.log('Skipping primitive object:', object.name);
+    // Skip primitives if disabled
+    if (object.userData?.isPrimitive && !showPrimitives) {
+      console.log('Skipping primitive object (primitives disabled):', object.name);
       return false;
     }
     
@@ -76,20 +81,48 @@ export const buildSceneObjects = (
       return true;
     }
     
+    // Always include loaded models and their children
+    if (object.userData?.isLoadedModel || object.userData?.isFromLoadedModel) {
+      console.log('Including loaded model object:', object.name, object.type);
+      return true;
+    }
+    
     // Include all other objects (meshes, groups, lights, etc.)
     console.log('Including object:', object.name, object.type);
     return true;
   };
 
-  // Helper function to determine object type
+  // Enhanced function to determine object type with better loaded model detection
   const getObjectType = (object: THREE.Object3D): SceneObject['type'] => {
     // Check userData first for special types
     if (object.userData?.isPoint) return 'point';
     if (object.userData?.isMeasurementGroup) return 'measurement';
     
-    // Check if this is a loaded model (top-level object from FBX/GLTF)
+    // Check if this is a top-level loaded model
+    if (object.userData?.isLoadedModel) {
+      console.log('Detected top-level loaded model:', object.name);
+      return 'model';
+    }
+    
+    // Check if this object is part of a loaded model
+    if (object.userData?.isFromLoadedModel) {
+      // For objects within loaded models, categorize by Three.js type
+      if (object instanceof THREE.Mesh) {
+        console.log('Detected mesh from loaded model:', object.name);
+        return 'mesh';
+      }
+      if (object instanceof THREE.Group) {
+        console.log('Detected group from loaded model:', object.name);
+        return 'group';
+      }
+    }
+    
+    // Check if this is a loaded model (fallback check)
     const isLoadedModel = loadedModels.some(model => model.object === object);
-    if (isLoadedModel) return 'model';
+    if (isLoadedModel) {
+      console.log('Detected loaded model via array check:', object.name);
+      return 'model';
+    }
     
     // Check Three.js types
     if (object instanceof THREE.Light) return 'light';
@@ -102,7 +135,7 @@ export const buildSceneObjects = (
   };
 
   // Recursive function to create SceneObject hierarchy
-  const createSceneObject = (object: THREE.Object3D): SceneObject | null => {
+  const createSceneObject = (object: THREE.Object3D, parentType?: string): SceneObject | null => {
     if (!shouldIncludeObject(object)) {
       return null;
     }
@@ -115,6 +148,8 @@ export const buildSceneObjects = (
     if (!objectName || objectName.trim() === '') {
       if (objectType === 'environment') {
         objectName = object.type === 'GridHelper' ? 'Grid' : 'Axes';
+      } else if (objectType === 'model') {
+        objectName = object.userData?.modelName || `Model_${object.uuid.slice(0, 8)}`;
       } else {
         objectName = `${object.type}_${object.uuid.slice(0, 8)}`;
       }
@@ -124,7 +159,9 @@ export const buildSceneObjects = (
       name: objectName, 
       type: objectType, 
       id: objectId,
-      hasChildren: object.children.length > 0
+      hasChildren: object.children.length > 0,
+      isFromLoadedModel: object.userData?.isFromLoadedModel,
+      parentType
     });
 
     const sceneObject: SceneObject = {
@@ -142,7 +179,7 @@ export const buildSceneObjects = (
       const validChildren: SceneObject[] = [];
       
       for (const child of object.children) {
-        const childSceneObject = createSceneObject(child);
+        const childSceneObject = createSceneObject(child, objectType);
         if (childSceneObject) {
           validChildren.push(childSceneObject);
         }
@@ -161,7 +198,9 @@ export const buildSceneObjects = (
       name: child.name || 'unnamed',
       type: child.type,
       isPrimitive: child.userData?.isPrimitive,
-      isHelper: child.userData?.isHelper
+      isHelper: child.userData?.isHelper,
+      isLoadedModel: child.userData?.isLoadedModel,
+      isFromLoadedModel: child.userData?.isFromLoadedModel
     });
     
     const sceneObject = createSceneObject(child);
@@ -183,7 +222,7 @@ export const buildSceneObjects = (
 
 export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
   const groups = {
-    geometry: [] as SceneObject[], // New unified geometry category
+    geometry: [] as SceneObject[], // Unified geometry category
     points: [] as SceneObject[],
     measurements: [] as SceneObject[],
     lights: [] as SceneObject[],

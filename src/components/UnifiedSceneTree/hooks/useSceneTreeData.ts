@@ -23,15 +23,22 @@ export const useSceneTreeData = (
   const createBuildKey = useCallback(() => {
     if (!scene) return 'no-scene';
     
-    // Create more stable build key that accounts for loading states
+    // Create more comprehensive build key that accounts for loaded models
     const sceneChildrenInfo = scene.children
       .filter(child => !child.userData?.isHelper || child.type === 'GridHelper' || child.type === 'AxesHelper')
       .map(child => {
         const isStable = child.userData?.isStable || false;
         const isLoading = child.userData?.isLoading || false;
-        return `${child.name || 'unnamed'}_${child.type}_${child.visible}_${isStable}_${isLoading}`;
+        const isLoadedModel = child.userData?.isLoadedModel || false;
+        const modelName = child.userData?.modelName || '';
+        return `${child.name || 'unnamed'}_${child.type}_${child.visible}_${isStable}_${isLoading}_${isLoadedModel}_${modelName}`;
       })
       .join('|');
+    
+    // Include loaded models information in build key
+    const loadedModelsInfo = loadedModels.map(model => 
+      `${model.id}_${model.name}_${model.object.children.length}`
+    ).join('|');
     
     return [
       scene.children.length,
@@ -39,9 +46,10 @@ export const useSceneTreeData = (
       showPrimitives,
       searchQuery.trim(),
       showSelectedOnly,
-      sceneChildrenInfo
+      sceneChildrenInfo,
+      loadedModelsInfo
     ].join('_');
-  }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly]);
+  }, [scene, loadedModels, showPrimitives, searchQuery, showSelectedOnly]);
 
   const buildSceneObjectsStable = useCallback(() => {
     console.log('SceneTreeData: Starting stable build process');
@@ -71,21 +79,24 @@ export const useSceneTreeData = (
       }
 
       console.log('SceneTreeData: Building objects for scene with', scene.children.length, 'children');
+      console.log('SceneTreeData: Loaded models:', loadedModels.length);
       
       // Check if any objects are still loading
       const hasLoadingObjects = scene.children.some(child => child.userData?.isLoading);
       if (hasLoadingObjects) {
-        console.log('SceneTreeData: Objects still loading, using cached version');
+        console.log('SceneTreeData: Objects still loading, waiting...');
         return;
       }
 
       setIsLoading(true);
 
       try {
-        // Build objects synchronously
+        // Build objects synchronously with enhanced logging
+        console.log('SceneTreeData: Building scene objects...');
         let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
         
         console.log('SceneTreeData: Built', objects.length, 'initial objects');
+        console.log('SceneTreeData: Object types:', objects.map(obj => ({ name: obj.name, type: obj.type })));
         
         // Apply search filter if needed
         if (searchQuery.trim()) {
@@ -125,7 +136,11 @@ export const useSceneTreeData = (
           console.log('SceneTreeData: After selection filter:', objects.length, 'objects');
         }
         
-        console.log('SceneTreeData: Final objects ready:', objects.map(obj => ({ name: obj.name, type: obj.type })));
+        console.log('SceneTreeData: Final objects ready:', objects.map(obj => ({ 
+          name: obj.name, 
+          type: obj.type,
+          childrenCount: obj.children.length 
+        })));
         
         // Update state and cache
         setSceneObjects(objects);
@@ -143,7 +158,7 @@ export const useSceneTreeData = (
       } finally {
         setIsLoading(false);
       }
-    }, 300); // 300ms debounce to prevent rapid rebuilds during loading
+    }, 200); // Reduced debounce time for faster response
   }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly, createBuildKey]);
 
   // Force rebuild for external calls (like after deletion)
@@ -153,13 +168,24 @@ export const useSceneTreeData = (
     buildSceneObjectsStable();
   }, [buildSceneObjectsStable]);
 
-  // Effect for scene/model changes
+  // Effect for scene/model changes with enhanced dependency tracking
   useEffect(() => {
     console.log('SceneTreeData: Dependencies changed, scheduling rebuild');
+    console.log('SceneTreeData: Current state:', {
+      hasScene: !!scene,
+      sceneChildrenCount: scene?.children.length || 0,
+      loadedModelsCount: loadedModels.length,
+      showPrimitives,
+      searchQuery: searchQuery.trim(),
+      showSelectedOnly,
+      selectedObjectsCount: selectedObjects.length
+    });
     buildSceneObjectsStable();
   }, [
     scene,
     loadedModels.length,
+    // Also track if the actual loaded models changed (not just count)
+    ...loadedModels.map(model => model.id),
     showPrimitives,
     selectedObjects,
     searchQuery,

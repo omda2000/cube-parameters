@@ -1,4 +1,3 @@
-
 import { useRef, useCallback, useState } from 'react';
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
@@ -16,6 +15,27 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   
   // Add loading state tracking to prevent multiple simultaneous loads
   const loadingRef = useRef<boolean>(false);
+
+  // Helper function to detect FBX format (ASCII vs Binary)
+  const detectFBXFormat = (arrayBuffer: ArrayBuffer): 'ascii' | 'binary' => {
+    const view = new Uint8Array(arrayBuffer, 0, Math.min(1000, arrayBuffer.byteLength));
+    const header = new TextDecoder().decode(view);
+    
+    // ASCII FBX files start with "; FBX" or contain readable text
+    if (header.includes('; FBX') || header.includes('FBXHeaderVersion')) {
+      return 'ascii';
+    }
+    
+    // Binary FBX files start with "Kaydara FBX Binary" magic bytes
+    const binarySignature = 'Kaydara FBX Binary';
+    const headerStr = header.substring(0, binarySignature.length);
+    if (headerStr === binarySignature) {
+      return 'binary';
+    }
+    
+    // Default to binary for unknown format
+    return 'binary';
+  };
 
   const loadFBXModel = useCallback(async (file: File) => {
     console.log('FBXLoader: Starting model load process for:', file.name);
@@ -50,10 +70,47 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
         console.log('FBXLoader: Reading FBX file as array buffer...');
         const arrayBuffer = await file.arrayBuffer();
+        
+        // Detect FBX format
+        const format = detectFBXFormat(arrayBuffer);
+        console.log('FBXLoader: Detected FBX format:', format);
 
-        console.log('FBXLoader: Parsing FBX data...');
-        object = loaderRef.current.parse(arrayBuffer, '');
-        console.log('FBXLoader: FBX parsed successfully');
+        try {
+          // Use proper FBX loading method with Blob URL
+          const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+          
+          console.log('FBXLoader: Loading FBX via loadAsync...');
+          object = await loaderRef.current.loadAsync(url);
+          
+          // Clean up URL
+          URL.revokeObjectURL(url);
+          
+          console.log('FBXLoader: FBX loaded successfully, object type:', object.type);
+          console.log('FBXLoader: FBX children count:', object.children.length);
+          
+          // Log mesh information for debugging
+          let meshCount = 0;
+          object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              meshCount++;
+              console.log('FBXLoader: Found mesh:', child.name || 'unnamed', 'geometry:', child.geometry.type);
+            }
+          });
+          console.log('FBXLoader: Total meshes found:', meshCount);
+          
+        } catch (parseError) {
+          console.error('FBXLoader: Failed to parse FBX with loadAsync, trying fallback method');
+          
+          // Fallback: try the parse method for problematic files
+          try {
+            object = loaderRef.current.parse(arrayBuffer, '');
+            console.log('FBXLoader: FBX parsed successfully with fallback method');
+          } catch (fallbackError) {
+            throw new Error(`FBX parsing failed: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+          }
+        }
+        
       } else if (ext === 'gltf' || ext === 'glb') {
         if (!gltfLoaderRef.current) {
           gltfLoaderRef.current = new GLTFLoader();
@@ -71,7 +128,12 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       }
       
       if (!object) {
-        throw new Error('Failed to load model object');
+        throw new Error('Failed to load model object - parsed object is null');
+      }
+
+      // Validate object structure
+      if (!object.children && object.children !== undefined) {
+        console.warn('FBXLoader: Loaded object has no children array');
       }
 
       console.log('FBXLoader: Processing loaded object...');
@@ -83,11 +145,13 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       processedModel.object.userData.isLoadedModel = true;
       processedModel.object.userData.modelName = processedModel.name;
       processedModel.object.userData.isStable = true;
+      processedModel.object.userData.isLoading = false; // Mark as fully loaded
       
       // Remove previous model if exists (single operation)
       if (currentModel) {
         console.log('FBXLoader: Removing previous model from scene');
         scene.remove(currentModel.object);
+        disposeObject3D(currentModel.object);
       }
 
       console.log('FBXLoader: Adding new model to scene');
@@ -99,7 +163,8 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       // Use a small delay to ensure scene is fully updated before triggering UI updates
       setTimeout(() => {
         setLoadedModels(prev => {
-          const newModels = [...prev, processedModel];
+          // Remove old models and add new one
+          const newModels = [processedModel];
           console.log('FBXLoader: Updated loaded models count:', newModels.length);
           return newModels;
         });
@@ -122,9 +187,14 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
     }
   }, [scene, currentModel]);
 
-  // Helper function to process the model object in a single batch
+  // Enhanced model processing with better validation and marking
   const processModelBatch = (object: THREE.Group, fileName: string): LoadedModel => {
     console.log('FBXLoader: Processing model batch for:', fileName);
+    
+    // Validate object before processing
+    if (!object || typeof object !== 'object') {
+      throw new Error('Invalid object provided for processing');
+    }
     
     // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
     object.rotateX(-Math.PI / 2);
@@ -144,12 +214,20 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
 
     // Process all children in one go - avoid individual traverse calls
     const meshes: THREE.Mesh[] = [];
+    const groups: THREE.Group[] = [];
+    
     object.traverse((child) => {
+      // Mark all children as part of loaded model
+      child.userData.isFromLoadedModel = true;
+      child.userData.parentModelName = fileName.replace(/\.(fbx|gltf|glb)$/i, '');
+      child.userData.isStable = true;
+      
       if (child instanceof THREE.Mesh) {
         meshes.push(child);
-        // Mark meshes as part of loaded model
-        child.userData.isFromLoadedModel = true;
-        child.userData.parentModelName = fileName.replace(/\.(fbx|gltf|glb)$/i, '');
+        console.log('FBXLoader: Processing mesh:', child.name || 'unnamed');
+      } else if (child instanceof THREE.Group && child !== object) {
+        groups.push(child);
+        console.log('FBXLoader: Processing group:', child.name || 'unnamed');
       }
     });
 
@@ -166,9 +244,26 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
         });
         mesh.material = newMaterial;
       }
+      
+      // Ensure geometry is properly named for hierarchy
+      if (!mesh.name || mesh.name.trim() === '') {
+        mesh.name = `Mesh_${mesh.uuid.slice(0, 8)}`;
+      }
     });
 
-    console.log('FBXLoader: Processed', meshes.length, 'meshes in model');
+    // Process groups
+    groups.forEach(group => {
+      if (!group.name || group.name.trim() === '') {
+        group.name = `Group_${group.uuid.slice(0, 8)}`;
+      }
+    });
+
+    console.log('FBXLoader: Processed', meshes.length, 'meshes and', groups.length, 'groups in model');
+
+    // Set a proper name for the root object
+    if (!object.name || object.name.trim() === '') {
+      object.name = fileName.replace(/\.(fbx|gltf|glb)$/i, '');
+    }
 
     const processedModel: LoadedModel = {
       id: Date.now().toString(),
