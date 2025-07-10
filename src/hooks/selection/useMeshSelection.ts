@@ -2,11 +2,15 @@
 import { useRef } from 'react';
 import * as THREE from 'three';
 import { createBlueOutline } from '../utils/outlineEffects';
+import { applyMaterialOverlay, restoreOriginalMaterials } from '../utils/materialEffects';
 
 export const useMeshSelection = () => {
+  const originalMaterialsRef =
+    useRef<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
   const outlineMapRef = useRef<Map<THREE.Object3D, THREE.LineSegments>>(new Map());
 
-  const applyMeshSelection = (object: THREE.Object3D, selected: boolean) => {
+  const applyMeshSelection = (object: THREE.Object3D, selected: boolean, overlayMaterial: THREE.Material) => {
+    const originalMaterials = originalMaterialsRef.current;
     const outlineMap = outlineMapRef.current;
 
     if (selected) {
@@ -18,24 +22,9 @@ export const useMeshSelection = () => {
           object.parent?.add(outline);
         }
       }
-      
-      // Ensure material properties are preserved during selection
-      object.traverse((child) => {
-        if (child instanceof THREE.Mesh && child.material) {
-          const materials = Array.isArray(child.material) ? child.material : [child.material];
-          materials.forEach(material => {
-            if (material instanceof THREE.MeshStandardMaterial) {
-              // Restore any stored properties
-              if (material.userData.originalProperties) {
-                const props = material.userData.originalProperties;
-                material.opacity = props.opacity;
-                material.transparent = props.transparent;
-                material.needsUpdate = true;
-              }
-            }
-          });
-        }
-      });
+
+      // Apply red overlay
+      applyMaterialOverlay(object, overlayMaterial, originalMaterials);
     } else {
       // Remove outline for this object
       const outline = outlineMap.get(object);
@@ -46,20 +35,8 @@ export const useMeshSelection = () => {
         outlineMap.delete(object);
       }
 
-      // Restore original material properties when deselecting
-      object.traverse((child) => {
-        if (child instanceof THREE.Mesh && child.material) {
-          const materials = Array.isArray(child.material) ? child.material : [child.material];
-          materials.forEach(material => {
-            if (material instanceof THREE.MeshStandardMaterial && material.userData.originalProperties) {
-              const props = material.userData.originalProperties;
-              material.opacity = props.opacity;
-              material.transparent = props.transparent;
-              material.needsUpdate = true;
-            }
-          });
-        }
-      });
+      // Restore original materials
+      restoreOriginalMaterials(object, originalMaterials);
     }
   };
 

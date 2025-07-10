@@ -1,3 +1,4 @@
+
 import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -7,15 +8,14 @@ export const useBoxMesh = (
   dimensions: { length: number; width: number; height: number },
   color: string,
   name: string,
-  visible: boolean = true,
-  enabled: boolean = true
+  visible: boolean = true
 ) => {
   const boxRef = useRef<THREE.Mesh | null>(null);
   const labelRef = useRef<CSS2DObject | null>(null);
   const isInitialized = useRef(false);
 
   useEffect(() => {
-    if (!scene || isInitialized.current || !enabled) return;
+    if (!scene || isInitialized.current) return;
 
     // Create box geometry
     const geometry = new THREE.BoxGeometry(dimensions.length, dimensions.height, dimensions.width);
@@ -55,11 +55,11 @@ export const useBoxMesh = (
       }
       isInitialized.current = false;
     };
-  }, [scene, enabled]);
+  }, [scene]);
 
-  // Update dimensions, color, and name only if enabled
+  // Update dimensions, color, and name
   useEffect(() => {
-    if (!boxRef.current || !enabled) return;
+    if (!boxRef.current) return;
     
     const box = boxRef.current;
     const geometry = box.geometry as THREE.BoxGeometry;
@@ -79,19 +79,17 @@ export const useBoxMesh = (
       labelDiv.textContent = name;
       labelRef.current.position.set(0, dimensions.height / 2 + 0.5, 0);
     }
-  }, [dimensions.length, dimensions.width, dimensions.height, color, name, enabled]);
+  }, [dimensions.length, dimensions.width, dimensions.height, color, name]);
 
   // Update visibility when it changes
   useEffect(() => {
-    if (!enabled) return;
-    
     if (boxRef.current) {
       boxRef.current.visible = visible;
     }
     if (labelRef.current) {
       labelRef.current.visible = visible;
     }
-  }, [visible, enabled]);
+  }, [visible]);
 
   return { boxRef };
 };

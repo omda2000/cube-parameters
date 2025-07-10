@@ -80,19 +80,16 @@ const TabsControlPanel = ({
   camera,
   controls
 }: TabsControlPanelProps) => {
-  // Removed duplicate material logic - now handled by useDefaultMaterials hook
-
   return (
     <div className="w-full h-full flex flex-col">
       <Tabs value={activeTab} className="w-full h-full flex flex-col">
-        {/* Hide tab list - navigation handled by left panel icons */}
-        <TabsList className="hidden">
-          <TabsTrigger value="scene">Scene</TabsTrigger>
-          <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="materials">Materials</TabsTrigger>
-          <TabsTrigger value="lighting">Lighting</TabsTrigger>
-          <TabsTrigger value="view">View</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6 mb-4">
+          <TabsTrigger value="scene" className="text-xs">Scene</TabsTrigger>
+          <TabsTrigger value="properties" className="text-xs">Properties</TabsTrigger>
+          <TabsTrigger value="materials" className="text-xs">Materials</TabsTrigger>
+          <TabsTrigger value="lighting" className="text-xs">Lighting</TabsTrigger>
+          <TabsTrigger value="view" className="text-xs">View</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
         </TabsList>
 
         <div className="flex-1 overflow-hidden">

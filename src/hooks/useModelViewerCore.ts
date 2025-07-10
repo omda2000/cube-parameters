@@ -31,7 +31,7 @@ interface UseModelViewerCoreProps {
 }
 
 export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
-  // Core Three.js setup with direct FBX loading
+  // Core Three.js setup
   const {
     mountRef,
     scene,
@@ -61,16 +61,10 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     showPrimitives: props.showPrimitives
   });
 
-  console.log('useModelViewerCore: Setup returned:', {
-    camera: camera ? 'Available' : 'Null',
-    controls: controls ? 'Available' : 'Null',
-    scene: scene ? 'Available' : 'Null'
-  });
-
   // Renderer optimization
   useOptimizedRenderer(renderer);
 
-  // Effects and interactions with direct model handler access
+  // Effects and interactions
   const {
     objectData,
     mousePosition,
@@ -87,7 +81,7 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     onPointCreate: props.onPointCreate,
     onMeasureCreate: props.onMeasureCreate,
     loadedModels: currentModel ? [currentModel] : [],
-    loadFBXModel, // Direct access to FBX loader
+    loadFBXModel,
     switchToModel,
     removeModel,
     onModelsChange: props.onModelsChange,
@@ -102,13 +96,6 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     selectedObjects,
     isLoading,
     error,
-    performanceMetrics,
-    // Expose camera and controls for TouchGestureHandler
-    camera,
-    controls,
-    // Expose the FBX handlers directly for UI components
-    loadFBXModel,
-    switchToModel,
-    removeModel
+    performanceMetrics
   };
 };

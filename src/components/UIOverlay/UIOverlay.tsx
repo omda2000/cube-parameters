@@ -63,11 +63,7 @@ const UIOverlay = ({
   onShadeTypeChange,
   modelCount
 }: UIOverlayProps) => {
-  console.log('UIOverlay: Starting render...');
-  
   const { isMobile, isTablet } = useResponsiveMode();
-
-  console.log('UIOverlay: Responsive mode loaded, rendering components...');
 
   return (
     <>
@@ -93,21 +89,22 @@ const UIOverlay = ({
         />
       </div>
 
-      {/* Fixed Control Panel */}
-      <FixedControlPanel
-        title="Control Panel"
-        isOpen={showControlPanel}
-        onClose={onCloseControlPanel}
-        className={`${
-          isMobile 
-            ? 'w-full max-w-none h-[60vh] max-h-none' 
-            : isTablet 
-              ? 'w-80 h-96'
-              : 'w-96 h-[32rem]'
-        }`}
-      >
-        <TabsControlPanel {...controlsPanelProps} />
-      </FixedControlPanel>
+      {/* Fixed Control Panel - responsive sizing and positioning */}
+      <div className={`${isMobile ? 'fixed inset-x-4 top-28 z-40' : ''}`}>
+        <FixedControlPanel
+          isOpen={showControlPanel}
+          onClose={onCloseControlPanel}
+          className={`${
+            isMobile 
+              ? 'w-full max-w-none h-[60vh] max-h-none' 
+              : isTablet 
+                ? 'w-80 h-96'
+                : 'w-96 h-[32rem]'
+          }`}
+        >
+          <TabsControlPanel {...controlsPanelProps} />
+        </FixedControlPanel>
+      </div>
 
       {/* Measure Tools Panel - responsive positioning */}
       <div className={`fixed z-40 ${

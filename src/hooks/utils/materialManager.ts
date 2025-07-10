@@ -1,104 +1,68 @@
 
 import * as THREE from 'three';
+import { ResourceManager } from './ResourceManager';
 
 export class MaterialManager {
-  private originalMaterials = new Map<THREE.Object3D, THREE.Material | THREE.Material[]>();
+  private originalMaterials = new WeakMap<THREE.Object3D, THREE.Material | THREE.Material[]>();
+  private resourceManager = ResourceManager.getInstance();
   private hoverMaterial: THREE.MeshStandardMaterial;
-  private hoveredObjects = new Set<THREE.Object3D>();
 
   constructor() {
-    this.hoverMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffff00,
-      transparent: true,
-      opacity: 0.3,
-      side: THREE.DoubleSide
-    });
+    this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
+      new THREE.MeshStandardMaterial({
+        color: 0xffaa00,
+        emissive: 0x442200,
+        emissiveIntensity: 0.4,
+        transparent: false
+      })
+    ) as THREE.MeshStandardMaterial;
   }
 
-  setHoverEffect(object: THREE.Object3D, isHovering: boolean) {
+  setHoverEffect(object: THREE.Object3D, hover: boolean) {
     if (object instanceof THREE.Mesh) {
-      if (isHovering) {
-        // Only store original material if not already stored and not currently hovering
-        if (!this.originalMaterials.has(object) && !this.hoveredObjects.has(object)) {
+      if (hover) {
+        if (!this.originalMaterials.has(object)) {
           this.originalMaterials.set(object, object.material);
         }
-        this.hoveredObjects.add(object);
-        
-        // Create a new hover material based on original
-        const originalMat = this.originalMaterials.get(object);
-        const hoverMat = this.hoverMaterial.clone();
-        
-        if (originalMat instanceof THREE.Material) {
-          // Preserve current material properties (user may have modified them)
-          const currentMat = object.material as THREE.MeshStandardMaterial;
-          hoverMat.copy(currentMat);
-          hoverMat.color.setHex(0xffff00);
-          hoverMat.opacity = Math.min(0.7, currentMat.opacity + 0.3); // Make it more visible but respect opacity
-          hoverMat.transparent = true;
-        }
-        
-        object.material = hoverMat;
+        object.material = this.hoverMaterial;
       } else {
-        // Restore original material or current material state
-        const mesh = object as THREE.Mesh;
-        if (mesh.material instanceof THREE.MeshStandardMaterial) {
-          // If the material has user-modified properties, use those
-          if (mesh.material.userData.originalProperties) {
-            const currentMat = mesh.material;
-            const originalMaterial = this.originalMaterials.get(object) as THREE.MeshStandardMaterial;
-            
-            if (originalMaterial) {
-              // Create a new material with user modifications
-              const restoredMat = originalMaterial.clone();
-              restoredMat.color.copy(currentMat.color);
-              restoredMat.metalness = currentMat.metalness;
-              restoredMat.roughness = currentMat.roughness;
-              restoredMat.envMapIntensity = currentMat.envMapIntensity;
-              restoredMat.opacity = currentMat.userData.originalProperties.opacity;
-              restoredMat.transparent = currentMat.userData.originalProperties.transparent;
-              restoredMat.userData = currentMat.userData;
-              restoredMat.needsUpdate = true;
-              
-              object.material = restoredMat;
-            }
-          } else {
-            // No user modifications, restore original
-            const originalMaterial = this.originalMaterials.get(object);
-            if (originalMaterial) {
-              object.material = originalMaterial;
-            }
-          }
-        }
-        
-        this.hoveredObjects.delete(object);
-        this.originalMaterials.delete(object);
+        this.clearHoverEffect(object);
       }
     }
 
-    // Handle children recursively
-    object.children.forEach(child => {
-      if (child instanceof THREE.Mesh) {
-        this.setHoverEffect(child, isHovering);
-      }
-    });
-  }
+    // Batch process children to reduce function calls
+    const meshChildren = object.children.filter(child => 
+      child instanceof THREE.Mesh && !child.userData.isHelper
+    ) as THREE.Mesh[];
 
-  // Clear all hover effects - useful for cleanup
-  clearAllHoverEffects() {
-    this.hoveredObjects.forEach(object => {
-      if (object instanceof THREE.Mesh) {
-        const originalMaterial = this.originalMaterials.get(object);
+    for (const child of meshChildren) {
+      if (hover) {
+        if (!this.originalMaterials.has(child)) {
+          this.originalMaterials.set(child, child.material);
+        }
+        child.material = this.hoverMaterial;
+      } else {
+        const originalMaterial = this.originalMaterials.get(child);
         if (originalMaterial) {
-          object.material = originalMaterial;
+          child.material = originalMaterial;
+          this.originalMaterials.delete(child);
         }
       }
-    });
-    this.originalMaterials.clear();
-    this.hoveredObjects.clear();
+    }
+  }
+
+  clearHoverEffect(object: THREE.Object3D) {
+    if (object instanceof THREE.Mesh) {
+      const originalMaterial = this.originalMaterials.get(object);
+      if (originalMaterial) {
+        object.material = originalMaterial;
+        this.originalMaterials.delete(object);
+      }
+    }
   }
 
   dispose() {
-    this.clearAllHoverEffects();
-    this.hoverMaterial.dispose();
+    // Don't dispose shared materials, let ResourceManager handle it
+    this.originalMaterials = new WeakMap();
   }
 }

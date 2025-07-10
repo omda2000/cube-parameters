@@ -14,6 +14,8 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
   const selectionMaterials = new SelectionMaterials();
 
   const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
+    const overlayMaterial = selectionMaterials.getOverlayMaterial();
+
     // Handle points
     if (objectType === 'point') {
       applyPointSelection(object, selected);
@@ -26,8 +28,8 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
       return;
     }
 
-    // Handle meshes - use outline-only selection
-    applyMeshSelection(object, selected);
+    // Handle meshes
+    applyMeshSelection(object, selected, overlayMaterial);
   };
 
   // Apply/remove selection effects when selectedObjects changes

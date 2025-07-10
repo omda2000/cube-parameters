@@ -38,20 +38,11 @@ export const useSceneResize = (
   }, [mountRef, perspectiveCamera, orthographicCamera, renderer, labelRenderer]);
 
   useEffect(() => {
-    if (!mountRef.current) return;
-
-    const observer = new ResizeObserver(handleResize);
-    observer.observe(mountRef.current);
     window.addEventListener('resize', handleResize);
-
-    // Initial resize to ensure correct sizing
-    handleResize();
-
     return () => {
-      observer.disconnect();
       window.removeEventListener('resize', handleResize);
     };
-  }, [mountRef, handleResize]);
+  }, [handleResize]);
 
   return { handleResize };
 };

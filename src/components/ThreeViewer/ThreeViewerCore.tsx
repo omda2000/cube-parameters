@@ -43,15 +43,8 @@ const ThreeViewerCore = (props: ThreeViewerCoreProps) => {
     selectedObjects,
     isLoading,
     error,
-    performanceMetrics,
-    camera: actualCamera,
-    controls: actualControls
+    performanceMetrics
   } = useModelViewerCore(props);
-
-  console.log('ThreeViewerCore: Camera and controls from useModelViewerCore:', {
-    camera: actualCamera ? 'Available' : 'Null',
-    controls: actualControls ? 'Available' : 'Null'
-  });
 
   // Debug performance in development
   React.useEffect(() => {
@@ -80,8 +73,8 @@ const ThreeViewerCore = (props: ThreeViewerCoreProps) => {
   return (
     <>
       <TouchGestureHandler
-        camera={actualCamera}
-        controls={actualControls}
+        camera={props.camera}
+        controls={props.controls}
         onDoubleTap={props.onDoubleTap}
         onPinchZoom={props.onPinchZoom}
         onThreeFingerTap={props.onThreeFingerTap}

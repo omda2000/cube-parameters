@@ -25,53 +25,13 @@ const ExpandableZoomControls = ({
 }: ExpandableZoomControlsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const expandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // Enhanced touch and click handling
-  const handleInteractionStart = (event: React.MouseEvent | React.TouchEvent) => {
-    event.preventDefault();
-    
-    // Clear any existing timeout
-    if (expandTimeoutRef.current) {
-      clearTimeout(expandTimeoutRef.current);
-    }
-    
-    if (event.type === 'touchstart') {
-      // For touch, add a small delay to prevent accidental triggers
-      expandTimeoutRef.current = setTimeout(() => {
-        setIsExpanded(!isExpanded);
-      }, 50);
-    } else {
-      // Immediate response for mouse clicks
-      setIsExpanded(!isExpanded);
-    }
-  };
-
-  const handleZoomAction = (action: () => void, event: React.MouseEvent | React.TouchEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Clear expand timeout if user is interacting with zoom buttons
-    if (expandTimeoutRef.current) {
-      clearTimeout(expandTimeoutRef.current);
-    }
-    
-    action();
-    
-    // Auto-collapse after action on touch devices
-    if (event.type === 'touchend' || event.type === 'touchstart') {
-      setTimeout(() => {
-        setIsExpanded(false);
-      }, 500);
-    }
-  };
-
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsExpanded(false);
       }
@@ -79,37 +39,21 @@ const ExpandableZoomControls = ({
 
     if (isExpanded) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside, { passive: true });
-      
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('touchstart', handleClickOutside);
-      };
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isExpanded]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (expandTimeoutRef.current) {
-        clearTimeout(expandTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <TooltipProvider>
       <div ref={containerRef} className="relative">
-        {/* Main zoom toggle button with enhanced touch support */}
+        {/* Main zoom toggle button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1 touch-manipulation"
-              onMouseDown={handleInteractionStart}
-              onTouchStart={handleInteractionStart}
-              style={{ minHeight: '32px', minWidth: '60px' }} // Larger touch target
+              className="h-6 px-2 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-700/50 flex items-center gap-1"
+              onClick={handleToggle}
             >
               <ZoomIn className="h-3 w-3" />
               <span className="text-xs">{zoomLevel}%</span>
@@ -117,24 +61,23 @@ const ExpandableZoomControls = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Zoom Controls (Tap for options)</p>
+            <p>Zoom Controls (Click for options)</p>
           </TooltipContent>
         </Tooltip>
 
-        {/* Floating zoom options - expands upward with touch support */}
+        {/* Floating zoom options - expands upward */}
         {isExpanded && (
-          <div className="absolute bottom-full left-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-2 z-50 shadow-lg">
-            <div className="flex gap-2">
+          <div className="absolute bottom-full left-0 mb-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-md p-1 z-50 shadow-lg">
+            <div className="flex gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onMouseDown={(e) => handleZoomAction(onZoomAll, e)}
-                    onTouchStart={(e) => handleZoomAction(onZoomAll, e)}
-                    className="h-10 w-10 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 touch-manipulation"
+                    onClick={onZoomAll}
+                    className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
                   >
-                    <Maximize className="h-5 w-5" />
+                    <Maximize className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -147,12 +90,11 @@ const ExpandableZoomControls = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onMouseDown={(e) => handleZoomAction(onZoomToSelected, e)}
-                    onTouchStart={(e) => handleZoomAction(onZoomToSelected, e)}
+                    onClick={onZoomToSelected}
                     disabled={!selectedObject}
-                    className="h-10 w-10 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 disabled:opacity-30 touch-manipulation"
+                    className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 disabled:opacity-30"
                   >
-                    <Focus className="h-5 w-5" />
+                    <Focus className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -165,11 +107,10 @@ const ExpandableZoomControls = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onMouseDown={(e) => handleZoomAction(onZoomIn, e)}
-                    onTouchStart={(e) => handleZoomAction(onZoomIn, e)}
-                    className="h-10 w-10 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 touch-manipulation"
+                    onClick={onZoomIn}
+                    className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
                   >
-                    <ZoomIn className="h-5 w-5" />
+                    <ZoomIn className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -182,11 +123,10 @@ const ExpandableZoomControls = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onMouseDown={(e) => handleZoomAction(onZoomOut, e)}
-                    onTouchStart={(e) => handleZoomAction(onZoomOut, e)}
-                    className="h-10 w-10 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 touch-manipulation"
+                    onClick={onZoomOut}
+                    className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
                   >
-                    <ZoomOut className="h-5 w-5" />
+                    <ZoomOut className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -199,11 +139,10 @@ const ExpandableZoomControls = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onMouseDown={(e) => handleZoomAction(onResetView, e)}
-                    onTouchStart={(e) => handleZoomAction(onResetView, e)}
-                    className="h-10 w-10 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60 touch-manipulation"
+                    onClick={onResetView}
+                    className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-600/60"
                   >
-                    <RotateCcw className="h-5 w-5" />
+                    <RotateCcw className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

@@ -38,21 +38,6 @@ const SceneObjectNode = ({
     onObjectSelect(sceneObject, isCtrlClick);
   };
 
-  const handleVisibilityToggle = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    // Toggle visibility and force scene update
-    const newVisibility = !sceneObject.object.visible;
-    sceneObject.object.visible = newVisibility;
-    
-    // Recursively update all children visibility
-    sceneObject.object.traverse((child) => {
-      child.visible = newVisibility;
-    });
-    
-    // Trigger re-render by calling the parent handler
-    onToggleVisibility(sceneObject);
-  };
-
   return (
     <div>
       <div 
@@ -94,7 +79,10 @@ const SceneObjectNode = ({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
-              onClick={handleVisibilityToggle}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleVisibility(sceneObject);
+              }}
             >
               {sceneObject.object.visible ? (
                 <Eye className="h-3 w-3" />

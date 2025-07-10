@@ -1,10 +1,9 @@
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
-import type { LoadedModel } from '../../../types/model';
-import { useSceneTreeData } from './useSceneTreeData';
-import { useSceneTreeActions } from './useSceneTreeActions';
+import type { LoadedModel, SceneObject } from '../../../types/model';
+import { buildSceneObjects } from '../utils/sceneObjectBuilder';
 
 export const useSceneTreeState = (
   scene: THREE.Scene | null,
@@ -13,50 +12,105 @@ export const useSceneTreeState = (
   searchQuery: string = '',
   showSelectedOnly: boolean = false
 ) => {
-  const { selectedObjects, clearSelection } = useSelectionContext();
-  
-  const {
-    sceneObjects,
-    isLoading,
-    buildSceneObjectsStable,
-    forceRebuild,
-    setSceneObjects
-  } = useSceneTreeData(scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly);
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
+  const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
+  const { selectedObjects, selectObject, toggleSelection, clearSelection } = useSelectionContext();
 
-  const {
-    expandedNodes,
-    toggleExpanded,
-    toggleVisibility,
-    handleObjectSelect,
-    handleDelete
-  } = useSceneTreeActions(scene, forceRebuild);
-
-  // Enhanced logging for debugging
+  // Build unified scene tree with filtering
   useEffect(() => {
-    console.log('SceneTreeState: State changed -', {
-      hasScene: !!scene,
-      sceneChildrenCount: scene?.children.length || 0,
-      loadedModelsCount: loadedModels.length,
-      showPrimitives,
-      searchQuery: searchQuery.trim(),
-      showSelectedOnly,
-      selectedObjectsCount: selectedObjects.length,
-      sceneObjectsCount: sceneObjects.length,
-      isLoading
-    });
-  }, [scene, loadedModels.length, showPrimitives, searchQuery, showSelectedOnly, selectedObjects.length, sceneObjects.length, isLoading]);
+    let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
+    
+    // Apply selected-only filter FIRST
+    if (showSelectedOnly) {
+      const selectedIds = new Set(selectedObjects.map(obj => obj.id));
+      objects = objects.filter(obj => {
+        // Check if object or any of its children are selected
+        const checkSelected = (sceneObj: SceneObject): boolean => {
+          if (selectedIds.has(sceneObj.id)) return true;
+          return sceneObj.children.some(child => checkSelected(child));
+        };
+        return checkSelected(obj);
+      });
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      objects = objects.filter(obj => 
+        obj.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    setSceneObjects(objects);
+  }, [scene, loadedModels, showPrimitives, selectedObjects, searchQuery, showSelectedOnly]);
 
-  const wrappedToggleVisibility = (sceneObject: any) => {
-    toggleVisibility(sceneObject, setSceneObjects);
+  const toggleExpanded = (nodeId: string) => {
+    const newExpanded = new Set(expandedNodes);
+    if (newExpanded.has(nodeId)) {
+      newExpanded.delete(nodeId);
+    } else {
+      newExpanded.add(nodeId);
+    }
+    setExpandedNodes(newExpanded);
+  };
+
+  const toggleVisibility = (sceneObject: SceneObject) => {
+    sceneObject.object.visible = !sceneObject.object.visible;
+    setSceneObjects([...sceneObjects]);
+  };
+
+  const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
+    if (isMultiSelect) {
+      toggleSelection(sceneObject);
+    } else {
+      selectObject(sceneObject);
+    }
+  };
+
+  const handleDelete = (sceneObject: SceneObject, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    if (sceneObject.type === 'point' || sceneObject.type === 'measurement') {
+      // Remove from scene
+      scene?.remove(sceneObject.object);
+      
+      // Dispose geometry and material for measurement groups
+      if (sceneObject.type === 'measurement' && sceneObject.object instanceof THREE.Group) {
+        sceneObject.object.children.forEach(child => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry?.dispose();
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => mat.dispose());
+            } else {
+              child.material?.dispose();
+            }
+          } else if (child instanceof THREE.Line) {
+            child.geometry?.dispose();
+            (child.material as THREE.Material)?.dispose();
+          }
+        });
+      }
+      
+      // Dispose geometry and material for points
+      if (sceneObject.type === 'point' && sceneObject.object instanceof THREE.Mesh) {
+        sceneObject.object.geometry?.dispose();
+        if (Array.isArray(sceneObject.object.material)) {
+          sceneObject.object.material.forEach(mat => mat.dispose());
+        } else {
+          sceneObject.object.material?.dispose();
+        }
+      }
+      
+      // Force re-render
+      setSceneObjects([...sceneObjects]);
+    }
   };
 
   return {
     expandedNodes,
     sceneObjects,
     selectedObjects,
-    isLoading,
     toggleExpanded,
-    toggleVisibility: wrappedToggleVisibility,
+    toggleVisibility,
     handleObjectSelect,
     handleDelete,
     clearSelection

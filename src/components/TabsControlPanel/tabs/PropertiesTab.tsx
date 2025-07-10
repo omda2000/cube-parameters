@@ -1,12 +1,9 @@
 
-import { Box, Palette, Tag, Ruler, Sparkles, Eye, Globe, Droplets, AlertCircle } from 'lucide-react';
+import { Box, Palette, Tag, Ruler } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-import { useMaterialProperties } from '../../../hooks/useMaterialProperties';
-import { useSelectionContext } from '../../../contexts/SelectionContext';
 import type { BoxDimensions } from '../../../types/model';
 
 interface PropertiesTabProps {
@@ -26,157 +23,112 @@ const PropertiesTab = ({
   objectName,
   setObjectName
 }: PropertiesTabProps) => {
-  const { selectedObjects } = useSelectionContext();
-  const { materialProps, updateMaterialProperty } = useMaterialProperties(selectedObjects);
-
-  // Use material properties from selected object or fallback to box properties
-  const hasSelectedObject = selectedObjects.length > 0;
-  const displayColor = hasSelectedObject ? materialProps.color : boxColor;
-  const setDisplayColor = hasSelectedObject 
-    ? (color: string) => updateMaterialProperty('color', color)
-    : setBoxColor;
-
-  // Safe fallbacks for material properties
-  const metalness = materialProps?.metalness ?? 0.1;
-  const roughness = materialProps?.roughness ?? 0.6;
-  const envMapIntensity = materialProps?.envMapIntensity ?? 0.5;
-  const opacity = materialProps?.opacity ?? 1.0;
-
   return (
     <TooltipProvider>
-      <div className="space-y-3 p-2">
-        {/* Compact Header */}
-        <div className="flex items-center gap-1.5 mb-2">
-          <Box className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Properties</span>
+      <div className="space-y-2 p-1">
+        {/* Header */}
+        <div className="flex items-center gap-1 mb-2">
+          <Box className="h-4 w-4 text-slate-400" />
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Properties</span>
         </div>
 
-        {hasSelectedObject ? (
-          <>
-            {/* Object name - Only show when object is selected */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-1">
-                <Tag className="h-3 w-3 text-slate-400" />
-                <Label className="text-xs text-slate-600 dark:text-slate-400">Name</Label>
+        {/* Object name */}
+        <div className="space-y-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <Tag className="h-3 w-3 text-slate-400" />
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Name</Label>
+                </div>
+                <Input
+                  value={objectName}
+                  onChange={(e) => setObjectName(e.target.value)}
+                  className="h-6 text-xs"
+                  placeholder="Object name"
+                />
               </div>
-              <Input
-                value={selectedObjects[0]?.name || ''}
-                onChange={(e) => {
-                  // Update the selected object's name
-                  if (selectedObjects[0]) {
-                    selectedObjects[0].name = e.target.value;
-                    if (selectedObjects[0].object) {
-                      selectedObjects[0].object.name = e.target.value;
-                    }
-                  }
-                }}
-                className="h-7 text-xs"
-                placeholder="Object name"
-              />
-            </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Object Name</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
-            <Separator className="bg-slate-600/30" />
+        <Separator className="bg-slate-600" />
 
-            {/* Material Properties Section */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1">
-                <Palette className="h-3 w-3 text-blue-400" />
-                <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Material</Label>
-              </div>
-              
-              {/* Color */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-500 dark:text-slate-500">Diffuse Color</Label>
-                <div className="flex gap-1.5">
+        {/* Color picker */}
+        <div className="space-y-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <Palette className="h-3 w-3 text-pink-400" />
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Color</Label>
+                </div>
+                <div className="flex gap-1">
                   <input
                     type="color"
-                    value={displayColor}
-                    onChange={(e) => setDisplayColor(e.target.value)}
-                    className="w-7 h-7 rounded border border-slate-600/50 bg-transparent cursor-pointer"
+                    value={boxColor}
+                    onChange={(e) => setBoxColor(e.target.value)}
+                    className="w-8 h-6 rounded border border-slate-600 bg-transparent"
                   />
                   <Input
-                    value={displayColor}
-                    onChange={(e) => setDisplayColor(e.target.value)}
-                    className="h-7 text-xs flex-1"
-                    placeholder="#808080"
+                    value={boxColor}
+                    onChange={(e) => setBoxColor(e.target.value)}
+                    className="h-6 text-xs flex-1"
+                    placeholder="#000000"
                   />
                 </div>
               </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Material Color</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
-              {/* Opacity */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Droplets className="h-2.5 w-2.5 text-blue-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Opacity</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{opacity.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[opacity * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('opacity', value / 100)}
-                />
-              </div>
+        <Separator className="bg-slate-600" />
 
-              {/* Metalness */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Sparkles className="h-2.5 w-2.5 text-yellow-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Metalness</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{metalness.toFixed(2)}</span>
+        {/* Dimensions */}
+        <div className="space-y-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <Ruler className="h-3 w-3 text-cyan-400" />
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Dimensions</Label>
                 </div>
-                <Slider
-                  value={[metalness * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('metalness', value / 100)}
-                />
-              </div>
-
-              {/* Roughness */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Eye className="h-2.5 w-2.5 text-green-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Roughness</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{roughness.toFixed(2)}</span>
+                <div className="grid grid-cols-3 gap-1">
+                  <Input
+                    type="number"
+                    value={dimensions.length}
+                    onChange={(e) => setDimensions({ ...dimensions, length: parseFloat(e.target.value) || 1 })}
+                    className="h-6 text-xs"
+                    placeholder="L"
+                  />
+                  <Input
+                    type="number"
+                    value={dimensions.width}
+                    onChange={(e) => setDimensions({ ...dimensions, width: parseFloat(e.target.value) || 1 })}
+                    className="h-6 text-xs"
+                    placeholder="W"
+                  />
+                  <Input
+                    type="number"
+                    value={dimensions.height}
+                    onChange={(e) => setDimensions({ ...dimensions, height: parseFloat(e.target.value) || 1 })}
+                    className="h-6 text-xs"
+                    placeholder="H"
+                  />
                 </div>
-                <Slider
-                  value={[roughness * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('roughness', value / 100)}
-                />
               </div>
-
-              {/* Environment Intensity */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Globe className="h-2.5 w-2.5 text-cyan-400" />
-                  <Label className="text-xs text-slate-500 dark:text-slate-500">Reflection</Label>
-                  <span className="text-xs text-slate-400 ml-auto">{envMapIntensity.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[envMapIntensity * 100]}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                  onValueChange={([value]) => updateMaterialProperty('envMapIntensity', value / 100)}
-                />
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1">
-              <AlertCircle className="h-3 w-3 text-slate-400" />
-              <Label className="text-xs text-slate-500 dark:text-slate-500">No object selected</Label>
-            </div>
-            <p className="text-xs text-slate-400">Select an object to edit its properties</p>
-          </div>
-        )}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Object Dimensions (L, W, H)</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </TooltipProvider>
   );

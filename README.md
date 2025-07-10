@@ -46,7 +46,7 @@ App
 The central 3D rendering component that orchestrates:
 - Scene setup and management
 - Camera controls and positioning
-- Object loading (FBX and GLTF models, primitives)
+- Object loading (FBX models, primitives)
 - Lighting and environment
 - Mouse interactions and tool handling
 

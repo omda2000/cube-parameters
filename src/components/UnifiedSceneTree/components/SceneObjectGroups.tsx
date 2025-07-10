@@ -117,7 +117,10 @@ const SceneObjectGroups = ({
         Hold Ctrl+Click to select multiple objects
       </div>
       
-      {renderGroup("Geometry", groupedObjects.geometry)}
+      {renderGroup("Models", groupedObjects.models)}
+      {renderGroup("Meshes", groupedObjects.meshes)}
+      {renderGroup("Groups", groupedObjects.groups)}
+      {renderGroup("Primitives", groupedObjects.primitives)}
       {renderGroup("Points", groupedObjects.points)}
       {renderGroup("Measurements", groupedObjects.measurements)}
       {renderGroup("Lights", groupedObjects.lights)}

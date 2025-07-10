@@ -93,11 +93,11 @@ export const useMouseInteraction = (
     };
 
     const handleMouseLeave = () => {
-      if (materialManager) {
-        materialManager.clearAllHoverEffects();
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
+        setHoveredObject(null);
+        setObjectData(null);
       }
-      setHoveredObject(null);
-      setObjectData(null);
       measureTool.cleanup();
       setCursor(renderer, 'default');
     };
@@ -123,8 +123,8 @@ export const useMouseInteraction = (
       controls?.removeEventListener('change', updateHover);
       
       // Cleanup hover effects
-      if (materialManager) {
-        materialManager.clearAllHoverEffects();
+      if (hoveredObject && materialManager) {
+        materialManager.setHoverEffect(hoveredObject, false);
       }
       
       // Cleanup tools

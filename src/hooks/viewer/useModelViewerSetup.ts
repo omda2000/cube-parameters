@@ -6,8 +6,6 @@ import { useBoxMesh } from '../useBoxMesh';
 import { useLighting } from '../useLighting';
 import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
-import { useDefaultMaterials } from '../useDefaultMaterials';
-import { useModelsExposure } from '../useModelsExposure';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -57,17 +55,23 @@ export const useModelViewerSetup = ({
     switchCamera
   } = useThreeScene(mountRef);
 
-  // Box mesh setup - disabled by default
+  // Box mesh setup
   const { boxRef } = useBoxMesh(
     sceneRef.current,
     dimensions,
     boxColor,
     objectName,
-    showPrimitives,
-    false  // Disable box creation
+    showPrimitives
   );
 
-  // FBX model loading with direct connection
+  // Mark box as primitive
+  useEffect(() => {
+    if (boxRef.current) {
+      boxRef.current.userData.isPrimitive = true;
+    }
+  }, [boxRef]);
+
+  // FBX model loading
   const {
     loadedModels,
     currentModel,
@@ -77,12 +81,6 @@ export const useModelViewerSetup = ({
     switchToModel,
     removeModel
   } = useFBXLoader(sceneRef.current);
-
-  // Simplified models exposure without global handlers
-  useModelsExposure(loadedModels, currentModel, onModelsChange);
-
-  // Apply default materials using the centralized hook
-  useDefaultMaterials(sceneRef.current, loadedModels);
 
   // Lighting setup
   useLighting(
@@ -99,13 +97,24 @@ export const useModelViewerSetup = ({
     gridHelperRef.current
   );
 
-  // Expose scene to parent when ready
+  // Expose scene to parent
   useEffect(() => {
     if (sceneRef.current && onSceneReady) {
-      console.log('ModelViewerSetup: Scene ready, notifying parent');
       onSceneReady(sceneRef.current);
     }
   }, [onSceneReady]);
+
+  // Expose models to parent with proper change detection
+  useEffect(() => {
+    if (onModelsChange) {
+      // Use a timeout to batch updates and prevent rapid firing
+      const timeoutId = setTimeout(() => {
+        onModelsChange(loadedModels, currentModel);
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loadedModels.length, currentModel?.id, onModelsChange]);
 
   return {
     mountRef,

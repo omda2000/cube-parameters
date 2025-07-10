@@ -31,11 +31,8 @@ export const useSelectTool = (
       }
       
       onObjectSelect(targetObject, isCtrlClick);
-    } else {
-      // Always clear selection when clicking empty space, regardless of ctrl key
-      if (onObjectSelect) {
-        onObjectSelect(null, false);
-      }
+    } else if (onObjectSelect && !isCtrlClick) {
+      onObjectSelect(null, false);
     }
   }, [renderer, camera, scene, onObjectSelect]);
 

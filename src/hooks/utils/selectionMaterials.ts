@@ -2,26 +2,25 @@
 import * as THREE from 'three';
 
 export class SelectionMaterials {
-  private outlineMaterial: THREE.LineBasicMaterial | null = null;
+  private overlayMaterial: THREE.MeshStandardMaterial | null = null;
 
-  getOutlineMaterial(): THREE.LineBasicMaterial {
-    if (!this.outlineMaterial) {
-      this.outlineMaterial = new THREE.LineBasicMaterial({
-        color: 0x0088ff, // Blue outline instead of red overlay
-        linewidth: 2,
+  getOverlayMaterial(): THREE.MeshStandardMaterial {
+    if (!this.overlayMaterial) {
+      this.overlayMaterial = new THREE.MeshStandardMaterial({
+        color: 0xff0000,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.3,
         depthTest: false,
         depthWrite: false
       });
     }
-    return this.outlineMaterial;
+    return this.overlayMaterial;
   }
 
   dispose() {
-    if (this.outlineMaterial) {
-      this.outlineMaterial.dispose();
-      this.outlineMaterial = null;
+    if (this.overlayMaterial) {
+      this.overlayMaterial.dispose();
+      this.overlayMaterial = null;
     }
   }
 }
