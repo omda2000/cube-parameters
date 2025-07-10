@@ -54,9 +54,8 @@ const BottomFloatingBar = React.memo(({
   const lastValidCountRef = useRef<number>(1);
   const stabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Much more stable object count with better validation and longer stability period
+  // Enhanced stability for object count with much longer debounce
   const stableObjectCount = useMemo(() => {
-    // Validate and sanitize the input count
     const isValidCount = typeof objectCount === 'number' && 
                         !isNaN(objectCount) && 
                         isFinite(objectCount) &&
@@ -65,38 +64,26 @@ const BottomFloatingBar = React.memo(({
     
     const validCount = isValidCount ? Math.floor(objectCount) : lastValidCountRef.current;
     
-    // Update last valid count if we have a valid input
     if (isValidCount) {
       lastValidCountRef.current = validCount;
     }
     
-    // Clear any existing timeout
     if (stabilityTimeoutRef.current) {
       clearTimeout(stabilityTimeoutRef.current);
     }
     
-    // Only update stable count after a much longer delay to prevent flickering
+    // Much longer stability period to prevent any flickering during model loading
     stabilityTimeoutRef.current = setTimeout(() => {
       if (Math.abs(validCount - stableCountRef.current) > 0) {
         console.log('BottomFloatingBar: Updating stable count from', stableCountRef.current, 'to', validCount);
         stableCountRef.current = validCount;
       }
-    }, 3000); // 3 second stability period to prevent rapid changes
+    }, 5000); // 5 second stability period
     
-    // Return the current stable count instead of the new count
     return stableCountRef.current;
   }, [objectCount]);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (stabilityTimeoutRef.current) {
-        clearTimeout(stabilityTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Stabilized coordinate display with proper validation and rounding
+  // Enhanced coordinate display with better stability
   const coordinateDisplay = useMemo(() => {
     if (!cursorPosition || typeof cursorPosition !== 'object') {
       return { x: 0, y: 0 };
@@ -111,16 +98,25 @@ const BottomFloatingBar = React.memo(({
     };
   }, [cursorPosition?.x, cursorPosition?.y]);
 
-  // Stable grid status
+  // More stable grid status
   const gridStatus = useMemo(() => {
     return gridEnabled ? `ON (${gridSpacing || '1m'})` : 'OFF';
   }, [gridEnabled, gridSpacing]);
 
-  // Stable zoom level with proper validation
+  // Enhanced zoom level stability
   const stableZoomLevel = useMemo(() => {
     const zoom = typeof zoomLevel === 'number' && isFinite(zoomLevel) ? zoomLevel : 100;
-    return Math.max(1, Math.min(500, Math.round(zoom))); // Bounded and rounded
+    return Math.max(1, Math.min(500, Math.round(zoom)));
   }, [zoomLevel]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (stabilityTimeoutRef.current) {
+        clearTimeout(stabilityTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <TooltipProvider>
@@ -159,7 +155,7 @@ const BottomFloatingBar = React.memo(({
             </div>
           </div>
           
-          {/* Center section - Zoom controls */}
+          {/* Center section - Enhanced zoom controls with touch support */}
           <div className="flex items-center">
             <ExpandableZoomControls
               onZoomAll={onZoomAll}
