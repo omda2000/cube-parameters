@@ -28,201 +28,263 @@ export class EnhancedMaterialManager {
   private hoverMaterial: THREE.MeshStandardMaterial;
   private selectionMaterial: THREE.MeshStandardMaterial;
   private trackedObjects = new Set<THREE.Object3D>();
+  private isDisposed = false;
 
   constructor() {
-    this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
-      new THREE.MeshStandardMaterial({
-        color: 0xffaa00,
-        emissive: 0x442200,
-        emissiveIntensity: 0.4,
-        transparent: false
-      })
-    ) as THREE.MeshStandardMaterial;
+    try {
+      this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
+        new THREE.MeshStandardMaterial({
+          color: 0xffaa00,
+          emissive: 0x442200,
+          emissiveIntensity: 0.4,
+          transparent: false
+        })
+      ) as THREE.MeshStandardMaterial;
 
-    this.selectionMaterial = this.resourceManager.getMaterial('selection', () => 
-      new THREE.MeshStandardMaterial({
-        color: 0x00ff00,
-        emissive: 0x004400,
-        emissiveIntensity: 0.3,
-        transparent: false
-      })
-    ) as THREE.MeshStandardMaterial;
+      this.selectionMaterial = this.resourceManager.getMaterial('selection', () => 
+        new THREE.MeshStandardMaterial({
+          color: 0x00ff00,
+          emissive: 0x004400,
+          emissiveIntensity: 0.3,
+          transparent: false
+        })
+      ) as THREE.MeshStandardMaterial;
+    } catch (error) {
+      console.error('Error initializing EnhancedMaterialManager:', error);
+      // Fallback materials
+      this.hoverMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa00 });
+      this.selectionMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    }
   }
 
   setObjectState(object: THREE.Object3D, updates: Partial<MaterialState>) {
-    // Store original material if not already stored
-    if (!this.originalMaterials.has(object)) {
-      this.storeOriginalMaterial(object);
+    if (this.isDisposed || !object) {
+      console.warn('Material manager is disposed or object is null');
+      return;
     }
 
-    // Track this object
-    this.trackedObjects.add(object);
+    try {
+      // Store original material if not already stored
+      if (!this.originalMaterials.has(object)) {
+        this.storeOriginalMaterial(object);
+      }
 
-    // Get or create current state
-    const currentState = this.objectStates.get(object) || {
-      type: 'default',
-      parameters: this.getDefaultParameters(),
-      isHovered: false,
-      isSelected: false
-    };
+      // Track this object
+      this.trackedObjects.add(object);
 
-    // Update state
-    const newState = { ...currentState, ...updates };
-    this.objectStates.set(object, newState);
+      // Get or create current state
+      const currentState = this.objectStates.get(object) || {
+        type: 'default',
+        parameters: this.getDefaultParameters(),
+        isHovered: false,
+        isSelected: false
+      };
 
-    // Apply material based on priority: selection > hover > custom > original
-    this.applyMaterialByPriority(object, newState);
+      // Update state
+      const newState = { ...currentState, ...updates };
+      this.objectStates.set(object, newState);
+
+      // Apply material based on priority: selection > hover > custom > original
+      this.applyMaterialByPriority(object, newState);
+    } catch (error) {
+      console.error('Error setting object state:', error);
+    }
   }
 
   setHoverEffect(object: THREE.Object3D, hover: boolean) {
-    const currentState = this.objectStates.get(object);
-    if (currentState && currentState.isSelected && !hover) {
-      // Don't remove hover if object is selected, just update state
+    if (this.isDisposed || !object) return;
+    
+    try {
+      const currentState = this.objectStates.get(object);
+      if (currentState && currentState.isSelected && !hover) {
+        // Don't remove hover if object is selected, just update state
+        this.setObjectState(object, { isHovered: hover });
+        return;
+      }
       this.setObjectState(object, { isHovered: hover });
-      return;
+    } catch (error) {
+      console.error('Error setting hover effect:', error);
     }
-    this.setObjectState(object, { isHovered: hover });
   }
 
   setSelectionEffect(object: THREE.Object3D, selected: boolean) {
-    this.setObjectState(object, { isSelected: selected });
+    if (this.isDisposed || !object) return;
+    
+    try {
+      this.setObjectState(object, { isSelected: selected });
+    } catch (error) {
+      console.error('Error setting selection effect:', error);
+    }
   }
 
   setMaterialType(object: THREE.Object3D, type: MaterialType, parameters?: Partial<MaterialParameters>) {
-    const finalParameters = { 
-      ...this.getDefaultParameters(), 
-      ...parameters 
-    };
-    this.setObjectState(object, { type, parameters: finalParameters });
+    if (this.isDisposed || !object) return;
+    
+    try {
+      const finalParameters = { 
+        ...this.getDefaultParameters(), 
+        ...parameters 
+      };
+      this.setObjectState(object, { type, parameters: finalParameters });
+    } catch (error) {
+      console.error('Error setting material type:', error);
+    }
   }
 
   updateMaterialParameters(object: THREE.Object3D, parameters: Partial<MaterialParameters>) {
-    const currentState = this.objectStates.get(object);
-    if (currentState) {
-      const newParameters = { ...currentState.parameters, ...parameters };
-      this.setObjectState(object, { parameters: newParameters });
+    if (this.isDisposed || !object) return;
+    
+    try {
+      const currentState = this.objectStates.get(object);
+      if (currentState) {
+        const newParameters = { ...currentState.parameters, ...parameters };
+        this.setObjectState(object, { parameters: newParameters });
+      }
+    } catch (error) {
+      console.error('Error updating material parameters:', error);
     }
   }
 
   private storeOriginalMaterial(object: THREE.Object3D) {
-    if (object instanceof THREE.Mesh) {
-      this.originalMaterials.set(object, object.material);
-    }
-
-    object.children.forEach(child => {
-      if (child instanceof THREE.Mesh && !child.userData.isHelper) {
-        this.originalMaterials.set(child, child.material);
+    try {
+      if (object instanceof THREE.Mesh && object.material) {
+        this.originalMaterials.set(object, object.material);
       }
-    });
+
+      object.children.forEach(child => {
+        if (child instanceof THREE.Mesh && !child.userData.isHelper && child.material) {
+          this.originalMaterials.set(child, child.material);
+        }
+      });
+    } catch (error) {
+      console.error('Error storing original material:', error);
+    }
   }
 
   private applyMaterialByPriority(object: THREE.Object3D, state: MaterialState) {
-    let materialToApply: THREE.Material;
+    try {
+      let materialToApply: THREE.Material;
 
-    // Priority: selection > hover > custom material > original
-    if (state.isSelected) {
-      materialToApply = this.selectionMaterial;
-    } else if (state.isHovered) {
-      materialToApply = this.hoverMaterial;
-    } else if (state.type !== 'default') {
-      materialToApply = this.createCustomMaterial(state.type, state.parameters);
-    } else {
-      // Restore original material
-      this.restoreOriginalMaterial(object);
-      return;
+      // Priority: selection > hover > custom material > original
+      if (state.isSelected) {
+        materialToApply = this.selectionMaterial;
+      } else if (state.isHovered) {
+        materialToApply = this.hoverMaterial;
+      } else if (state.type !== 'default') {
+        materialToApply = this.createCustomMaterial(state.type, state.parameters);
+      } else {
+        // Restore original material
+        this.restoreOriginalMaterial(object);
+        return;
+      }
+
+      this.applyMaterialToObject(object, materialToApply);
+    } catch (error) {
+      console.error('Error applying material by priority:', error);
     }
-
-    this.applyMaterialToObject(object, materialToApply);
   }
 
   private createCustomMaterial(type: MaterialType, parameters: MaterialParameters): THREE.Material {
     const cacheKey = `${type}_${JSON.stringify(parameters)}`;
     
-    return this.resourceManager.getMaterial(cacheKey, () => {
-      switch (type) {
-        case 'wood':
-          return new THREE.MeshStandardMaterial({
-            color: 0x8B4513,
-            roughness: 0.8 - parameters.reflection * 0.5,
-            metalness: 0.1,
-            transparent: parameters.opacity < 1,
-            opacity: parameters.opacity,
-            emissiveIntensity: parameters.edge * 0.2
-          });
+    try {
+      return this.resourceManager.getMaterial(cacheKey, () => {
+        switch (type) {
+          case 'wood':
+            return new THREE.MeshStandardMaterial({
+              color: 0x8B4513,
+              roughness: Math.max(0, Math.min(1, 0.8 - parameters.reflection * 0.5)),
+              metalness: 0.1,
+              transparent: parameters.opacity < 1,
+              opacity: Math.max(0, Math.min(1, parameters.opacity)),
+              emissiveIntensity: Math.max(0, parameters.edge * 0.2)
+            });
 
-        case 'matPaint':
-          return new THREE.MeshLambertMaterial({
-            color: 0x666666,
-            transparent: parameters.opacity < 1,
-            opacity: parameters.opacity,
-            reflectivity: parameters.reflection * 0.3
-          });
+          case 'matPaint':
+            return new THREE.MeshLambertMaterial({
+              color: 0x666666,
+              transparent: parameters.opacity < 1,
+              opacity: Math.max(0, Math.min(1, parameters.opacity)),
+              reflectivity: Math.max(0, Math.min(1, parameters.reflection * 0.3))
+            });
 
-        case 'metal':
-          return new THREE.MeshStandardMaterial({
-            color: 0xC0C0C0,
-            roughness: 0.2 - parameters.reflection * 0.15,
-            metalness: 0.9,
-            transparent: parameters.opacity < 1,
-            opacity: parameters.opacity,
-            emissiveIntensity: parameters.edge * 0.1
-          });
+          case 'metal':
+            return new THREE.MeshStandardMaterial({
+              color: 0xC0C0C0,
+              roughness: Math.max(0, Math.min(1, 0.2 - parameters.reflection * 0.15)),
+              metalness: 0.9,
+              transparent: parameters.opacity < 1,
+              opacity: Math.max(0, Math.min(1, parameters.opacity)),
+              emissiveIntensity: Math.max(0, parameters.edge * 0.1)
+            });
 
-        case 'plastic':
-          return new THREE.MeshPhongMaterial({
-            color: 0xFFFFFF,
-            shininess: 100 * parameters.reflection,
-            transparent: parameters.opacity < 1,
-            opacity: parameters.opacity,
-            specular: 0x222222
-          });
+          case 'plastic':
+            return new THREE.MeshPhongMaterial({
+              color: 0xFFFFFF,
+              shininess: Math.max(0, 100 * parameters.reflection),
+              transparent: parameters.opacity < 1,
+              opacity: Math.max(0, Math.min(1, parameters.opacity)),
+              specular: 0x222222
+            });
 
-        case 'glass':
-          return new THREE.MeshPhysicalMaterial({
-            color: 0xFFFFFF,
-            metalness: 0,
-            roughness: 0.1,
-            transparent: true,
-            opacity: parameters.opacity * 0.3,
-            transmission: 0.9,
-            ior: parameters.refraction,
-            thickness: parameters.thickness
-          });
+          case 'glass':
+            return new THREE.MeshPhysicalMaterial({
+              color: 0xFFFFFF,
+              metalness: 0,
+              roughness: 0.1,
+              transparent: true,
+              opacity: Math.max(0, Math.min(1, parameters.opacity * 0.3)),
+              transmission: 0.9,
+              ior: Math.max(1, Math.min(2.5, parameters.refraction)),
+              thickness: Math.max(0, parameters.thickness)
+            });
 
-        default:
-          return new THREE.MeshStandardMaterial({ color: 0x888888 });
-      }
-    }) as THREE.Material;
+          default:
+            return new THREE.MeshStandardMaterial({ color: 0x888888 });
+        }
+      }) as THREE.Material;
+    } catch (error) {
+      console.error('Error creating custom material:', error);
+      return new THREE.MeshStandardMaterial({ color: 0x888888 });
+    }
   }
 
   private applyMaterialToObject(object: THREE.Object3D, material: THREE.Material) {
-    if (object instanceof THREE.Mesh) {
-      object.material = material;
-    }
-
-    object.children.forEach(child => {
-      if (child instanceof THREE.Mesh && !child.userData.isHelper) {
-        child.material = material;
+    try {
+      if (object instanceof THREE.Mesh) {
+        object.material = material;
       }
-    });
+
+      object.children.forEach(child => {
+        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
+          child.material = material;
+        }
+      });
+    } catch (error) {
+      console.error('Error applying material to object:', error);
+    }
   }
 
   private restoreOriginalMaterial(object: THREE.Object3D) {
-    if (object instanceof THREE.Mesh) {
-      const originalMaterial = this.originalMaterials.get(object);
-      if (originalMaterial) {
-        object.material = originalMaterial;
-      }
-    }
-
-    object.children.forEach(child => {
-      if (child instanceof THREE.Mesh && !child.userData.isHelper) {
-        const originalMaterial = this.originalMaterials.get(child);
+    try {
+      if (object instanceof THREE.Mesh) {
+        const originalMaterial = this.originalMaterials.get(object);
         if (originalMaterial) {
-          child.material = originalMaterial;
+          object.material = originalMaterial;
         }
       }
-    });
+
+      object.children.forEach(child => {
+        if (child instanceof THREE.Mesh && !child.userData.isHelper) {
+          const originalMaterial = this.originalMaterials.get(child);
+          if (originalMaterial) {
+            child.material = originalMaterial;
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error restoring original material:', error);
+    }
   }
 
   private getDefaultParameters(): MaterialParameters {
@@ -238,20 +300,36 @@ export class EnhancedMaterialManager {
   }
 
   clearAllEffects() {
-    // Clear all states and restore original materials for tracked objects
-    this.trackedObjects.forEach(object => {
-      this.restoreOriginalMaterial(object);
-    });
-    this.objectStates = new WeakMap();
-    this.trackedObjects.clear();
+    if (this.isDisposed) return;
+    
+    try {
+      // Clear all states and restore original materials for tracked objects
+      this.trackedObjects.forEach(object => {
+        try {
+          this.restoreOriginalMaterial(object);
+        } catch (error) {
+          console.warn('Error restoring material during clear:', error);
+        }
+      });
+      this.objectStates = new WeakMap();
+      this.trackedObjects.clear();
+    } catch (error) {
+      console.error('Error clearing all effects:', error);
+    }
   }
 
   getObjectState(object: THREE.Object3D): MaterialState | null {
+    if (this.isDisposed || !object) return null;
     return this.objectStates.get(object) || null;
   }
 
   dispose() {
-    this.clearAllEffects();
-    this.originalMaterials = new WeakMap();
+    try {
+      this.isDisposed = true;
+      this.clearAllEffects();
+      this.originalMaterials = new WeakMap();
+    } catch (error) {
+      console.error('Error disposing material manager:', error);
+    }
   }
 }

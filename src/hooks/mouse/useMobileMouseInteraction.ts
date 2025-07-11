@@ -26,6 +26,7 @@ export const useMobileMouseInteraction = (
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
+  // Always call hooks - never conditionally
   const mobile = isMobile();
   
   console.log('useMobileMouseInteraction: Mobile detected:', mobile);
@@ -36,7 +37,7 @@ export const useMobileMouseInteraction = (
     controls: !!controls
   });
 
-  // Use standard mouse interaction for desktop
+  // Use standard mouse interaction for desktop - always call this hook
   const mouseInteraction = useMouseInteraction(
     renderer,
     camera,
@@ -51,12 +52,11 @@ export const useMobileMouseInteraction = (
 
   // Mobile-specific zoom handling
   const handlePinchZoom = useCallback((scale: number, center: { x: number; y: number }) => {
+    if (!mobile || !camera || !controls) {
+      return;
+    }
+    
     try {
-      if (!camera || !controls) {
-        console.log('handlePinchZoom: Missing camera or controls');
-        return;
-      }
-      
       const zoomFactor = (scale - 1) * 0.5;
       const currentDistance = camera.position.distanceTo(controls.target);
       const newDistance = Math.max(0.1, Math.min(1000, currentDistance - zoomFactor * 10));
@@ -67,16 +67,15 @@ export const useMobileMouseInteraction = (
     } catch (error) {
       console.error('Error in handlePinchZoom:', error);
     }
-  }, [camera, controls]);
+  }, [mobile, camera, controls]);
 
   // Mobile-specific double tap to fit
   const handleDoubleTap = useCallback((position: { x: number; y: number }) => {
+    if (!mobile || !camera || !controls || !scene) {
+      return;
+    }
+    
     try {
-      if (!camera || !controls || !scene) {
-        console.log('handleDoubleTap: Missing dependencies');
-        return;
-      }
-      
       // Calculate bounding box of all visible objects
       const box = new THREE.Box3();
       scene.traverse((child) => {
@@ -98,39 +97,35 @@ export const useMobileMouseInteraction = (
     } catch (error) {
       console.error('Error in handleDoubleTap:', error);
     }
-  }, [camera, controls, scene]);
+  }, [mobile, camera, controls, scene]);
 
   // Three finger tap to reset view
   const handleThreeFingerTap = useCallback(() => {
+    if (!mobile || !camera || !controls) {
+      return;
+    }
+    
     try {
-      if (!camera || !controls) {
-        console.log('handleThreeFingerTap: Missing camera or controls');
-        return;
-      }
-      
       camera.position.set(5, 5, 5);
       controls.target.set(0, 0, 0);
       controls.update();
     } catch (error) {
       console.error('Error in handleThreeFingerTap:', error);
     }
-  }, [camera, controls]);
+  }, [mobile, camera, controls]);
 
-  // Only set up touch gestures if we're on mobile AND have all required dependencies
-  const shouldSetupTouchGestures = mobile && renderer && controls;
-  
-  console.log('useMobileMouseInteraction: Should setup touch gestures:', shouldSetupTouchGestures);
-
-  // Touch gesture setup for mobile
+  // Always call useTouchGestures hook - never conditionally
   const touchGestureResult = useTouchGestures(
-    shouldSetupTouchGestures ? renderer.domElement : null,
-    shouldSetupTouchGestures ? controls : null,
+    mobile && renderer ? renderer.domElement : null,
+    mobile && controls ? controls : null,
     {
       onPinchZoom: handlePinchZoom,
       onDoubleTap: handleDoubleTap,
       onThreeFingerTap: handleThreeFingerTap,
       onSwipe: (direction, velocity) => {
-        console.log(`Swipe ${direction} with velocity ${velocity}`);
+        if (mobile) {
+          console.log(`Swipe ${direction} with velocity ${velocity}`);
+        }
       }
     }
   );
@@ -138,7 +133,6 @@ export const useMobileMouseInteraction = (
   // Mobile-specific touch feedback
   useEffect(() => {
     if (!mobile || !renderer) {
-      console.log('useMobileMouseInteraction: Skipping touch feedback setup');
       return;
     }
 

@@ -1,5 +1,5 @@
 
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import type { LoadedModel } from '../types/model';
@@ -10,96 +10,145 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   const [currentModel, setCurrentModel] = useState<LoadedModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activeLoadingRef = useRef<AbortController | null>(null);
+
+  // Cleanup function for geometries and materials
+  const disposeObject = useCallback((object: THREE.Object3D) => {
+    try {
+      object.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) {
+            child.geometry.dispose();
+          }
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(material => {
+                if (material.map) material.map.dispose();
+                if (material.normalMap) material.normalMap.dispose();
+                if (material.bumpMap) material.bumpMap.dispose();
+                material.dispose();
+              });
+            } else {
+              if (child.material.map) child.material.map.dispose();
+              if (child.material.normalMap) child.material.normalMap.dispose();
+              if (child.material.bumpMap) child.material.bumpMap.dispose();
+              child.material.dispose();
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error disposing object:', error);
+    }
+  }, []);
 
   const mergeGeometries = useCallback(async (object: THREE.Object3D): Promise<THREE.Object3D> => {
-    const geometries: THREE.BufferGeometry[] = [];
-    const materials: THREE.Material[] = [];
-    
-    object.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.geometry) {
-        // Clone geometry to avoid modifying original
-        const clonedGeometry = child.geometry.clone();
-        
-        // Apply the mesh's transformation to the geometry
-        clonedGeometry.applyMatrix4(child.matrixWorld);
-        
-        geometries.push(clonedGeometry);
-        
-        // Collect unique materials
-        if (Array.isArray(child.material)) {
-          materials.push(...child.material);
+    try {
+      const geometries: THREE.BufferGeometry[] = [];
+      const materials: THREE.Material[] = [];
+      
+      object.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.geometry) {
+          // Clone geometry to avoid modifying original
+          const clonedGeometry = child.geometry.clone();
+          
+          // Apply the mesh's transformation to the geometry
+          clonedGeometry.applyMatrix4(child.matrixWorld);
+          
+          geometries.push(clonedGeometry);
+          
+          // Collect unique materials
+          if (Array.isArray(child.material)) {
+            materials.push(...child.material);
+          } else {
+            materials.push(child.material);
+          }
+        }
+      });
+
+      if (geometries.length === 0) {
+        console.warn('No geometries found to merge');
+        return object;
+      }
+
+      // Merge all geometries into one
+      let mergedGeometry: THREE.BufferGeometry;
+      
+      try {
+        const { mergeGeometries: mergeGeometriesUtil } = await import('three/examples/jsm/utils/BufferGeometryUtils.js');
+        const merged = mergeGeometriesUtil(geometries);
+        if (merged) {
+          mergedGeometry = merged;
         } else {
-          materials.push(child.material);
+          throw new Error('BufferGeometryUtils merge failed');
+        }
+      } catch (error) {
+        console.warn('BufferGeometryUtils not available or failed, using basic merge:', error);
+        // Basic merge fallback
+        mergedGeometry = new THREE.BufferGeometry();
+        const positions: number[] = [];
+        const normals: number[] = [];
+        const uvs: number[] = [];
+        
+        geometries.forEach(geometry => {
+          const posAttr = geometry.getAttribute('position');
+          const normAttr = geometry.getAttribute('normal');
+          const uvAttr = geometry.getAttribute('uv');
+          
+          if (posAttr) positions.push(...Array.from(posAttr.array));
+          if (normAttr) normals.push(...Array.from(normAttr.array));
+          if (uvAttr) uvs.push(...Array.from(uvAttr.array));
+        });
+        
+        if (positions.length > 0) {
+          mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        }
+        if (normals.length > 0) {
+          mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+        }
+        if (uvs.length > 0) {
+          mergedGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
         }
       }
-    });
 
-    if (geometries.length === 0) return object;
-
-    // Merge all geometries into one
-    const mergedGeometry = new THREE.BufferGeometry();
-    
-    // Merge geometries using BufferGeometryUtils if available, otherwise use basic merge
-    try {
-      const { mergeGeometries: mergeGeometriesUtil } = await import('three/examples/jsm/utils/BufferGeometryUtils.js');
-      const merged = mergeGeometriesUtil(geometries);
-      if (merged) {
-        mergedGeometry.copy(merged);
+      // Compute normals if they don't exist
+      if (!mergedGeometry.getAttribute('normal')) {
+        mergedGeometry.computeVertexNormals();
       }
+
+      // Create a single material (use the first non-basic material found)
+      let finalMaterial = materials.find(mat => !(mat instanceof THREE.MeshBasicMaterial)) || materials[0];
+      
+      if (!finalMaterial) {
+        finalMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
+      } else if (finalMaterial instanceof THREE.MeshBasicMaterial) {
+        // Convert basic material to phong for better lighting
+        finalMaterial = new THREE.MeshPhongMaterial({
+          color: finalMaterial.color,
+          map: finalMaterial.map
+        });
+      }
+
+      // Create new merged mesh
+      const mergedMesh = new THREE.Mesh(mergedGeometry, finalMaterial);
+      mergedMesh.name = object.name || 'Merged Object';
+      mergedMesh.castShadow = true;
+      mergedMesh.receiveShadow = true;
+
+      // Clean up original geometries to prevent memory leaks
+      geometries.forEach(geo => {
+        try {
+          geo.dispose();
+        } catch (error) {
+          console.warn('Error disposing geometry:', error);
+        }
+      });
+
+      return mergedMesh;
     } catch (error) {
-      console.warn('BufferGeometryUtils not available, using basic merge');
-      // Basic merge - combine position, normal, and uv attributes
-      const positions: number[] = [];
-      const normals: number[] = [];
-      const uvs: number[] = [];
-      
-      geometries.forEach(geometry => {
-        const posAttr = geometry.getAttribute('position');
-        const normAttr = geometry.getAttribute('normal');
-        const uvAttr = geometry.getAttribute('uv');
-        
-        if (posAttr) positions.push(...Array.from(posAttr.array));
-        if (normAttr) normals.push(...Array.from(normAttr.array));
-        if (uvAttr) uvs.push(...Array.from(uvAttr.array));
-      });
-      
-      mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      if (normals.length > 0) {
-        mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-      }
-      if (uvs.length > 0) {
-        mergedGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      }
+      console.error('Error in mergeGeometries:', error);
+      return object;
     }
-
-    // Compute normals if they don't exist
-    if (!mergedGeometry.getAttribute('normal')) {
-      mergedGeometry.computeVertexNormals();
-    }
-
-    // Create a single material (use the first non-basic material found)
-    let finalMaterial = materials.find(mat => !(mat instanceof THREE.MeshBasicMaterial)) || materials[0];
-    
-    if (!finalMaterial) {
-      finalMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
-    } else if (finalMaterial instanceof THREE.MeshBasicMaterial) {
-      // Convert basic material to phong for better lighting
-      finalMaterial = new THREE.MeshPhongMaterial({
-        color: finalMaterial.color,
-        map: finalMaterial.map
-      });
-    }
-
-    // Create new merged mesh
-    const mergedMesh = new THREE.Mesh(mergedGeometry, finalMaterial);
-    mergedMesh.name = object.name || 'Merged Object';
-    mergedMesh.castShadow = true;
-    mergedMesh.receiveShadow = true;
-
-    // Clean up original geometries
-    geometries.forEach(geo => geo.dispose());
-
-    return mergedMesh;
   }, []);
 
   const loadFBXModel = useCallback(async (file: File) => {
@@ -111,10 +160,27 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       return;
     }
 
+    // Cancel any existing loading operation
+    if (activeLoadingRef.current) {
+      activeLoadingRef.current.abort();
+    }
+
+    const abortController = new AbortController();
+    activeLoadingRef.current = abortController;
+
     setIsLoading(true);
     setError(null);
 
     try {
+      // Validate file
+      if (!file.name.toLowerCase().endsWith('.fbx')) {
+        throw new Error('Invalid file format. Please select an FBX file.');
+      }
+
+      if (file.size > 50 * 1024 * 1024) { // 50MB limit
+        throw new Error('File too large. Please select a file smaller than 50MB.');
+      }
+
       if (!loaderRef.current) {
         loaderRef.current = new FBXLoader();
         console.log('FBX loader initialized');
@@ -123,8 +189,22 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       console.log('Reading file as array buffer...');
       const arrayBuffer = await file.arrayBuffer();
       
+      // Check if operation was aborted
+      if (abortController.signal.aborted) {
+        console.log('FBX loading aborted');
+        return;
+      }
+      
       console.log('Parsing FBX data...');
       const object = loaderRef.current.parse(arrayBuffer, '');
+      
+      // Check if operation was aborted after parsing
+      if (abortController.signal.aborted) {
+        console.log('FBX loading aborted after parsing');
+        disposeObject(object);
+        return;
+      }
+      
       console.log('FBX parsed successfully:', object);
       
       // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
@@ -136,6 +216,13 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       // Merge geometries to create unified object
       console.log('Merging geometries...');
       const mergedObject = await mergeGeometries(object);
+      
+      // Check if operation was aborted after merging
+      if (abortController.signal.aborted) {
+        console.log('FBX loading aborted after merging');
+        disposeObject(mergedObject);
+        return;
+      }
       
       // Calculate bounding box after merging
       const boundingBox = new THREE.Box3().setFromObject(mergedObject);
@@ -175,6 +262,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       if (currentModel) {
         console.log('Removing previous model from scene');
         scene.remove(currentModel.object);
+        disposeObject(currentModel.object);
       }
 
       console.log('Adding merged model to scene');
@@ -182,13 +270,24 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
       
+      // Dispose original object to free memory
+      if (object !== mergedObject) {
+        disposeObject(object);
+      }
+      
     } catch (err) {
-      console.error('Failed to load FBX model:', err);
-      setError('Failed to load model. Please check the file format.');
+      if (!abortController.signal.aborted) {
+        console.error('Failed to load FBX model:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load model. Please check the file format.';
+        setError(errorMessage);
+      }
     } finally {
-      setIsLoading(false);
+      if (!abortController.signal.aborted) {
+        setIsLoading(false);
+      }
+      activeLoadingRef.current = null;
     }
-  }, [scene, currentModel, mergeGeometries]);
+  }, [scene, currentModel, mergeGeometries, disposeObject]);
 
   const switchToModel = useCallback((modelId: string) => {
     if (!scene) return;
@@ -217,8 +316,29 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       setCurrentModel(null);
     }
 
+    // Dispose of the model to free memory
+    disposeObject(model.object);
     setLoadedModels(prev => prev.filter(m => m.id !== modelId));
-  }, [scene, loadedModels, currentModel]);
+  }, [scene, loadedModels, currentModel, disposeObject]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Cancel any active loading
+      if (activeLoadingRef.current) {
+        activeLoadingRef.current.abort();
+      }
+      
+      // Dispose all loaded models
+      loadedModels.forEach(model => {
+        try {
+          disposeObject(model.object);
+        } catch (error) {
+          console.warn('Error disposing model on cleanup:', error);
+        }
+      });
+    };
+  }, [loadedModels, disposeObject]);
 
   return {
     loadedModels,

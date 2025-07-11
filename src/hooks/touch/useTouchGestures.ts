@@ -27,14 +27,6 @@ export const useTouchGestures = (
     swipeStartTime: 0
   });
 
-  // Early return if essential dependencies are missing
-  if (!element) {
-    console.log('useTouchGestures: element is null, returning early');
-    return {
-      isGesturing: false
-    };
-  }
-
   const getTouchDistance = useCallback((touch1: Touch, touch2: Touch) => {
     try {
       return Math.sqrt(
@@ -60,6 +52,8 @@ export const useTouchGestures = (
   }, []);
 
   const handleTouchStart = useCallback((event: TouchEvent) => {
+    if (!element) return;
+    
     try {
       event.preventDefault();
       
@@ -84,12 +78,16 @@ export const useTouchGestures = (
           clearTimeout(state.longPressTimer);
         }
         state.longPressTimer = setTimeout(() => {
-          config.onLongPress?.({ x: touch.clientX, y: touch.clientY });
+          if (config.onLongPress) {
+            config.onLongPress({ x: touch.clientX, y: touch.clientY });
+          }
         }, 500);
 
         // Double tap detection
         if (now - state.lastTapTime < 300) {
-          config.onDoubleTap?.({ x: touch.clientX, y: touch.clientY });
+          if (config.onDoubleTap) {
+            config.onDoubleTap({ x: touch.clientX, y: touch.clientY });
+          }
           state.lastTapTime = 0;
         } else {
           state.lastTapTime = now;
@@ -105,14 +103,18 @@ export const useTouchGestures = (
         }
       } else if (touches.length === 3) {
         // Three finger tap
-        config.onThreeFingerTap?.();
+        if (config.onThreeFingerTap) {
+          config.onThreeFingerTap();
+        }
       }
     } catch (error) {
       console.error('Error in handleTouchStart:', error);
     }
-  }, [controls, config, getTouchDistance, getTouchCenter]);
+  }, [element, controls, config, getTouchDistance, getTouchCenter]);
 
   const handleTouchMove = useCallback((event: TouchEvent) => {
+    if (!element) return;
+    
     try {
       event.preventDefault();
       
@@ -129,17 +131,19 @@ export const useTouchGestures = (
         const currentDistance = getTouchDistance(touches[0], touches[1]);
         const currentCenter = getTouchCenter(touches[0], touches[1]);
         
-        if (state.initialPinchDistance > 0) {
+        if (state.initialPinchDistance > 0 && config.onPinchZoom) {
           const scale = currentDistance / state.initialPinchDistance;
-          config.onPinchZoom?.(scale, currentCenter);
+          config.onPinchZoom(scale, currentCenter);
         }
       }
     } catch (error) {
       console.error('Error in handleTouchMove:', error);
     }
-  }, [config, getTouchDistance, getTouchCenter]);
+  }, [element, config, getTouchDistance, getTouchCenter]);
 
   const handleTouchEnd = useCallback((event: TouchEvent) => {
+    if (!element) return;
+    
     try {
       event.preventDefault();
       
@@ -161,7 +165,7 @@ export const useTouchGestures = (
         // Check for swipe gesture
         if (timeDiff < 300 && timeDiff > 50) {
           const changedTouch = event.changedTouches[0];
-          if (changedTouch) {
+          if (changedTouch && config.onSwipe) {
             const deltaX = changedTouch.clientX - state.swipeStartPos.x;
             const deltaY = changedTouch.clientY - state.swipeStartPos.y;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -169,9 +173,9 @@ export const useTouchGestures = (
             if (distance > 50) {
               const velocity = distance / timeDiff;
               if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                config.onSwipe?.(deltaX > 0 ? 'right' : 'left', velocity);
+                config.onSwipe(deltaX > 0 ? 'right' : 'left', velocity);
               } else {
-                config.onSwipe?.(deltaY > 0 ? 'down' : 'up', velocity);
+                config.onSwipe(deltaY > 0 ? 'down' : 'up', velocity);
               }
             }
           }
@@ -198,7 +202,7 @@ export const useTouchGestures = (
     } catch (error) {
       console.error('Error in handleTouchEnd:', error);
     }
-  }, [controls, config]);
+  }, [element, controls, config]);
 
   useEffect(() => {
     if (!element) {
