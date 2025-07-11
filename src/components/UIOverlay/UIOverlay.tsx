@@ -1,11 +1,10 @@
 
 import React from 'react';
 import AidToolsBar from '../AidToolsBar/AidToolsBar';
-import ControlPanelTabs from '../ControlPanelTabs/ControlPanelTabs';
-import FixedControlPanel from '../FixedControlPanel/FixedControlPanel';
-import TabsControlPanel from '../TabsControlPanel/TabsControlPanel';
-import MeasureToolsPanel from '../MeasureToolsPanel/MeasureToolsPanel';
-import BottomFloatingBar from '../BottomFloatingBar/BottomFloatingBar';
+import LeftSidebar from '../LeftSidebar/LeftSidebar';
+import OrganizedControlPanel from '../OrganizedControlPanel/OrganizedControlPanel';
+import OrganizedMeasurePanel from '../OrganizedMeasurePanel/OrganizedMeasurePanel';
+import EnhancedStatusBar from '../EnhancedStatusBar/EnhancedStatusBar';
 import NotificationBell from '../NotificationBell/NotificationBell';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
@@ -69,40 +68,40 @@ const UIOverlay = ({
         <NotificationBell />
       </div>
 
-      {/* Aid Tools Bar - centered at top */}
-      <AidToolsBar
-        onToolSelect={onToolSelect}
-        activeTool={activeTool}
-      />
+      {/* Aid Tools Bar - centered at top with proper spacing */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
+        <AidToolsBar
+          onToolSelect={onToolSelect}
+          activeTool={activeTool}
+        />
+      </div>
 
-      {/* Control Panel Tabs - left side, positioned to avoid overlap */}
-      <ControlPanelTabs
+      {/* Left Sidebar - properly positioned to avoid overlaps */}
+      <LeftSidebar
         activeTab={activeControlTab}
         onTabChange={onTabChange}
         isPanelOpen={showControlPanel}
       />
 
-      {/* Fixed Control Panel - positioned next to tabs with proper spacing */}
-      <FixedControlPanel
+      {/* Organized Control Panel - positioned with proper spacing */}
+      <OrganizedControlPanel
+        activeTab={activeControlTab}
         isOpen={showControlPanel}
         onClose={onCloseControlPanel}
-      >
-        <TabsControlPanel {...controlsPanelProps} />
-      </FixedControlPanel>
+        controlsPanelProps={controlsPanelProps}
+      />
 
-      {/* Measure Tools Panel - positioned on the bottom left to avoid overlap */}
-      <div className="fixed left-4 bottom-28 z-40">
-        <MeasureToolsPanel
-          measurements={measurements}
-          onClearAll={onClearAllMeasurements}
-          onRemoveMeasurement={onRemoveMeasurement}
-          visible={showMeasurePanel}
-          onClose={onCloseMeasurePanel}
-        />
-      </div>
+      {/* Organized Measure Panel - positioned to avoid status bar overlap */}
+      <OrganizedMeasurePanel
+        measurements={measurements}
+        onClearAll={onClearAllMeasurements}
+        onRemoveMeasurement={onRemoveMeasurement}
+        visible={showMeasurePanel}
+        onClose={onCloseMeasurePanel}
+      />
 
-      {/* Bottom Floating Bar - stays at bottom */}
-      <BottomFloatingBar
+      {/* Enhanced Status Bar - improved layout and information */}
+      <EnhancedStatusBar
         objectCount={modelCount}
         gridEnabled={true}
         gridSpacing="1m"

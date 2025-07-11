@@ -4,6 +4,7 @@ import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
 import ViewTab from './tabs/ViewTab';
 import SettingsTab from './tabs/SettingsTab';
+import HelpPanel from '../HelpPanel/HelpPanel';
 import * as THREE from 'three';
 import type { 
   LoadedModel, 
@@ -109,6 +110,8 @@ const TabsControlPanel = ({
             onCameraToggle={onCameraToggle}
           />
         );
+      case 'help':
+        return <HelpPanel />;
       case 'settings':
         return <SettingsTab />;
       default:
