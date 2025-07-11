@@ -2,7 +2,6 @@
 import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../useThreeScene';
-import { useBoxMesh } from '../useBoxMesh';
 import { useLighting } from '../useLighting';
 import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
@@ -14,34 +13,25 @@ import type {
   AmbientLightSettings, 
   EnvironmentSettings, 
   LoadedModel,
-  BoxDimensions,
   ShadowQuality
 } from '../../types/model';
 
 interface UseModelViewerSetupProps {
-  dimensions: BoxDimensions;
-  boxColor: string;
-  objectName: string;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: ShadowQuality;
   environment: EnvironmentSettings;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
   onSceneReady?: (scene: THREE.Scene) => void;
-  showPrimitives?: boolean;
 }
 
 export const useModelViewerSetup = ({
-  dimensions,
-  boxColor,
-  objectName,
   sunlight,
   ambientLight,
   shadowQuality,
   environment,
   onModelsChange,
-  onSceneReady,
-  showPrimitives = true
+  onSceneReady
 }: UseModelViewerSetupProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const { selectedObject } = useSelectionContext();
@@ -58,22 +48,6 @@ export const useModelViewerSetup = ({
     isOrthographic,
     switchCamera
   } = useThreeScene(mountRef);
-
-  // Box mesh setup
-  const { boxRef } = useBoxMesh(
-    sceneRef.current,
-    dimensions,
-    boxColor,
-    objectName,
-    showPrimitives
-  );
-
-  // Mark box as primitive
-  useEffect(() => {
-    if (boxRef.current) {
-      boxRef.current.userData.isPrimitive = true;
-    }
-  }, [boxRef]);
 
   // FBX model loading
   const {
@@ -177,7 +151,6 @@ export const useModelViewerSetup = ({
     renderer: rendererRef.current,
     controls: controlsRef.current,
     currentModel,
-    boxRef,
     isLoading,
     error,
     loadFBXModel,

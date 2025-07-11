@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
-import { MapPin, Ruler, Target, Move } from 'lucide-react';
+import React from 'react';
+import { MapPin, Ruler, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AidToolsBarProps {
-  onToolSelect: (tool: 'select' | 'point' | 'measure' | 'move') => void;
-  activeTool: 'select' | 'point' | 'measure' | 'move';
+  onToolSelect: (tool: 'select' | 'point' | 'measure') => void;
+  activeTool: 'select' | 'point' | 'measure';
 }
 
 const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
@@ -52,20 +52,6 @@ const AidToolsBar = ({ onToolSelect, activeTool }: AidToolsBarProps) => {
           title="Measure Tool"
         >
           <Ruler className="h-4 w-4" />
-        </Button>
-        
-        <Button
-          variant={activeTool === 'move' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => onToolSelect('move')}
-          className={`h-8 w-8 p-0 transition-all ${
-            activeTool === 'move' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-          }`}
-          title="Move Tool"
-        >
-          <Move className="h-4 w-4" />
         </Button>
       </div>
     </div>

@@ -8,7 +8,6 @@ import type {
   SunlightSettings, 
   AmbientLightSettings, 
   EnvironmentSettings, 
-  BoxDimensions, 
   ShadowQuality 
 } from '../types/model';
 
@@ -25,12 +24,12 @@ interface UIStateSlice {
   showControlPanel: boolean;
   showMeasurePanel: boolean;
   activeControlTab: string;
-  activeTool: 'select' | 'point' | 'measure' | 'move';
+  activeTool: 'select' | 'point' | 'measure';
   isOrthographic: boolean;
   setShowControlPanel: (show: boolean) => void;
   setShowMeasurePanel: (show: boolean) => void;
   setActiveControlTab: (tab: string) => void;
-  setActiveTool: (tool: 'select' | 'point' | 'measure' | 'move') => void;
+  setActiveTool: (tool: 'select' | 'point' | 'measure') => void;
   setIsOrthographic: (orthographic: boolean) => void;
 }
 
@@ -38,9 +37,6 @@ interface UIStateSlice {
 interface SceneStateSlice {
   loadedModels: LoadedModel[];
   currentModel: LoadedModel | null;
-  dimensions: BoxDimensions;
-  boxColor: string;
-  objectName: string;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: ShadowQuality;
@@ -49,9 +45,6 @@ interface SceneStateSlice {
   uploadError: string | null;
   setLoadedModels: (models: LoadedModel[]) => void;
   setCurrentModel: (model: LoadedModel | null) => void;
-  setDimensions: (dimensions: BoxDimensions) => void;
-  setBoxColor: (color: string) => void;
-  setObjectName: (name: string) => void;
   setSunlight: (sunlight: SunlightSettings) => void;
   setAmbientLight: (ambientLight: AmbientLightSettings) => void;
   setShadowQuality: (quality: ShadowQuality) => void;
@@ -87,9 +80,6 @@ export const useAppStore = create<AppStore>()(
       // Scene State
       loadedModels: [],
       currentModel: null,
-      dimensions: { length: 1, width: 1, height: 1 },
-      boxColor: '#4F46E5',
-      objectName: 'My Box',
       sunlight: {
         intensity: 1,
         azimuth: 45,
@@ -113,9 +103,6 @@ export const useAppStore = create<AppStore>()(
       uploadError: null,
       setLoadedModels: (loadedModels) => set({ loadedModels }, false, 'setLoadedModels'),
       setCurrentModel: (currentModel) => set({ currentModel }, false, 'setCurrentModel'),
-      setDimensions: (dimensions) => set({ dimensions }, false, 'setDimensions'),
-      setBoxColor: (boxColor) => set({ boxColor }, false, 'setBoxColor'),
-      setObjectName: (objectName) => set({ objectName }, false, 'setObjectName'),
       setSunlight: (sunlight) => set({ sunlight }, false, 'setSunlight'),
       setAmbientLight: (ambientLight) => set({ ambientLight }, false, 'setAmbientLight'),
       setShadowQuality: (shadowQuality) => set({ shadowQuality }, false, 'setShadowQuality'),
@@ -158,9 +145,6 @@ export const useSceneState = () => useAppStore(
   useShallow((state) => ({
     loadedModels: state.loadedModels,
     currentModel: state.currentModel,
-    dimensions: state.dimensions,
-    boxColor: state.boxColor,
-    objectName: state.objectName,
     sunlight: state.sunlight,
     ambientLight: state.ambientLight,
     shadowQuality: state.shadowQuality,
@@ -169,9 +153,6 @@ export const useSceneState = () => useAppStore(
     uploadError: state.uploadError,
     setLoadedModels: state.setLoadedModels,
     setCurrentModel: state.setCurrentModel,
-    setDimensions: state.setDimensions,
-    setBoxColor: state.setBoxColor,
-    setObjectName: state.setObjectName,
     setSunlight: state.setSunlight,
     setAmbientLight: state.setAmbientLight,
     setShadowQuality: state.setShadowQuality,

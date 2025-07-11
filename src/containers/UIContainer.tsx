@@ -80,7 +80,7 @@ const UIContainer = () => {
       onResetView={handleResetView}
       shadeType={shadeType}
       onShadeTypeChange={setShadeType}
-      modelCount={sceneState.loadedModels.length + 1}
+      modelCount={sceneState.loadedModels.length}
     />
   );
 };

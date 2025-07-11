@@ -15,8 +15,7 @@ interface UseModelViewerEffectsProps {
   scene: THREE.Scene | null;
   controls: any;
   currentModel: LoadedModel | null;
-  boxRef: React.RefObject<THREE.Mesh>;
-  activeTool?: 'select' | 'point' | 'measure' | 'move';
+  activeTool?: 'select' | 'point' | 'measure';
   onPointCreate?: (point: { x: number; y: number; z: number }) => void;
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
   loadedModels: LoadedModel[];
@@ -34,7 +33,6 @@ export const useModelViewerEffects = ({
   scene,
   controls,
   currentModel,
-  boxRef,
   activeTool = 'select',
   onPointCreate,
   onMeasureCreate,
@@ -72,11 +70,12 @@ export const useModelViewerEffects = ({
     onMeasureCreate
   );
 
-  // Mouse interaction
+  // Mouse interaction - use the current model's object if available
+  const targetObject = currentModel ? currentModel.object : null;
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
     renderer,
     camera,
-    currentModel ? currentModel.object : boxRef.current,
+    targetObject,
     scene,
     handleObjectSelect,
     activeTool,

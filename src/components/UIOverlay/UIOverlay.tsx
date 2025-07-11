@@ -17,8 +17,8 @@ interface MeasureData {
 }
 
 interface UIOverlayProps {
-  activeTool: 'select' | 'point' | 'measure' | 'move';
-  onToolSelect: (tool: 'select' | 'point' | 'measure' | 'move') => void;
+  activeTool: 'select' | 'point' | 'measure';
+  onToolSelect: (tool: 'select' | 'point' | 'measure') => void;
   activeControlTab: string;
   showControlPanel: boolean;
   onTabChange: (tab: string) => void;
@@ -115,10 +115,6 @@ const UIOverlay = ({
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
         onResetView={onResetView}
-        snapToGrid={false}
-        onSnapToGridChange={() => {}}
-        gridSize={1}
-        onGridSizeChange={() => {}}
       />
     </>
   );

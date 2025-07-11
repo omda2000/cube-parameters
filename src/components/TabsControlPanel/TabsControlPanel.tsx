@@ -31,13 +31,6 @@ interface TabsControlPanelProps {
   shadowQuality: 'low' | 'medium' | 'high';
   setShadowQuality: (quality: 'low' | 'medium' | 'high') => void;
   
-  dimensions: { length: number; width: number; height: number };
-  setDimensions: (dimensions: { length: number; width: number; height: number }) => void;
-  boxColor: string;
-  setBoxColor: (color: string) => void;
-  objectName: string;
-  setObjectName: (name: string) => void;
-  
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
   
