@@ -33,7 +33,7 @@ interface ThreeViewerProps {
 }
 
 const ThreeViewer = memo((props: ThreeViewerProps) => {
-  // Core setup
+  // Core setup with enhanced error handling
   const {
     mountRef,
     scene,
@@ -84,7 +84,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     props.onMeasureCreate
   );
 
-  // Effects and interactions
+  // Effects and interactions with null-safe switchCamera
   const {
     selectedObjects
   } = useModelViewerEffects({
@@ -110,21 +110,46 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('ThreeViewer Performance Metrics:', performanceMetrics);
       console.log('Mobile Device:', isMobile);
+      console.log('Components initialized:', {
+        scene: !!scene,
+        camera: !!camera,
+        renderer: !!renderer,
+        controls: !!controls,
+        switchCamera: !!switchCamera
+      });
     }
-  }, [performanceMetrics, isMobile]);
+  }, [performanceMetrics, isMobile, scene, camera, renderer, controls, switchCamera]);
 
   if (error) {
     return (
       <div className="w-full h-full flex items-center justify-center text-red-500">
         <div className="text-center">
           <h2 className="text-xl font-bold mb-2">Model Viewer Error</h2>
-          <p>{error}</p>
+          <p className="mb-2">{error}</p>
+          <p className="text-sm text-gray-600 mb-4">
+            Debug info: Scene={!!scene}, Camera={!!camera}, Renderer={!!renderer}
+          </p>
           <button 
             onClick={() => window.location.reload()} 
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 min-h-[44px] min-w-[44px]"
           >
             Reload Application
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state if critical components aren't ready
+  if (!scene || !camera || !renderer) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Initializing 3D Scene...</p>
+          <p className="text-sm text-gray-600">
+            Scene: {scene ? '✓' : '✗'} | Camera: {camera ? '✓' : '✗'} | Renderer: {renderer ? '✓' : '✗'}
+          </p>
         </div>
       </div>
     );

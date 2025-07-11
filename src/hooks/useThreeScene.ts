@@ -12,7 +12,7 @@ import { useAnimationLoop } from './scene/useAnimationLoop';
 export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const resourceManagerRef = useRef<ResourceManager>(ResourceManager.getInstance());
 
-  // Set up scene components
+  // Set up scene components with proper error handling
   const { sceneRef, ucsHelperRef, gridHelperRef } = useSceneSetup();
   
   const { 
@@ -20,22 +20,38 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     orthographicCameraRef, 
     activeCameraRef, 
     isOrthographic, 
+    isInitialized: cameraInitialized,
     switchCamera: baseSwitchCamera 
   } = useCameraSetup(mountRef);
   
   const { rendererRef, labelRendererRef } = useRendererSetup(mountRef);
   
+  // Only set up controls when camera and renderer are available
   const { controlsRef } = useControlsSetup(
-    perspectiveCameraRef.current, 
+    cameraInitialized ? perspectiveCameraRef.current : null, 
     rendererRef.current
   );
 
-  // Enhanced switch camera with controls reference
+  // Enhanced switch camera with proper validation
   const switchCamera = useCallback((orthographic: boolean) => {
-    baseSwitchCamera(orthographic, controlsRef);
+    try {
+      if (!baseSwitchCamera) {
+        console.warn('Camera switch function not available');
+        return;
+      }
+      
+      if (!controlsRef.current) {
+        console.warn('Controls not available for camera switch');
+        return;
+      }
+      
+      baseSwitchCamera(orthographic, controlsRef);
+    } catch (error) {
+      console.error('Error switching camera:', error);
+    }
   }, [baseSwitchCamera, controlsRef]);
 
-  // Set up resize handling
+  // Set up resize handling with null checks
   useSceneResize(
     mountRef,
     perspectiveCameraRef.current,
@@ -44,7 +60,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     labelRendererRef.current
   );
 
-  // Set up animation loop
+  // Set up animation loop with null checks
   useAnimationLoop(
     sceneRef.current,
     activeCameraRef.current,
@@ -53,7 +69,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     controlsRef.current
   );
 
-  // Performance monitoring
+  // Performance monitoring with error handling
   const { metrics } = useThreePerformance(rendererRef.current);
 
   return {
@@ -66,6 +82,6 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     gridHelperRef,
     performanceMetrics: metrics,
     isOrthographic,
-    switchCamera
+    switchCamera: cameraInitialized ? switchCamera : null
   };
 };
