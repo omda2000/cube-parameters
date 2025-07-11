@@ -56,6 +56,7 @@ export const getIntersectableObjects = (scene: THREE.Scene, forceRefresh = false
   if (forceRefresh || currentVersion !== cacheVersion || cachedIntersectableObjects.length === 0) {
     cachedIntersectableObjects = [];
     scene.traverse((object) => {
+      // Include meshes, points, and measurement groups for intersection
       if (object instanceof THREE.Mesh && object.visible && !object.userData.isHelper) {
         cachedIntersectableObjects.push(object);
       }

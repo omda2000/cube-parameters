@@ -12,7 +12,7 @@ const generateObjectId = (object: THREE.Object3D): string => {
     return `point_${object.uuid}`;
   } else if (object.userData.isMeasurementGroup) {
     return `measurement_${object.uuid}`;
-  } else if (object instanceof THREE.Group) {
+  } else if (object.userData.isLoadedModel || object instanceof THREE.Group) {
     return `group_${object.uuid}`;
   } else if (object instanceof THREE.Mesh) {
     return `mesh_${object.uuid}`;
@@ -24,6 +24,28 @@ const generateObjectId = (object: THREE.Object3D): string => {
   return `object_${object.uuid}`;
 };
 
+// Helper function to determine object type
+const getObjectType = (object: THREE.Object3D): SceneObject['type'] => {
+  if (object.userData.isLoadedModel) {
+    return 'model';
+  } else if (object.userData.isPrimitive) {
+    return 'primitive';
+  } else if (object.userData.isPoint) {
+    return 'point';
+  } else if (object.userData.isMeasurementGroup) {
+    return 'measurement';
+  } else if (object instanceof THREE.Group) {
+    return 'group';
+  } else if (object instanceof THREE.Mesh) {
+    return 'mesh';
+  } else if (object instanceof THREE.Light) {
+    return 'light';
+  } else if (object.type === 'GridHelper' || object.type === 'AxesHelper') {
+    return 'environment';
+  }
+  return 'mesh';
+};
+
 export const useObjectSelection = () => {
   const { selectObject, selectedObjects, clearSelection, toggleSelection } = useSelectionContext();
 
@@ -31,22 +53,19 @@ export const useObjectSelection = () => {
   const handleObjectSelect = useMemo(() => (object: THREE.Object3D | null, isMultiSelect = false) => {
     if (object) {
       const objectId = generateObjectId(object);
+      const objectType = getObjectType(object);
       
       const sceneObject: SceneObject = {
         id: objectId,
         name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
-        type: object.userData.isPrimitive ? 'primitive' : 
-              object.userData.isPoint ? 'point' :
-              object.userData.isMeasurementGroup ? 'measurement' : 
-              object instanceof THREE.Group ? 'group' :
-              object instanceof THREE.Mesh ? 'mesh' :
-              object instanceof THREE.Light ? 'light' :
-              (object.type === 'GridHelper' || object.type === 'AxesHelper') ? 'environment' : 'mesh',
+        type: objectType,
         object: object,
         children: [],
         visible: object.visible,
         selected: true
       };
+      
+      console.log('Selecting object:', sceneObject.name, 'Type:', sceneObject.type, 'Multi:', isMultiSelect);
       
       if (isMultiSelect) {
         toggleSelection(sceneObject);
@@ -54,6 +73,7 @@ export const useObjectSelection = () => {
         selectObject(sceneObject);
       }
     } else if (!isMultiSelect) {
+      console.log('Clearing selection');
       clearSelection();
     }
   }, [selectObject, clearSelection, toggleSelection]);

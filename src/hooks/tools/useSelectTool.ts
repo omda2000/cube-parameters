@@ -9,6 +9,32 @@ export const useSelectTool = (
   scene: THREE.Scene | null,
   onObjectSelect?: (object: THREE.Object3D | null, isMultiSelect?: boolean) => void
 ) => {
+  const findSelectableObject = useCallback((object: THREE.Object3D): THREE.Object3D => {
+    // If clicked on a child of a measurement group, select the group
+    if (object.parent && object.parent.userData.isMeasurementGroup) {
+      return object.parent;
+    }
+    
+    // If clicked on part of a loaded model, find the model root
+    if (object.userData.isPartOfLoadedModel && object.userData.loadedModelRoot) {
+      return object.userData.loadedModelRoot;
+    }
+    
+    // If this object is itself a loaded model root, select it
+    if (object.userData.isLoadedModel || (object.parent && object.parent.userData.isLoadedModel)) {
+      // Walk up to find the actual loaded model root
+      let current = object;
+      while (current.parent && !current.userData.isLoadedModel) {
+        current = current.parent;
+        if (current.userData.isLoadedModel) {
+          return current;
+        }
+      }
+    }
+    
+    return object;
+  }, []);
+
   const handleClick = useCallback((event: MouseEvent) => {
     if (!renderer || !camera || !scene || event.button !== 0) return;
 
@@ -27,20 +53,16 @@ export const useSelectTool = (
     const intersects = raycaster.intersectObjects(intersectableObjects, true);
     
     if (intersects.length > 0 && onObjectSelect) {
-      let targetObject = intersects[0].object;
+      const hitObject = intersects[0].object;
+      const targetObject = findSelectableObject(hitObject);
       
-      // If clicked on a child of a measurement group, select the group
-      if (targetObject.parent && targetObject.parent.userData.isMeasurementGroup) {
-        targetObject = targetObject.parent;
-      }
-      
-      console.log('Object selected:', targetObject.name || targetObject.type);
+      console.log('Object selected:', targetObject.name || targetObject.type, 'from hit:', hitObject.name || hitObject.type);
       onObjectSelect(targetObject, isCtrlClick);
     } else if (onObjectSelect && !isCtrlClick) {
       console.log('Selection cleared');
       onObjectSelect(null, false);
     }
-  }, [renderer, camera, scene, onObjectSelect]);
+  }, [renderer, camera, scene, onObjectSelect, findSelectableObject]);
 
   const handleTouch = useCallback((event: TouchEvent) => {
     if (!renderer || !camera || !scene || event.touches.length !== 1) return;
@@ -59,20 +81,16 @@ export const useSelectTool = (
     const intersects = raycaster.intersectObjects(intersectableObjects, true);
     
     if (intersects.length > 0 && onObjectSelect) {
-      let targetObject = intersects[0].object;
+      const hitObject = intersects[0].object;
+      const targetObject = findSelectableObject(hitObject);
       
-      // If touched on a child of a measurement group, select the group
-      if (targetObject.parent && targetObject.parent.userData.isMeasurementGroup) {
-        targetObject = targetObject.parent;
-      }
-      
-      console.log('Object selected via touch:', targetObject.name || targetObject.type);
+      console.log('Object selected via touch:', targetObject.name || targetObject.type, 'from hit:', hitObject.name || hitObject.type);
       onObjectSelect(targetObject, false); // No multi-select on touch
     } else if (onObjectSelect) {
       console.log('Selection cleared via touch');
       onObjectSelect(null, false);
     }
-  }, [renderer, camera, scene, onObjectSelect]);
+  }, [renderer, camera, scene, onObjectSelect, findSelectableObject]);
 
   return { handleClick, handleTouch };
 };

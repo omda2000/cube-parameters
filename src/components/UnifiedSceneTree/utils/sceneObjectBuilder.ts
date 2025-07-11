@@ -32,14 +32,31 @@ export const buildSceneObjects = (
 
   const sceneObjects: SceneObject[] = [];
   const selectedIds = new Set(selectedObjects.map(obj => obj.id));
+  const processedObjects = new Set<THREE.Object3D>(); // Track processed objects to avoid duplication
+
+  // Create a map of loaded model objects for quick lookup
+  const loadedModelMap = new Map<THREE.Object3D, LoadedModel>();
+  loadedModels.forEach(model => {
+    loadedModelMap.set(model.object, model);
+    // Also mark all children of loaded models to prevent separate processing
+    model.object.traverse(child => {
+      if (child !== model.object) {
+        child.userData.isPartOfLoadedModel = true;
+        child.userData.loadedModelRoot = model.object;
+      }
+    });
+  });
 
   // Helper function to determine object type and create SceneObject
   const createSceneObject = (object: THREE.Object3D, parentId?: string): SceneObject => {
     let objectType: SceneObject['type'] = 'mesh';
     const objectId = generateObjectId(object);
 
-    // Determine object type based on userData and object properties
-    if (object.userData.isPrimitive) {
+    // Check if this is a loaded model root
+    const loadedModel = loadedModelMap.get(object);
+    if (loadedModel) {
+      objectType = 'model';
+    } else if (object.userData.isPrimitive) {
       objectType = 'primitive';
     } else if (object.userData.isPoint) {
       objectType = 'point';
@@ -55,15 +72,9 @@ export const buildSceneObjects = (
       objectType = 'environment';
     }
 
-    // Check if this is a loaded model
-    const isLoadedModel = loadedModels.some(model => model.object === object);
-    if (isLoadedModel) {
-      objectType = 'model';
-    }
-
     const sceneObject: SceneObject = {
       id: objectId,
-      name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
+      name: loadedModel ? loadedModel.name : (object.name || `${object.type}_${object.uuid.slice(0, 8)}`),
       type: objectType,
       object: object,
       children: [],
@@ -71,7 +82,7 @@ export const buildSceneObjects = (
       selected: selectedIds.has(objectId)
     };
 
-    // Build children recursively
+    // Build children recursively, but only for loaded models or non-model objects
     if (object.children.length > 0) {
       sceneObject.children = object.children
         .map(child => createSceneObject(child, objectId))
@@ -88,11 +99,27 @@ export const buildSceneObjects = (
 
   // Traverse the scene and build the tree
   scene.children.forEach(child => {
-    const sceneObject = createSceneObject(child);
-    
-    // Only add objects that should be visible in the tree
-    if (!child.userData.isHelper) {
+    // Skip if this object has already been processed or is a helper
+    if (processedObjects.has(child) || child.userData.isHelper) {
+      return;
+    }
+
+    // If this is a loaded model, process it as a single unit
+    const loadedModel = loadedModelMap.get(child);
+    if (loadedModel) {
+      const sceneObject = createSceneObject(child);
       sceneObjects.push(sceneObject);
+      
+      // Mark this model and all its children as processed to prevent duplication
+      processedObjects.add(child);
+      child.traverse(descendant => {
+        processedObjects.add(descendant);
+      });
+    } else if (!child.userData.isPartOfLoadedModel) {
+      // Only process objects that are not part of a loaded model
+      const sceneObject = createSceneObject(child);
+      sceneObjects.push(sceneObject);
+      processedObjects.add(child);
     }
   });
 
@@ -111,39 +138,48 @@ export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
     environment: [] as SceneObject[]
   };
 
-  const categorizeObject = (obj: SceneObject) => {
-    switch (obj.type) {
-      case 'model':
-        groups.models.push(obj);
-        break;
-      case 'mesh':
-        groups.meshes.push(obj);
-        break;
-      case 'group':
-        groups.groups.push(obj);
-        break;
-      case 'primitive':
-        groups.primitives.push(obj);
-        break;
-      case 'point':
-        groups.points.push(obj);
-        break;
-      case 'measurement':
-        groups.measurements.push(obj);
-        break;
-      case 'light':
-        groups.lights.push(obj);
-        break;
-      case 'environment':
-        groups.environment.push(obj);
-        break;
+  const categorizeObject = (obj: SceneObject, isTopLevel = true) => {
+    // Only categorize top-level objects to avoid duplication
+    if (isTopLevel) {
+      switch (obj.type) {
+        case 'model':
+          groups.models.push(obj);
+          break;
+        case 'mesh':
+          // Only add meshes that are not part of loaded models
+          if (!obj.object.userData.isPartOfLoadedModel) {
+            groups.meshes.push(obj);
+          }
+          break;
+        case 'group':
+          // Only add groups that are not loaded models
+          const isLoadedModel = obj.type === 'model';
+          if (!isLoadedModel && !obj.object.userData.isPartOfLoadedModel) {
+            groups.groups.push(obj);
+          }
+          break;
+        case 'primitive':
+          groups.primitives.push(obj);
+          break;
+        case 'point':
+          groups.points.push(obj);
+          break;
+        case 'measurement':
+          groups.measurements.push(obj);
+          break;
+        case 'light':
+          groups.lights.push(obj);
+          break;
+        case 'environment':
+          groups.environment.push(obj);
+          break;
+      }
     }
 
-    // Recursively categorize children
-    obj.children.forEach(categorizeObject);
+    // Don't recursively categorize children - they should be shown as part of their parent
   };
 
-  sceneObjects.forEach(categorizeObject);
+  sceneObjects.forEach(obj => categorizeObject(obj, true));
 
   return groups;
 };

@@ -152,6 +152,17 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const modelGroup = new THREE.Group();
       modelGroup.add(object);
       modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
+      
+      // Mark as loaded model for proper selection handling
+      modelGroup.userData.isLoadedModel = true;
+      
+      // Mark all children as part of this loaded model
+      modelGroup.traverse((child) => {
+        if (child !== modelGroup) {
+          child.userData.isPartOfLoadedModel = true;
+          child.userData.loadedModelRoot = modelGroup;
+        }
+      });
 
       const modelData: LoadedModel = {
         id: Date.now().toString(),
