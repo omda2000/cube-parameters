@@ -11,7 +11,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const mergeGeometries = useCallback((object: THREE.Object3D) => {
+  const mergeGeometries = useCallback(async (object: THREE.Object3D): Promise<THREE.Object3D> => {
     const geometries: THREE.BufferGeometry[] = [];
     const materials: THREE.Material[] = [];
     
@@ -158,11 +158,16 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
         }
       });
 
+      // Create a Group to ensure proper typing
+      const modelGroup = new THREE.Group();
+      modelGroup.add(mergedObject);
+      modelGroup.name = file.name.replace('.fbx', '');
+
       const modelData: LoadedModel = {
         id: Date.now().toString(),
         name: file.name.replace('.fbx', ''),
-        object: mergedObject,
-        boundingBox: new THREE.Box3().setFromObject(mergedObject),
+        object: modelGroup,
+        boundingBox: new THREE.Box3().setFromObject(modelGroup),
         size: file.size
       };
 
@@ -173,7 +178,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       }
 
       console.log('Adding merged model to scene');
-      scene.add(mergedObject);
+      scene.add(modelGroup);
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
       
