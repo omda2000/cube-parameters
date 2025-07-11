@@ -41,15 +41,13 @@ export const useFileHandlers = () => {
         uploadHandler = (window as any).__fbxUploadHandler;
         console.log('Using FBX loader for:', file.name);
       } else if (fileName.endsWith('.gltf') || fileName.endsWith('.glb')) {
-        uploadHandler = (window as any).__gltfUploadHandler || (window as any).__fbxUploadHandler;
-        console.log('Using GLTF/GLB loader for:', file.name);
+        uploadHandler = (window as any).__gltfUploadHandler;
+        console.log('Using GLTF loader for:', file.name);
       } else if (fileName.endsWith('.obj')) {
         uploadHandler = (window as any).__objUploadHandler || (window as any).__fbxUploadHandler;
-        console.log('Using OBJ loader for:', file.name);
+        console.log('Using OBJ loader (fallback to FBX) for:', file.name);
       } else {
-        // Fallback to FBX loader for unknown types (may work for some formats)
-        uploadHandler = (window as any).__fbxUploadHandler;
-        console.log('Using fallback FBX loader for:', file.name);
+        throw new Error('Unsupported file format. Please select FBX, GLTF, GLB, or OBJ files.');
       }
 
       if (uploadHandler) {
@@ -94,9 +92,15 @@ export const useFileHandlers = () => {
     if (model) {
       console.log('Selecting model:', model.name);
       const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
+      const gltfSwitchHandler = (window as any).__gltfSwitchHandler;
+      
+      // Try both handlers (they're the same unified handler now)
       if (fbxSwitchHandler) {
         fbxSwitchHandler(modelId);
+      } else if (gltfSwitchHandler) {
+        gltfSwitchHandler(modelId);
       }
+      
       addMessage({
         type: 'success',
         title: 'Model selected',
@@ -110,9 +114,15 @@ export const useFileHandlers = () => {
     if (model) {
       console.log('Removing model:', model.name);
       const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
+      const gltfRemoveHandler = (window as any).__gltfRemoveHandler;
+      
+      // Try both handlers (they're the same unified handler now)
       if (fbxRemoveHandler) {
         fbxRemoveHandler(modelId);
+      } else if (gltfRemoveHandler) {
+        gltfRemoveHandler(modelId);
       }
+      
       addMessage({
         type: 'warning',
         title: 'Model removed',

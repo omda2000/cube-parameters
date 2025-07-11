@@ -6,6 +6,7 @@ export const useModelsExposure = (
   loadedModels: LoadedModel[],
   currentModel: LoadedModel | null,
   loadFBXModel: (file: File) => Promise<void>,
+  loadGLTFModel: (file: File) => Promise<void>,
   switchToModel: (modelId: string) => void,
   removeModel: (modelId: string) => void,
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void
@@ -40,16 +41,22 @@ export const useModelsExposure = (
     }
   }, [loadedModels, currentModel, onModelsChange]);
 
-  // Expose FBX handlers globally for parent components to access
+  // Expose handlers globally for parent components to access
   useEffect(() => {
     (window as any).__fbxUploadHandler = loadFBXModel;
+    (window as any).__gltfUploadHandler = loadGLTFModel;
     (window as any).__fbxSwitchHandler = switchToModel;
+    (window as any).__gltfSwitchHandler = switchToModel;
     (window as any).__fbxRemoveHandler = removeModel;
+    (window as any).__gltfRemoveHandler = removeModel;
 
     return () => {
       delete (window as any).__fbxUploadHandler;
+      delete (window as any).__gltfUploadHandler;
       delete (window as any).__fbxSwitchHandler;
+      delete (window as any).__gltfSwitchHandler;
       delete (window as any).__fbxRemoveHandler;
+      delete (window as any).__gltfRemoveHandler;
     };
-  }, [loadFBXModel, switchToModel, removeModel]);
+  }, [loadFBXModel, loadGLTFModel, switchToModel, removeModel]);
 };

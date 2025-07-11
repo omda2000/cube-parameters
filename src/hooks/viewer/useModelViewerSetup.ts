@@ -6,6 +6,7 @@ import { useBoxMesh } from '../useBoxMesh';
 import { useLighting } from '../useLighting';
 import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
+import { useGLTFLoader } from '../useGLTFLoader';
 import { useZoomControls } from '../useZoomControls';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { 
@@ -76,14 +77,55 @@ export const useModelViewerSetup = ({
 
   // FBX model loading
   const {
-    loadedModels,
-    currentModel,
-    isLoading,
-    error,
+    loadedModels: fbxModels,
+    currentModel: fbxCurrentModel,
+    isLoading: fbxLoading,
+    error: fbxError,
     loadFBXModel,
-    switchToModel,
-    removeModel
+    switchToModel: fbxSwitchToModel,
+    removeModel: fbxRemoveModel
   } = useFBXLoader(sceneRef.current);
+
+  // GLTF model loading
+  const {
+    loadedModels: gltfModels,
+    currentModel: gltfCurrentModel,
+    isLoading: gltfLoading,
+    error: gltfError,
+    loadGLTFModel,
+    switchToModel: gltfSwitchToModel,
+    removeModel: gltfRemoveModel
+  } = useGLTFLoader(sceneRef.current);
+
+  // Combine models from both loaders
+  const loadedModels = [...fbxModels, ...gltfModels];
+  const currentModel = fbxCurrentModel || gltfCurrentModel;
+  const isLoading = fbxLoading || gltfLoading;
+  const error = fbxError || gltfError;
+
+  // Unified model switching
+  const switchToModel = (modelId: string) => {
+    const fbxModel = fbxModels.find(m => m.id === modelId);
+    const gltfModel = gltfModels.find(m => m.id === modelId);
+    
+    if (fbxModel) {
+      fbxSwitchToModel(modelId);
+    } else if (gltfModel) {
+      gltfSwitchToModel(modelId);
+    }
+  };
+
+  // Unified model removal
+  const removeModel = (modelId: string) => {
+    const fbxModel = fbxModels.find(m => m.id === modelId);
+    const gltfModel = gltfModels.find(m => m.id === modelId);
+    
+    if (fbxModel) {
+      fbxRemoveModel(modelId);
+    } else if (gltfModel) {
+      gltfRemoveModel(modelId);
+    }
+  };
 
   // Zoom controls integration
   const zoomControls = useZoomControls(
@@ -139,6 +181,7 @@ export const useModelViewerSetup = ({
     isLoading,
     error,
     loadFBXModel,
+    loadGLTFModel,
     switchToModel,
     removeModel,
     performanceMetrics,

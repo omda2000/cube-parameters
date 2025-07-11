@@ -21,6 +21,7 @@ interface UseModelViewerEffectsProps {
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
   loadedModels: LoadedModel[];
   loadFBXModel: (file: File) => Promise<void>;
+  loadGLTFModel: (file: File) => Promise<void>;
   switchToModel: (modelId: string) => void;
   removeModel: (modelId: string) => void;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
@@ -39,6 +40,7 @@ export const useModelViewerEffects = ({
   onMeasureCreate,
   loadedModels,
   loadFBXModel,
+  loadGLTFModel,
   switchToModel,
   removeModel,
   onModelsChange,
@@ -58,6 +60,7 @@ export const useModelViewerEffects = ({
     loadedModels,
     currentModel,
     loadFBXModel,
+    loadGLTFModel,
     switchToModel,
     removeModel,
     onModelsChange
