@@ -49,7 +49,8 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     removeModel,
     performanceMetrics,
     isOrthographic,
-    switchCamera
+    switchCamera,
+    isFullyInitialized
   } = useModelViewerSetup({
     dimensions: props.dimensions,
     boxColor: props.boxColor,
@@ -66,32 +67,32 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   // Renderer optimization
   useOptimizedRenderer(renderer);
 
-  // Mobile-optimized mouse interaction
+  // Mobile-optimized mouse interaction - only when fully initialized
   const {
     objectData,
     mousePosition,
     isHovering,
     isMobile
   } = useMobileMouseInteraction(
-    renderer,
-    camera,
-    currentModel ? currentModel.object : boxRef.current,
-    scene,
-    undefined, // onObjectSelect handled in effects
+    isFullyInitialized ? renderer : null,
+    isFullyInitialized ? camera : null,
+    isFullyInitialized && currentModel ? currentModel.object : (isFullyInitialized ? boxRef.current : null),
+    isFullyInitialized ? scene : null,
+    undefined,
     props.activeTool,
-    controls,
+    isFullyInitialized ? controls : null,
     props.onPointCreate,
     props.onMeasureCreate
   );
 
-  // Effects and interactions with null-safe switchCamera
+  // Effects and interactions - only when fully initialized
   const {
     selectedObjects
   } = useModelViewerEffects({
-    renderer,
-    camera,
-    scene,
-    controls,
+    renderer: isFullyInitialized ? renderer : null,
+    camera: isFullyInitialized ? camera : null,
+    scene: isFullyInitialized ? scene : null,
+    controls: isFullyInitialized ? controls : null,
     currentModel,
     boxRef,
     activeTool: props.activeTool,
@@ -102,7 +103,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     switchToModel,
     removeModel,
     onModelsChange: props.onModelsChange,
-    switchCamera
+    switchCamera: isFullyInitialized ? switchCamera : null
   });
 
   // Debug performance in development
@@ -110,15 +111,16 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('ThreeViewer Performance Metrics:', performanceMetrics);
       console.log('Mobile Device:', isMobile);
-      console.log('Components initialized:', {
+      console.log('Initialization Status:', {
         scene: !!scene,
         camera: !!camera,
         renderer: !!renderer,
         controls: !!controls,
-        switchCamera: !!switchCamera
+        switchCamera: !!switchCamera,
+        isFullyInitialized
       });
     }
-  }, [performanceMetrics, isMobile, scene, camera, renderer, controls, switchCamera]);
+  }, [performanceMetrics, isMobile, scene, camera, renderer, controls, switchCamera, isFullyInitialized]);
 
   if (error) {
     return (
@@ -140,16 +142,22 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     );
   }
 
-  // Show loading state if critical components aren't ready
-  if (!scene || !camera || !renderer) {
+  // Show enhanced loading state with detailed progress
+  if (!isFullyInitialized) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Initializing 3D Scene...</p>
-          <p className="text-sm text-gray-600">
-            Scene: {scene ? '✓' : '✗'} | Camera: {camera ? '✓' : '✗'} | Renderer: {renderer ? '✓' : '✗'}
-          </p>
+          <p className="text-lg font-semibold mb-2">Initializing 3D Scene...</p>
+          <div className="text-sm text-gray-600 space-y-1">
+            <p>Scene: {scene ? '✓ Ready' : '⏳ Loading...'}</p>
+            <p>Camera: {camera ? '✓ Ready' : '⏳ Loading...'}</p>
+            <p>Renderer: {renderer ? '✓ Ready' : '⏳ Loading...'}</p>
+            <p>Controls: {controls ? '✓ Ready' : '⏳ Loading...'}</p>
+          </div>
+          {isLoading && (
+            <p className="text-sm text-blue-600 mt-2">Loading 3D model...</p>
+          )}
         </div>
       </div>
     );

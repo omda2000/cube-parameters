@@ -1,7 +1,8 @@
 
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { ResourceManager } from './utils/ResourceManager';
 import { useThreePerformance } from './useThreePerformance';
+import { useMountState } from './scene/useMountState';
 import { useSceneSetup } from './scene/useSceneSetup';
 import { useCameraSetup } from './scene/useCameraSetup';
 import { useRendererSetup } from './scene/useRendererSetup';
@@ -9,68 +10,83 @@ import { useControlsSetup } from './scene/useControlsSetup';
 import { useSceneResize } from './scene/useSceneResize';
 import { useAnimationLoop } from './scene/useAnimationLoop';
 
-export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
-  const resourceManagerRef = useRef<ResourceManager>(ResourceManager.getInstance());
+export const useThreeScene = (providedMountRef?: React.RefObject<HTMLDivElement>) => {
+  // Use our own mount state management or the provided ref
+  const { mountRef, mountCallback, isMountReady } = useMountState();
+  const actualMountRef = providedMountRef || mountRef;
 
-  // Set up scene components with proper error handling
-  const { sceneRef, ucsHelperRef, gridHelperRef } = useSceneSetup();
+  // Sequential initialization with proper dependencies
+  const { sceneRef, ucsHelperRef, gridHelperRef, isSceneReady } = useSceneSetup(isMountReady);
   
   const { 
     perspectiveCameraRef, 
     orthographicCameraRef, 
     activeCameraRef, 
     isOrthographic, 
-    isInitialized: cameraInitialized,
+    isInitialized: isCameraReady,
     switchCamera: baseSwitchCamera 
-  } = useCameraSetup(mountRef);
+  } = useCameraSetup(actualMountRef, isMountReady);
   
-  const { rendererRef, labelRendererRef } = useRendererSetup(mountRef);
+  const { rendererRef, labelRendererRef, isRendererReady } = useRendererSetup(actualMountRef, isMountReady);
   
-  // Only set up controls when camera and renderer are available
-  const { controlsRef } = useControlsSetup(
-    cameraInitialized ? perspectiveCameraRef.current : null, 
-    rendererRef.current
+  const { controlsRef, isControlsReady } = useControlsSetup(
+    perspectiveCameraRef.current, 
+    rendererRef.current,
+    isCameraReady,
+    isRendererReady
   );
 
   // Enhanced switch camera with proper validation
   const switchCamera = useCallback((orthographic: boolean) => {
+    if (!baseSwitchCamera) {
+      console.warn('Camera switch function not available');
+      return;
+    }
+    
+    if (!controlsRef.current) {
+      console.warn('Controls not available for camera switch');
+      return;
+    }
+    
     try {
-      if (!baseSwitchCamera) {
-        console.warn('Camera switch function not available');
-        return;
-      }
-      
-      if (!controlsRef.current) {
-        console.warn('Controls not available for camera switch');
-        return;
-      }
-      
       baseSwitchCamera(orthographic, controlsRef);
     } catch (error) {
       console.error('Error switching camera:', error);
     }
   }, [baseSwitchCamera, controlsRef]);
 
-  // Set up resize handling with null checks
+  // Set up resize handling - only when all components are ready
   useSceneResize(
-    mountRef,
-    perspectiveCameraRef.current,
-    orthographicCameraRef.current,
-    rendererRef.current,
-    labelRendererRef.current
+    actualMountRef,
+    isCameraReady ? perspectiveCameraRef.current : null,
+    isCameraReady ? orthographicCameraRef.current : null,
+    isRendererReady ? rendererRef.current : null,
+    isRendererReady ? labelRendererRef.current : null
   );
 
-  // Set up animation loop with null checks
+  // Set up animation loop - only when all components are ready
   useAnimationLoop(
-    sceneRef.current,
-    activeCameraRef.current,
-    rendererRef.current,
-    labelRendererRef.current,
-    controlsRef.current
+    isSceneReady ? sceneRef.current : null,
+    isCameraReady ? activeCameraRef.current : null,
+    isRendererReady ? rendererRef.current : null,
+    isRendererReady ? labelRendererRef.current : null,
+    isControlsReady ? controlsRef.current : null
   );
 
-  // Performance monitoring with error handling
+  // Performance monitoring
   const { metrics } = useThreePerformance(rendererRef.current);
+
+  // Check if everything is ready
+  const isFullyInitialized = isMountReady && isSceneReady && isCameraReady && isRendererReady && isControlsReady;
+
+  console.log('Three.js initialization status:', {
+    isMountReady,
+    isSceneReady,
+    isCameraReady,
+    isRendererReady,
+    isControlsReady,
+    isFullyInitialized
+  });
 
   return {
     sceneRef,
@@ -82,6 +98,8 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     gridHelperRef,
     performanceMetrics: metrics,
     isOrthographic,
-    switchCamera: cameraInitialized ? switchCamera : null
+    switchCamera: isFullyInitialized ? switchCamera : null,
+    mountCallback: providedMountRef ? undefined : mountCallback,
+    isFullyInitialized
   };
 };

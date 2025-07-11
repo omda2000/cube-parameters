@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -15,19 +15,16 @@ const isMobile = () => {
 
 export const useControlsSetup = (
   camera: THREE.PerspectiveCamera | null,
-  renderer: THREE.WebGLRenderer | null
+  renderer: THREE.WebGLRenderer | null,
+  isCameraReady: boolean,
+  isRendererReady: boolean
 ) => {
   const controlsRef = useRef<OrbitControls | null>(null);
+  const [isControlsReady, setIsControlsReady] = useState(false);
 
   useEffect(() => {
-    // Enhanced validation
-    if (!camera) {
-      console.warn('Camera not available for controls setup');
-      return;
-    }
-    
-    if (!renderer) {
-      console.warn('Renderer not available for controls setup');
+    if (!isCameraReady || !isRendererReady || !camera || !renderer) {
+      console.log('Controls setup waiting for camera and renderer...');
       return;
     }
 
@@ -37,12 +34,13 @@ export const useControlsSetup = (
     }
 
     try {
+      console.log('Setting up controls...');
+      
       const controls = new OrbitControls(camera, renderer.domElement);
       controlsRef.current = controls;
       
       const mobile = isMobile();
       
-      // Enhanced OrbitControls with mobile optimization and error handling
       try {
         controls.enableDamping = true;
         controls.dampingFactor = mobile ? 0.1 : 0.05;
@@ -56,7 +54,6 @@ export const useControlsSetup = (
       
       if (mobile) {
         try {
-          // Mobile-specific touch settings
           controls.touches = {
             ONE: THREE.TOUCH.ROTATE,
             TWO: THREE.TOUCH.DOLLY_PAN
@@ -68,16 +65,13 @@ export const useControlsSetup = (
           controls.minZoom = 0.1;
           controls.maxZoom = 10;
           
-          // Configure canvas for mobile
           const canvas = renderer.domElement;
           canvas.style.touchAction = 'none';
           
-          // Use type assertion for webkit-specific properties
           const canvasStyle = canvas.style as any;
           canvasStyle.webkitTouchCallout = 'none';
           canvasStyle.webkitUserSelect = 'none';
           
-          // Prevent iOS Safari bounce scrolling
           const preventBounce = (e: TouchEvent) => {
             try {
               if (e.touches.length > 1 || e.target === canvas) {
@@ -99,6 +93,9 @@ export const useControlsSetup = (
           document.addEventListener('touchmove', preventBounce, { passive: false });
           canvas.addEventListener('contextmenu', preventContextMenu);
           
+          setIsControlsReady(true);
+          console.log('Mobile controls setup completed');
+          
           return () => {
             try {
               controls.dispose();
@@ -113,7 +110,6 @@ export const useControlsSetup = (
         }
       } else {
         try {
-          // Desktop settings
           controls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.DOLLY,
@@ -128,12 +124,13 @@ export const useControlsSetup = (
           controls.rotateSpeed = 0.5;
           controls.zoomSpeed = 0.8;
           controls.panSpeed = 0.8;
+          
+          setIsControlsReady(true);
+          console.log('Desktop controls setup completed');
         } catch (error) {
           console.error('Error setting up desktop controls:', error);
         }
       }
-
-      console.log('Controls setup completed successfully');
 
       return () => {
         try {
@@ -144,11 +141,13 @@ export const useControlsSetup = (
       };
     } catch (error) {
       console.error('Error creating OrbitControls:', error);
+      setIsControlsReady(false);
       return () => {};
     }
-  }, [camera, renderer]);
+  }, [camera, renderer, isCameraReady, isRendererReady]);
 
   return {
-    controlsRef
+    controlsRef,
+    isControlsReady
   };
 };

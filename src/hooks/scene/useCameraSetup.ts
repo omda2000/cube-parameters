@@ -2,7 +2,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 
-export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
+export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>, isMountReady: boolean) => {
   const perspectiveCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const orthographicCameraRef = useRef<THREE.OrthographicCamera | null>(null);
   const activeCameraRef = useRef<THREE.Camera | null>(null);
@@ -10,8 +10,12 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const switchCamera = useCallback((orthographic: boolean, controlsRef?: React.RefObject<any>) => {
+    if (!isInitialized) {
+      console.warn('Cannot switch camera - cameras not initialized');
+      return;
+    }
+
     try {
-      // Enhanced validation
       if (!mountRef.current) {
         console.warn('Mount ref not available for camera switch');
         return;
@@ -29,7 +33,6 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
 
       const controls = controlsRef.current;
       
-      // Safely get current position and target
       let currentPosition: THREE.Vector3;
       let currentTarget: THREE.Vector3;
       
@@ -43,7 +46,6 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
       }
 
       if (orthographic && orthographicCameraRef.current) {
-        // Switch to orthographic
         const orthoCamera = orthographicCameraRef.current;
         orthoCamera.position.copy(currentPosition);
         orthoCamera.lookAt(currentTarget);
@@ -52,7 +54,6 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
         activeCameraRef.current = orthoCamera;
         setIsOrthographic(true);
       } else if (!orthographic && perspectiveCameraRef.current) {
-        // Switch to perspective
         const perspCamera = perspectiveCameraRef.current;
         perspCamera.position.copy(currentPosition);
         perspCamera.lookAt(currentTarget);
@@ -62,7 +63,6 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
         setIsOrthographic(false);
       }
 
-      // Safely update controls
       try {
         controls.target.copy(currentTarget);
         controls.update();
@@ -72,19 +72,20 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
     } catch (error) {
       console.error('Error in switchCamera:', error);
     }
-  }, [mountRef]);
+  }, [mountRef, isInitialized]);
 
   useEffect(() => {
-    if (!mountRef.current) {
-      console.warn('Mount ref not available for camera setup');
+    if (!isMountReady || !mountRef.current) {
+      console.log('Camera setup waiting for mount...');
       return;
     }
 
     try {
+      console.log('Setting up cameras...');
+      
       const width = mountRef.current.clientWidth;
       const height = mountRef.current.clientHeight;
       
-      // Validate dimensions
       if (width <= 0 || height <= 0) {
         console.warn('Invalid mount dimensions for camera setup:', { width, height });
         return;
@@ -92,18 +93,17 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
       
       const aspect = width / height;
 
-      // Perspective Camera setup with error handling
       try {
         const perspectiveCamera = new THREE.PerspectiveCamera(60, aspect, 0.01, 2000);
         perspectiveCameraRef.current = perspectiveCamera;
         perspectiveCamera.position.set(5, 5, 5);
         perspectiveCamera.lookAt(0, 0, 0);
+        console.log('Perspective camera created');
       } catch (error) {
         console.error('Error creating perspective camera:', error);
         return;
       }
 
-      // Orthographic Camera setup with error handling
       try {
         const frustumSize = 10;
         const orthographicCamera = new THREE.OrthographicCamera(
@@ -114,12 +114,12 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
         orthographicCameraRef.current = orthographicCamera;
         orthographicCamera.position.set(5, 5, 5);
         orthographicCamera.lookAt(0, 0, 0);
+        console.log('Orthographic camera created');
       } catch (error) {
         console.error('Error creating orthographic camera:', error);
         return;
       }
 
-      // Set initial active camera
       activeCameraRef.current = perspectiveCameraRef.current;
       setIsInitialized(true);
       
@@ -128,7 +128,7 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
       console.error('Error in camera setup:', error);
       setIsInitialized(false);
     }
-  }, [mountRef]);
+  }, [mountRef, isMountReady]);
 
   return {
     perspectiveCameraRef,
