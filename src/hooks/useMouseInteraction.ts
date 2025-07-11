@@ -75,8 +75,16 @@ export const useMouseInteraction = (
     };
 
     const handleClick = (event: MouseEvent) => {
+      // Temporarily disable controls during selection to prevent conflicts
+      if (controls && activeTool === 'select') {
+        controls.enabled = false;
+        setTimeout(() => {
+          if (controls) controls.enabled = true;
+        }, 100);
+      }
+
       // Clear any existing hover effects before selection
-      if (hoveredObject) {
+      if (hoveredObject && materialManager) {
         setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
@@ -92,11 +100,19 @@ export const useMouseInteraction = (
           measureTool.handleClick(event);
           break;
       }
-    };
+    });
 
     const handleTouchEnd = (event: TouchEvent) => {
+      // Temporarily disable controls during selection
+      if (controls && activeTool === 'select') {
+        controls.enabled = false;
+        setTimeout(() => {
+          if (controls) controls.enabled = true;
+        }, 100);
+      }
+
       // Clear any existing hover effects before selection
-      if (hoveredObject) {
+      if (hoveredObject && materialManager) {
         setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
@@ -107,7 +123,7 @@ export const useMouseInteraction = (
     };
 
     const handleMouseLeave = () => {
-      if (hoveredObject) {
+      if (hoveredObject && materialManager) {
         setHoverEffect(hoveredObject, false);
         setHoveredObject(null);
         setObjectData(null);
@@ -121,10 +137,10 @@ export const useMouseInteraction = (
       measureTool.handleRightClick();
     };
 
-    // Add event listeners
-    renderer.domElement.addEventListener('mousemove', handleMouseMove);
-    renderer.domElement.addEventListener('click', handleClick);
-    renderer.domElement.addEventListener('touchend', handleTouchEnd);
+    // Add event listeners with proper priority
+    renderer.domElement.addEventListener('mousemove', handleMouseMove, { passive: true });
+    renderer.domElement.addEventListener('click', handleClick, { capture: true });
+    renderer.domElement.addEventListener('touchend', handleTouchEnd, { capture: true });
     renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
     renderer.domElement.addEventListener('contextmenu', handleContextMenu);
     controls?.addEventListener('change', updateHover);
@@ -132,14 +148,14 @@ export const useMouseInteraction = (
     return () => {
       // Cleanup event listeners
       renderer.domElement.removeEventListener('mousemove', handleMouseMove);
-      renderer.domElement.removeEventListener('click', handleClick);
-      renderer.domElement.removeEventListener('touchend', handleTouchEnd);
+      renderer.domElement.removeEventListener('click', handleClick, { capture: true } as any);
+      renderer.domElement.removeEventListener('touchend', handleTouchEnd, { capture: true } as any);
       renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
       controls?.removeEventListener('change', updateHover);
       
       // Cleanup hover effects
-      if (hoveredObject) {
+      if (hoveredObject && materialManager) {
         setHoverEffect(hoveredObject, false);
       }
       
@@ -161,7 +177,8 @@ export const useMouseInteraction = (
     handleRaycastHover,
     setHoverEffect,
     setHoveredObject,
-    setObjectData
+    setObjectData,
+    materialManager
   ]);
 
   // Invalidate intersection cache when scene changes

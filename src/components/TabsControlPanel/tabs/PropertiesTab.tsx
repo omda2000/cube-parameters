@@ -1,5 +1,5 @@
 
-import { Settings, Tag, Palette, Ruler, Sliders } from 'lucide-react';
+import { Settings, Tag, Palette, Ruler, Sliders, Edit3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,20 +7,40 @@ import { Slider } from '@/components/ui/slider';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 import { MaterialType, MaterialParameters } from '../../../hooks/utils/enhancedMaterialManager';
 import { useMaterialManager } from '../../../hooks/useMaterialManager';
 import * as THREE from 'three';
+import { useState } from 'react';
 
 const PropertiesTab = () => {
   const { selectedObject } = useSelectionContext();
   const { materialManager, updateObjectMaterial, getObjectMaterialState } = useMaterialManager();
+  const [isEditingObjectName, setIsEditingObjectName] = useState(false);
+  const [isEditingMaterialName, setIsEditingMaterialName] = useState(false);
 
   const handlePropertyChange = (property: string, value: any) => {
     if (selectedObject && property === 'name') {
+      selectedObject.object.name = value;
+      // Update the selected object name in context as well
       selectedObject.name = value;
-      console.log(`Property changed: ${property} = ${value}`);
+      console.log(`Object name changed: ${value}`);
     }
+  };
+
+  const handleMaterialNameChange = (newName: string) => {
+    if (selectedObject && selectedObject.object instanceof THREE.Mesh) {
+      const material = Array.isArray(selectedObject.object.material) 
+        ? selectedObject.object.material[0] 
+        : selectedObject.object.material;
+      
+      if (material) {
+        material.name = newName;
+        console.log(`Material name changed: ${newName}`);
+      }
+    }
+    setIsEditingMaterialName(false);
   };
 
   const handleMaterialTypeChange = (type: MaterialType) => {
@@ -74,21 +94,91 @@ const PropertiesTab = () => {
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Tag className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Name</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300">Object Name</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 ml-auto"
+                    onClick={() => setIsEditingObjectName(!isEditingObjectName)}
+                  >
+                    <Edit3 className="h-3 w-3" />
+                  </Button>
                 </div>
-                <Input
-                  value={selectedObject.name}
-                  onChange={(e) => handlePropertyChange('name', e.target.value)}
-                  className="h-7 text-xs"
-                  placeholder="Object name"
-                />
+                {isEditingObjectName ? (
+                  <Input
+                    value={selectedObject.name}
+                    onChange={(e) => handlePropertyChange('name', e.target.value)}
+                    onBlur={() => setIsEditingObjectName(false)}
+                    onKeyDown={(e) => e.key === 'Enter' && setIsEditingObjectName(false)}
+                    className="h-7 text-xs"
+                    placeholder="Object name"
+                    autoFocus
+                  />
+                ) : (
+                  <div 
+                    className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50 cursor-pointer flex items-center"
+                    onClick={() => setIsEditingObjectName(true)}
+                  >
+                    {selectedObject.name || 'Unnamed Object'}
+                  </div>
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Object Name</p>
+              <p>Click to edit object name</p>
             </TooltipContent>
           </Tooltip>
         </div>
+
+        <Separator className="bg-slate-600" />
+
+        {/* Current Material Info */}
+        {selectedObject.type === 'mesh' && (
+          <div className="space-y-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Palette className="h-3 w-3 text-pink-400" />
+                    <Label className="text-xs text-slate-700 dark:text-slate-300">Material Name</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 ml-auto"
+                      onClick={() => setIsEditingMaterialName(!isEditingMaterialName)}
+                    >
+                      <Edit3 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {isEditingMaterialName ? (
+                    <Input
+                      defaultValue={getMaterialName(selectedObject.object)}
+                      onBlur={(e) => handleMaterialNameChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleMaterialNameChange((e.target as HTMLInputElement).value);
+                        }
+                      }}
+                      className="h-7 text-xs"
+                      placeholder="Material name"
+                      autoFocus
+                    />
+                  ) : (
+                    <div 
+                      className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50 cursor-pointer flex items-center"
+                      onClick={() => setIsEditingMaterialName(true)}
+                    >
+                      {getMaterialName(selectedObject.object)}
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Click to edit material name</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
 
         <Separator className="bg-slate-600" />
 
@@ -226,33 +316,6 @@ const PropertiesTab = () => {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Current Material Info */}
-        {selectedObject.type === 'mesh' && (
-          <>
-            <Separator className="bg-slate-600" />
-            <div className="space-y-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <div className="flex items-center gap-1 mb-1">
-                      <Palette className="h-3 w-3 text-pink-400" />
-                      <Label className="text-xs text-slate-700 dark:text-slate-300">Current Material</Label>
-                    </div>
-                    <Input
-                      value={getMaterialName(selectedObject.object)}
-                      readOnly
-                      className="h-7 text-xs bg-slate-700/50"
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Current Material Type</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </>
         )}
       </div>
     </TooltipProvider>

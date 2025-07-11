@@ -75,6 +75,12 @@ export class EnhancedMaterialManager {
   }
 
   setHoverEffect(object: THREE.Object3D, hover: boolean) {
+    const currentState = this.objectStates.get(object);
+    if (currentState && currentState.isSelected && !hover) {
+      // Don't remove hover if object is selected, just update state
+      this.setObjectState(object, { isHovered: hover });
+      return;
+    }
     this.setObjectState(object, { isHovered: hover });
   }
 

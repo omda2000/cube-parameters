@@ -11,6 +11,97 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const mergeGeometries = useCallback((object: THREE.Object3D) => {
+    const geometries: THREE.BufferGeometry[] = [];
+    const materials: THREE.Material[] = [];
+    
+    object.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.geometry) {
+        // Clone geometry to avoid modifying original
+        const clonedGeometry = child.geometry.clone();
+        
+        // Apply the mesh's transformation to the geometry
+        clonedGeometry.applyMatrix4(child.matrixWorld);
+        
+        geometries.push(clonedGeometry);
+        
+        // Collect unique materials
+        if (Array.isArray(child.material)) {
+          materials.push(...child.material);
+        } else {
+          materials.push(child.material);
+        }
+      }
+    });
+
+    if (geometries.length === 0) return object;
+
+    // Merge all geometries into one
+    const mergedGeometry = new THREE.BufferGeometry();
+    
+    // Merge geometries using BufferGeometryUtils if available, otherwise use basic merge
+    try {
+      const { mergeGeometries: mergeGeometriesUtil } = await import('three/examples/jsm/utils/BufferGeometryUtils.js');
+      const merged = mergeGeometriesUtil(geometries);
+      if (merged) {
+        mergedGeometry.copy(merged);
+      }
+    } catch (error) {
+      console.warn('BufferGeometryUtils not available, using basic merge');
+      // Basic merge - combine position, normal, and uv attributes
+      const positions: number[] = [];
+      const normals: number[] = [];
+      const uvs: number[] = [];
+      
+      geometries.forEach(geometry => {
+        const posAttr = geometry.getAttribute('position');
+        const normAttr = geometry.getAttribute('normal');
+        const uvAttr = geometry.getAttribute('uv');
+        
+        if (posAttr) positions.push(...Array.from(posAttr.array));
+        if (normAttr) normals.push(...Array.from(normAttr.array));
+        if (uvAttr) uvs.push(...Array.from(uvAttr.array));
+      });
+      
+      mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      if (normals.length > 0) {
+        mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+      }
+      if (uvs.length > 0) {
+        mergedGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      }
+    }
+
+    // Compute normals if they don't exist
+    if (!mergedGeometry.getAttribute('normal')) {
+      mergedGeometry.computeVertexNormals();
+    }
+
+    // Create a single material (use the first non-basic material found)
+    let finalMaterial = materials.find(mat => !(mat instanceof THREE.MeshBasicMaterial)) || materials[0];
+    
+    if (!finalMaterial) {
+      finalMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
+    } else if (finalMaterial instanceof THREE.MeshBasicMaterial) {
+      // Convert basic material to phong for better lighting
+      finalMaterial = new THREE.MeshPhongMaterial({
+        color: finalMaterial.color,
+        map: finalMaterial.map
+      });
+    }
+
+    // Create new merged mesh
+    const mergedMesh = new THREE.Mesh(mergedGeometry, finalMaterial);
+    mergedMesh.name = object.name || 'Merged Object';
+    mergedMesh.castShadow = true;
+    mergedMesh.receiveShadow = true;
+
+    // Clean up original geometries
+    geometries.forEach(geo => geo.dispose());
+
+    return mergedMesh;
+  }, []);
+
   const loadFBXModel = useCallback(async (file: File) => {
     console.log('Starting FBX load process:', file.name);
     
@@ -39,41 +130,39 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       // Fix Z-axis orientation - most FBX files are Y-up, convert to Z-up
       object.rotateX(-Math.PI / 2);
 
-      // Calculate bounding box after rotation
-      const boundingBox = new THREE.Box3().setFromObject(object);
+      // Update world matrix before merging
+      object.updateMatrixWorld(true);
+
+      // Merge geometries to create unified object
+      console.log('Merging geometries...');
+      const mergedObject = await mergeGeometries(object);
+      
+      // Calculate bounding box after merging
+      const boundingBox = new THREE.Box3().setFromObject(mergedObject);
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
 
       // Center the model at origin
-      object.position.sub(center);
+      mergedObject.position.sub(center);
 
-      // Scale model to fit in view (max size of 4 units to give more room)
+      // Scale model to fit in view (max size of 4 units)
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
-      object.scale.setScalar(scale);
+      mergedObject.scale.setScalar(scale);
 
-      // Enable shadows and improve materials
-      object.traverse((child) => {
+      // Ensure shadows are enabled
+      mergedObject.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-          
-          // Improve material if it's basic
-          if (child.material instanceof THREE.MeshBasicMaterial) {
-            const newMaterial = new THREE.MeshPhongMaterial({
-              color: child.material.color,
-              map: child.material.map
-            });
-            child.material = newMaterial;
-          }
         }
       });
 
       const modelData: LoadedModel = {
         id: Date.now().toString(),
         name: file.name.replace('.fbx', ''),
-        object,
-        boundingBox: new THREE.Box3().setFromObject(object), // Recalculate after transforms
+        object: mergedObject,
+        boundingBox: new THREE.Box3().setFromObject(mergedObject),
         size: file.size
       };
 
@@ -83,8 +172,8 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
         scene.remove(currentModel.object);
       }
 
-      console.log('Adding new model to scene');
-      scene.add(object);
+      console.log('Adding merged model to scene');
+      scene.add(mergedObject);
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
       
@@ -94,7 +183,7 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
     } finally {
       setIsLoading(false);
     }
-  }, [scene, currentModel]);
+  }, [scene, currentModel, mergeGeometries]);
 
   const switchToModel = useCallback((modelId: string) => {
     if (!scene) return;

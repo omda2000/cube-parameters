@@ -12,6 +12,10 @@ export const useSelectTool = (
   const handleClick = useCallback((event: MouseEvent) => {
     if (!renderer || !camera || !scene || event.button !== 0) return;
 
+    // Prevent event propagation to avoid conflicts with OrbitControls
+    event.stopPropagation();
+    event.preventDefault();
+
     const isCtrlClick = event.ctrlKey || event.metaKey;
     const { raycaster, mouse } = createRaycaster();
     const rect = renderer.domElement.getBoundingClientRect();
@@ -41,7 +45,8 @@ export const useSelectTool = (
   const handleTouch = useCallback((event: TouchEvent) => {
     if (!renderer || !camera || !scene || event.touches.length !== 1) return;
 
-    event.preventDefault(); // Prevent default touch behavior
+    event.preventDefault();
+    event.stopPropagation();
     
     const touch = event.touches[0];
     const { raycaster, mouse } = createRaycaster();
