@@ -10,7 +10,7 @@ const generateObjectId = (object: THREE.Object3D): string => {
     return `point_${object.uuid}`;
   } else if (object.userData.isMeasurementGroup) {
     return `measurement_${object.uuid}`;
-  } else if (object instanceof THREE.Group) {
+  } else if (object.userData.isLoadedModel || object instanceof THREE.Group) {
     return `group_${object.uuid}`;
   } else if (object instanceof THREE.Mesh) {
     return `mesh_${object.uuid}`;
@@ -38,6 +38,8 @@ export const buildSceneObjects = (
   const loadedModelMap = new Map<THREE.Object3D, LoadedModel>();
   loadedModels.forEach(model => {
     loadedModelMap.set(model.object, model);
+    // Mark the loaded model root
+    model.object.userData.isLoadedModel = true;
     // Also mark all children of loaded models to prevent separate processing
     model.object.traverse(child => {
       if (child !== model.object) {
@@ -54,7 +56,7 @@ export const buildSceneObjects = (
 
     // Check if this is a loaded model root
     const loadedModel = loadedModelMap.get(object);
-    if (loadedModel) {
+    if (loadedModel || object.userData.isLoadedModel) {
       objectType = 'model';
     } else if (object.userData.isPrimitive) {
       objectType = 'primitive';
@@ -106,7 +108,7 @@ export const buildSceneObjects = (
 
     // If this is a loaded model, process it as a single unit
     const loadedModel = loadedModelMap.get(child);
-    if (loadedModel) {
+    if (loadedModel || child.userData.isLoadedModel) {
       const sceneObject = createSceneObject(child);
       sceneObjects.push(sceneObject);
       
@@ -152,9 +154,8 @@ export const groupSceneObjects = (sceneObjects: SceneObject[]) => {
           }
           break;
         case 'group':
-          // Only add groups that are not loaded models
-          const isLoadedModel = obj.type === 'model';
-          if (!isLoadedModel && !obj.object.userData.isPartOfLoadedModel) {
+          // Only add groups that are not loaded models and not part of loaded models
+          if (!obj.object.userData.isLoadedModel && !obj.object.userData.isPartOfLoadedModel) {
             groups.groups.push(obj);
           }
           break;
