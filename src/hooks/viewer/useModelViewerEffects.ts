@@ -24,7 +24,7 @@ interface UseModelViewerEffectsProps {
   switchToModel: (modelId: string) => void;
   removeModel: (modelId: string) => void;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
-  switchCamera: ((orthographic: boolean) => void) | null;
+  switchCamera: (orthographic: boolean) => void;
 }
 
 export const useModelViewerEffects = ({
@@ -50,7 +50,7 @@ export const useModelViewerEffects = ({
   // Selection visual effects
   useSelectionEffects(selectedObjects);
 
-  // Camera exposure with null safety
+  // Camera exposure
   useCameraExposure(switchCamera);
 
   // Models exposure with proper change detection
@@ -69,7 +69,7 @@ export const useModelViewerEffects = ({
     onMeasureCreate
   );
 
-  // Mouse interaction with enhanced validation
+  // Mouse interaction
   const { objectData, mousePosition, isHovering } = useMouseInteraction(
     renderer,
     camera,
@@ -81,25 +81,6 @@ export const useModelViewerEffects = ({
     handlePointCreate,
     handleMeasureCreate
   );
-
-  // Add error boundary effect
-  useEffect(() => {
-    const handleError = (error: ErrorEvent) => {
-      console.error('Model viewer error caught:', error);
-    };
-
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled promise rejection in model viewer:', event.reason);
-    };
-
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    return () => {
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, []);
 
   return {
     objectData,

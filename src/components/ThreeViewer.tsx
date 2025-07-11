@@ -33,7 +33,7 @@ interface ThreeViewerProps {
 }
 
 const ThreeViewer = memo((props: ThreeViewerProps) => {
-  // Core setup with enhanced error handling
+  // Core setup
   const {
     mountRef,
     scene,
@@ -49,8 +49,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     removeModel,
     performanceMetrics,
     isOrthographic,
-    switchCamera,
-    isFullyInitialized
+    switchCamera
   } = useModelViewerSetup({
     dimensions: props.dimensions,
     boxColor: props.boxColor,
@@ -67,32 +66,32 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   // Renderer optimization
   useOptimizedRenderer(renderer);
 
-  // Mobile-optimized mouse interaction - only when fully initialized
+  // Mobile-optimized mouse interaction
   const {
     objectData,
     mousePosition,
     isHovering,
     isMobile
   } = useMobileMouseInteraction(
-    isFullyInitialized ? renderer : null,
-    isFullyInitialized ? camera : null,
-    isFullyInitialized && currentModel ? currentModel.object : (isFullyInitialized ? boxRef.current : null),
-    isFullyInitialized ? scene : null,
-    undefined,
+    renderer,
+    camera,
+    currentModel ? currentModel.object : boxRef.current,
+    scene,
+    undefined, // onObjectSelect handled in effects
     props.activeTool,
-    isFullyInitialized ? controls : null,
+    controls,
     props.onPointCreate,
     props.onMeasureCreate
   );
 
-  // Effects and interactions - only when fully initialized
+  // Effects and interactions
   const {
     selectedObjects
   } = useModelViewerEffects({
-    renderer: isFullyInitialized ? renderer : null,
-    camera: isFullyInitialized ? camera : null,
-    scene: isFullyInitialized ? scene : null,
-    controls: isFullyInitialized ? controls : null,
+    renderer,
+    camera,
+    scene,
+    controls,
     currentModel,
     boxRef,
     activeTool: props.activeTool,
@@ -103,7 +102,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     switchToModel,
     removeModel,
     onModelsChange: props.onModelsChange,
-    switchCamera: isFullyInitialized ? switchCamera : null
+    switchCamera
   });
 
   // Debug performance in development
@@ -111,53 +110,21 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('ThreeViewer Performance Metrics:', performanceMetrics);
       console.log('Mobile Device:', isMobile);
-      console.log('Initialization Status:', {
-        scene: !!scene,
-        camera: !!camera,
-        renderer: !!renderer,
-        controls: !!controls,
-        switchCamera: !!switchCamera,
-        isFullyInitialized
-      });
     }
-  }, [performanceMetrics, isMobile, scene, camera, renderer, controls, switchCamera, isFullyInitialized]);
+  }, [performanceMetrics, isMobile]);
 
   if (error) {
     return (
       <div className="w-full h-full flex items-center justify-center text-red-500">
         <div className="text-center">
           <h2 className="text-xl font-bold mb-2">Model Viewer Error</h2>
-          <p className="mb-2">{error}</p>
-          <p className="text-sm text-gray-600 mb-4">
-            Debug info: Scene={!!scene}, Camera={!!camera}, Renderer={!!renderer}
-          </p>
+          <p>{error}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 min-h-[44px] min-w-[44px]"
           >
             Reload Application
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show enhanced loading state with detailed progress
-  if (!isFullyInitialized) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg font-semibold mb-2">Initializing 3D Scene...</p>
-          <div className="text-sm text-gray-600 space-y-1">
-            <p>Scene: {scene ? '✓ Ready' : '⏳ Loading...'}</p>
-            <p>Camera: {camera ? '✓ Ready' : '⏳ Loading...'}</p>
-            <p>Renderer: {renderer ? '✓ Ready' : '⏳ Loading...'}</p>
-            <p>Controls: {controls ? '✓ Ready' : '⏳ Loading...'}</p>
-          </div>
-          {isLoading && (
-            <p className="text-sm text-blue-600 mt-2">Loading 3D model...</p>
-          )}
         </div>
       </div>
     );
