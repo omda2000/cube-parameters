@@ -11,23 +11,20 @@ import type {
   AmbientLightSettings, 
   EnvironmentSettings, 
   LoadedModel,
-  BoxDimensions,
   ShadowQuality
 } from '../types/model';
 
 interface ThreeViewerProps {
-  dimensions: BoxDimensions;
-  boxColor: string;
-  objectName: string;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: ShadowQuality;
   environment: EnvironmentSettings;
+  loadedModels: LoadedModel[];
+  currentModel: LoadedModel | null;
   onFileUpload?: (file: File) => void;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
   onSceneReady?: (scene: THREE.Scene) => void;
-  showPrimitives?: boolean;
-  activeTool?: 'select' | 'point' | 'measure' | 'move';
+  activeTool?: 'select' | 'point' | 'measure';
   onPointCreate?: (point: { x: number; y: number; z: number }) => void;
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
@@ -41,7 +38,6 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     renderer,
     controls,
     currentModel,
-    boxRef,
     isLoading,
     error,
     loadFBXModel,
@@ -52,16 +48,12 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     isOrthographic,
     switchCamera
   } = useModelViewerSetup({
-    dimensions: props.dimensions,
-    boxColor: props.boxColor,
-    objectName: props.objectName,
     sunlight: props.sunlight,
     ambientLight: props.ambientLight,
     shadowQuality: props.shadowQuality,
     environment: props.environment,
     onModelsChange: props.onModelsChange,
-    onSceneReady: props.onSceneReady,
-    showPrimitives: props.showPrimitives
+    onSceneReady: props.onSceneReady
   });
 
   // Renderer optimization
@@ -76,7 +68,7 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
   } = useMobileMouseInteraction(
     renderer,
     camera,
-    currentModel ? currentModel.object : boxRef.current,
+    currentModel ? currentModel.object : null,
     scene,
     undefined, // onObjectSelect handled in effects
     props.activeTool,
@@ -94,11 +86,10 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     scene,
     controls,
     currentModel,
-    boxRef,
     activeTool: props.activeTool,
     onPointCreate: props.onPointCreate,
     onMeasureCreate: props.onMeasureCreate,
-    loadedModels: currentModel ? [currentModel] : [],
+    loadedModels: props.loadedModels,
     loadFBXModel,
     loadGLTFModel,
     switchToModel,

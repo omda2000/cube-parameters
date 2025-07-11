@@ -4,7 +4,6 @@ import ModelViewerContainer from '../components/ModelViewerContainer/ModelViewer
 import { useAppState } from '../hooks/store/useAppState';
 import { useSceneState } from '../hooks/store/useSceneState';
 import { useUIState } from '../hooks/store/useUIState';
-import { useToolHandlers } from '../hooks/useToolHandlers';
 import { useFileHandlers } from '../hooks/useFileHandlers';
 import * as THREE from 'three';
 
@@ -25,9 +24,6 @@ const ModelViewerContainerWrapper = ({
 
   return (
     <ModelViewerContainer
-      dimensions={sceneState.dimensions}
-      boxColor={sceneState.boxColor}
-      objectName={sceneState.objectName}
       sunlight={sceneState.sunlight}
       ambientLight={sceneState.ambientLight}
       shadowQuality={sceneState.shadowQuality}

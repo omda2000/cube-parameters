@@ -32,13 +32,6 @@ export interface EnvironmentSettings {
   cameraFov?: number;
 }
 
-export interface BoxDimensions {
-  length: number;
-  width: number;
-  height: number;
-}
-
-export type TransformMode = 'translate' | 'rotate' | 'scale';
 export type ShadowQuality = 'low' | 'medium' | 'high';
 
 export interface SceneObject {

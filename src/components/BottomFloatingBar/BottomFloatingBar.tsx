@@ -5,7 +5,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
-import ExpandableSnapControls from '../ExpandableSnapControls/ExpandableSnapControls';
 
 interface BottomFloatingBarProps {
   objectCount?: number;
@@ -21,10 +20,6 @@ interface BottomFloatingBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
-  snapToGrid?: boolean;
-  onSnapToGridChange?: (enabled: boolean) => void;
-  gridSize?: number;
-  onGridSizeChange?: (size: number) => void;
 }
 
 const BottomFloatingBar = ({
@@ -40,11 +35,7 @@ const BottomFloatingBar = ({
   onZoomToSelected = () => {},
   onZoomIn = () => {},
   onZoomOut = () => {},
-  onResetView = () => {},
-  snapToGrid = false,
-  onSnapToGridChange = () => {},
-  gridSize = 1,
-  onGridSizeChange = () => {}
+  onResetView = () => {}
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -100,20 +91,11 @@ const BottomFloatingBar = ({
             />
           </div>
           
-          {/* Right section - Shade selector and snap controls */}
+          {/* Right section - Shade selector */}
           <div className="flex items-center gap-2">
             <ExpandableShadeSelector
               currentShadeType={shadeType}
               onShadeTypeChange={onShadeTypeChange}
-            />
-            
-            <Separator orientation="vertical" className="h-4" />
-            
-            <ExpandableSnapControls
-              snapToGrid={snapToGrid}
-              onSnapToGridChange={onSnapToGridChange}
-              gridSize={gridSize}
-              onGridSizeChange={onGridSizeChange}
             />
           </div>
         </div>

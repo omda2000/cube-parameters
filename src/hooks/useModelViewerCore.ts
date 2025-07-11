@@ -9,14 +9,10 @@ import type {
   AmbientLightSettings, 
   EnvironmentSettings, 
   LoadedModel,
-  BoxDimensions,
   ShadowQuality
 } from '../types/model';
 
 interface UseModelViewerCoreProps {
-  dimensions: BoxDimensions;
-  boxColor: string;
-  objectName: string;
   sunlight: SunlightSettings;
   ambientLight: AmbientLightSettings;
   shadowQuality: ShadowQuality;
@@ -24,8 +20,7 @@ interface UseModelViewerCoreProps {
   onFileUpload?: (file: File) => void;
   onModelsChange?: (models: LoadedModel[], current: LoadedModel | null) => void;
   onSceneReady?: (scene: THREE.Scene) => void;
-  showPrimitives?: boolean;
-  activeTool?: 'select' | 'point' | 'measure' | 'move';
+  activeTool?: 'select' | 'point' | 'measure';
   onPointCreate?: (point: { x: number; y: number; z: number }) => void;
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void;
 }
@@ -39,7 +34,6 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     renderer,
     controls,
     currentModel,
-    boxRef,
     isLoading,
     error,
     loadFBXModel,
@@ -51,16 +45,12 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     switchCamera,
     zoomControls
   } = useModelViewerSetup({
-    dimensions: props.dimensions,
-    boxColor: props.boxColor,
-    objectName: props.objectName,
     sunlight: props.sunlight,
     ambientLight: props.ambientLight,
     shadowQuality: props.shadowQuality,
     environment: props.environment,
     onModelsChange: props.onModelsChange,
-    onSceneReady: props.onSceneReady,
-    showPrimitives: props.showPrimitives
+    onSceneReady: props.onSceneReady
   });
 
   // Renderer optimization
@@ -78,7 +68,6 @@ export const useModelViewerCore = (props: UseModelViewerCoreProps) => {
     scene,
     controls,
     currentModel,
-    boxRef,
     activeTool: props.activeTool,
     onPointCreate: props.onPointCreate,
     onMeasureCreate: props.onMeasureCreate,

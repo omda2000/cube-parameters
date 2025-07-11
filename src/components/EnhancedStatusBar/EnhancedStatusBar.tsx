@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
-import ExpandableSnapControls from '../ExpandableSnapControls/ExpandableSnapControls';
 
 interface EnhancedStatusBarProps {
   objectCount?: number;
@@ -22,10 +21,6 @@ interface EnhancedStatusBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
-  snapToGrid?: boolean;
-  onSnapToGridChange?: (enabled: boolean) => void;
-  gridSize?: number;
-  onGridSizeChange?: (size: number) => void;
 }
 
 const EnhancedStatusBar = ({
@@ -41,11 +36,7 @@ const EnhancedStatusBar = ({
   onZoomToSelected = () => {},
   onZoomIn = () => {},
   onZoomOut = () => {},
-  onResetView = () => {},
-  snapToGrid = false,
-  onSnapToGridChange = () => {},
-  gridSize = 1,
-  onGridSizeChange = () => {}
+  onResetView = () => {}
 }: EnhancedStatusBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -125,15 +116,6 @@ const EnhancedStatusBar = ({
             <ExpandableShadeSelector
               currentShadeType={shadeType}
               onShadeTypeChange={onShadeTypeChange}
-            />
-            
-            <Separator orientation="vertical" className="h-4" />
-            
-            <ExpandableSnapControls
-              snapToGrid={snapToGrid}
-              onSnapToGridChange={onSnapToGridChange}
-              gridSize={gridSize}
-              onGridSizeChange={onGridSizeChange}
             />
           </div>
         </div>
