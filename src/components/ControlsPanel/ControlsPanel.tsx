@@ -5,7 +5,6 @@ import type {
   SunlightSettings, 
   AmbientLightSettings, 
   EnvironmentSettings, 
-  BoxDimensions, 
   ShadowQuality 
 } from '../../types/model';
 
@@ -25,12 +24,6 @@ interface ControlsPanelProps {
   setAmbientLight: (settings: AmbientLightSettings) => void;
   shadowQuality: ShadowQuality;
   setShadowQuality: (quality: ShadowQuality) => void;
-  dimensions: BoxDimensions;
-  setDimensions: (dimensions: BoxDimensions) => void;
-  boxColor: string;
-  setBoxColor: (color: string) => void;
-  objectName: string;
-  setObjectName: (name: string) => void;
   environment: EnvironmentSettings;
   setEnvironment: (settings: EnvironmentSettings) => void;
   activeTab: string;
