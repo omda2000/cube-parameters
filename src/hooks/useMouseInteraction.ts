@@ -75,9 +75,14 @@ export const useMouseInteraction = (
     };
 
     const handleClick = (event: MouseEvent) => {
-      // Temporarily disable controls during selection to prevent conflicts
-      if (controls && activeTool === 'select') {
+      // Prevent default behavior and stop propagation to avoid conflicts
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Temporarily disable controls during selection
+      if (controls) {
         controls.enabled = false;
+        // Re-enable controls after a short delay
         setTimeout(() => {
           if (controls) controls.enabled = true;
         }, 100);
@@ -100,11 +105,15 @@ export const useMouseInteraction = (
           measureTool.handleClick(event);
           break;
       }
-    });
+    };
 
     const handleTouchEnd = (event: TouchEvent) => {
+      // Prevent default behavior and stop propagation
+      event.preventDefault();
+      event.stopPropagation();
+
       // Temporarily disable controls during selection
-      if (controls && activeTool === 'select') {
+      if (controls) {
         controls.enabled = false;
         setTimeout(() => {
           if (controls) controls.enabled = true;
@@ -137,7 +146,7 @@ export const useMouseInteraction = (
       measureTool.handleRightClick();
     };
 
-    // Add event listeners with proper priority
+    // Add event listeners with proper priority and options
     renderer.domElement.addEventListener('mousemove', handleMouseMove, { passive: true });
     renderer.domElement.addEventListener('click', handleClick, { capture: true });
     renderer.domElement.addEventListener('touchend', handleTouchEnd, { capture: true });
