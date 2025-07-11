@@ -2,15 +2,31 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import type { LoadedModel } from '../types/model';
 
 export const useGLTFLoader = (scene: THREE.Scene | null) => {
   const loaderRef = useRef<GLTFLoader | null>(null);
+  const dracoLoaderRef = useRef<DRACOLoader | null>(null);
   const [loadedModels, setLoadedModels] = useState<LoadedModel[]>([]);
   const [currentModel, setCurrentModel] = useState<LoadedModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeLoadingRef = useRef<AbortController | null>(null);
+
+  // Initialize loaders
+  useEffect(() => {
+    if (!loaderRef.current) {
+      loaderRef.current = new GLTFLoader();
+      
+      // Set up DRACO loader for compressed GLTF files
+      dracoLoaderRef.current = new DRACOLoader();
+      dracoLoaderRef.current.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+      loaderRef.current.setDRACOLoader(dracoLoaderRef.current);
+      
+      console.log('GLTF and DRACO loaders initialized');
+    }
+  }, []);
 
   // Cleanup function for geometries and materials
   const disposeObject = useCallback((object: THREE.Object3D) => {
@@ -74,8 +90,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       }
 
       if (!loaderRef.current) {
-        loaderRef.current = new GLTFLoader();
-        console.log('GLTF loader initialized');
+        throw new Error('GLTF loader not initialized');
       }
 
       console.log('Reading file as array buffer...');
@@ -88,16 +103,23 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       }
       
       console.log('Parsing GLTF data...');
-      const gltf = loaderRef.current.parse(arrayBuffer, '', (gltf) => {
-        // Success callback
-      }, (error) => {
-        throw error;
+      
+      // Use Promise-based parsing
+      const gltf = await new Promise<any>((resolve, reject) => {
+        loaderRef.current!.parse(
+          arrayBuffer, 
+          '', 
+          (result) => resolve(result),
+          (error) => reject(error)
+        );
       });
       
       // Check if operation was aborted after parsing
       if (abortController.signal.aborted) {
         console.log('GLTF loading aborted after parsing');
-        disposeObject(gltf.scene);
+        if (gltf.scene) {
+          disposeObject(gltf.scene);
+        }
         return;
       }
       
@@ -203,6 +225,11 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       // Cancel any active loading
       if (activeLoadingRef.current) {
         activeLoadingRef.current.abort();
+      }
+      
+      // Dispose DRACO loader
+      if (dracoLoaderRef.current) {
+        dracoLoaderRef.current.dispose();
       }
       
       // Dispose all loaded models
