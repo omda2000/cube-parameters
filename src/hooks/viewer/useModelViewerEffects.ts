@@ -44,10 +44,12 @@ export const useModelViewerEffects = ({
   onModelsChange,
   switchCamera
 }: UseModelViewerEffectsProps) => {
-  // Selection handling
+  // ALWAYS call all hooks in the same order - no conditional hooks
+  
+  // Selection handling - always called first
   const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
 
-  // Enhanced object selection handler with logging
+  // Enhanced object selection handler with logging - always defined
   const enhancedHandleObjectSelect = (object: THREE.Object3D | null, isMultiSelect = false) => {
     console.log('Enhanced object select called:', { 
       object: object?.name || object?.type, 
@@ -62,13 +64,13 @@ export const useModelViewerEffects = ({
     }
   };
 
-  // Selection visual effects
+  // Selection visual effects - always called
   useSelectionEffects(selectedObjects);
 
-  // Camera exposure
+  // Camera exposure - always called
   useCameraExposure(switchCamera);
 
-  // Models exposure with proper change detection
+  // Models exposure - always called
   useModelsExposure(
     loadedModels,
     currentModel,
@@ -79,13 +81,13 @@ export const useModelViewerEffects = ({
     onModelsChange
   );
 
-  // Tool handlers
+  // Tool handlers - always called
   const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
     onPointCreate,
     onMeasureCreate
   );
 
-  // Mouse interaction - use currentModel.object instead of scene for type compatibility
+  // Mouse interaction - always called with safe defaults
   const mouseInteractionResult = useMouseInteraction(
     renderer,
     camera,
@@ -98,7 +100,7 @@ export const useModelViewerEffects = ({
     handleMeasureCreate
   );
 
-  // Debug logging for selection state
+  // Debug logging for selection state - always called
   useEffect(() => {
     console.log('Selection state changed:', {
       selectedCount: selectedObjects.length,
@@ -110,10 +112,11 @@ export const useModelViewerEffects = ({
     });
   }, [selectedObjects]);
 
+  // Return consistent object structure
   return {
-    objectData: mouseInteractionResult.objectData,
-    mousePosition: mouseInteractionResult.mousePosition,
-    isHovering: mouseInteractionResult.isHovering,
+    objectData: mouseInteractionResult?.objectData || null,
+    mousePosition: mouseInteractionResult?.mousePosition || { x: 0, y: 0 },
+    isHovering: mouseInteractionResult?.isHovering || false,
     selectedObjects
   };
 };
