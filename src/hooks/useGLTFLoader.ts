@@ -140,11 +140,23 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
       object.scale.setScalar(scale);
 
-      // Ensure shadows are enabled
+      // Process meshes: enable shadows and extract userData from glTF extras
       object.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          
+          // Extract id and type from userData (populated from glTF extras)
+          const { id, type } = child.userData || {};
+          if (id || type) {
+            console.log(`Mesh ${child.name || 'unnamed'} has id=${id}, type=${type}`);
+            // Ensure userData is properly set
+            child.userData = {
+              ...child.userData,
+              id,
+              type
+            };
+          }
         }
       });
 
