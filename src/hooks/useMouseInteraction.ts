@@ -79,9 +79,9 @@ export const useMouseInteraction = (
     
     if (intersects.length > 0 && onObjectSelect) {
       const hitObject = intersects[0].object;
-      onObjectSelect(hitObject, isCtrlClick);
+      onObjectSelect(hitObject);
     } else if (onObjectSelect && !isCtrlClick) {
-      onObjectSelect(null, false);
+      onObjectSelect(null);
     }
   }, [renderer, camera, scene, onObjectSelect]);
 
