@@ -171,26 +171,42 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
 
       // 1. Compute the model's bounding box
       const box = new THREE.Box3().setFromObject(root);
+      console.log('Original bounding box:', {
+        min: { x: box.min.x.toFixed(2), y: box.min.y.toFixed(2), z: box.min.z.toFixed(2) },
+        max: { x: box.max.x.toFixed(2), y: box.max.y.toFixed(2), z: box.max.z.toFixed(2) }
+      });
       
       // 2. Choose pivot point - using center pivot as default
       const pivot = new THREE.Vector3();
       box.getCenter(pivot);
+      console.log('Pivot point (center):', { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) });
       
-      // Alternative: use minimum corner pivot
+      // Alternative: use minimum corner pivot (uncomment if you want minimum corner)
       // const pivot = box.min.clone();
+      // console.log('Pivot point (minimum):', { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) });
       
       // 3. Offset the root group so that the pivot lands at (0,0,0)
       root.position.sub(pivot);
+      console.log('Model position after centering:', { x: root.position.x.toFixed(2), y: root.position.y.toFixed(2), z: root.position.z.toFixed(2) });
       
-      console.log(`Model re-centered: pivot at (${pivot.x.toFixed(2)}, ${pivot.y.toFixed(2)}, ${pivot.z.toFixed(2)}) moved to origin`);
+      // Verify the new bounding box
+      const newBox = new THREE.Box3().setFromObject(root);
+      console.log('New bounding box (should be centered at origin):', {
+        min: { x: newBox.min.x.toFixed(2), y: newBox.min.y.toFixed(2), z: newBox.min.z.toFixed(2) },
+        max: { x: newBox.max.x.toFixed(2), y: newBox.max.y.toFixed(2), z: newBox.max.z.toFixed(2) }
+      });
 
       // Optional: Scale model to fit in view (max size of 4 units)
       const size = box.getSize(new THREE.Vector3());
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
-      root.scale.setScalar(scale);
       
-      console.log(`Model scaled by factor: ${scale.toFixed(2)}`);
+      if (scale !== 1) {
+        root.scale.setScalar(scale);
+        console.log(`Model scaled by factor: ${scale.toFixed(2)}`);
+      } else {
+        console.log('No scaling needed - model fits within 4x4x4 units');
+      }
 
       // Create main container group and add the original scene
       const modelGroup = new THREE.Group();
