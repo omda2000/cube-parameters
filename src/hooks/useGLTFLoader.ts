@@ -1,4 +1,3 @@
-
 import { useRef, useCallback, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -125,124 +124,164 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       
       console.log('GLTF parsed successfully:', gltf);
       
-      const root = gltf.scene;
+      // Extract & Detach Meshes approach - make each mesh a separate top-level object
+      const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
       
-      // 1) Flatten: gather all meshes under root
-      root.traverse(node => {
+      // 1. First pass: collect all meshes and their metadata
+      gltf.scene.traverse(node => {
         if (node.isMesh) {
-          allMeshes.push(node as THREE.Mesh);
+          const mesh = node as THREE.Mesh;
+          allMeshes.push(mesh);
+          
+          // Read metadata from userData
+          const { id, type, name, params } = mesh.userData || {};
+          
+          if (id) {
+            // Parse params if it's a JSON string
+            let parsedParams = {};
+            if (params && typeof params === 'string') {
+              try {
+                parsedParams = JSON.parse(params);
+              } catch (e) {
+                console.warn('Failed to parse params for object', id, ':', e);
+                parsedParams = { raw: params };
+              }
+            } else if (params && typeof params === 'object') {
+              parsedParams = params;
+            }
+            
+            console.log(`Found mesh with metadata: id=${id}, type=${type}, name=${name}`);
+            
+            // Store as a standalone object
+            objectsById[id] = {
+              mesh: mesh,
+              metadata: { id, type, name, params: parsedParams }
+            };
+          } else {
+            console.log(`Mesh without ID found: ${mesh.name || 'unnamed'}`);
+          }
         }
       });
       
-      console.log(`Found ${allMeshes.length} meshes in GLB`);
+      console.log(`Found ${allMeshes.length} meshes, ${Object.keys(objectsById).length} with valid IDs`);
       
-      // Process meshes: enable shadows and log userData
-      allMeshes.forEach((mesh, index) => {
+      // 2. Detach meshes from their parent groups and position them properly
+      const detachedMeshes: THREE.Mesh[] = [];
+      
+      Object.values(objectsById).forEach(({ mesh, metadata }) => {
+        // Store world position before detaching
+        const worldPosition = new THREE.Vector3();
+        const worldRotation = new THREE.Euler();
+        const worldScale = new THREE.Vector3();
+        
+        mesh.getWorldPosition(worldPosition);
+        mesh.getWorldQuaternion(new THREE.Quaternion().setFromEuler(worldRotation));
+        mesh.getWorldScale(worldScale);
+        
+        // Detach from parent group
+        if (mesh.parent) {
+          mesh.parent.remove(mesh);
+        }
+        
+        // Apply world transform to maintain position
+        mesh.position.copy(worldPosition);
+        mesh.rotation.copy(worldRotation);
+        mesh.scale.copy(worldScale);
+        
+        // Enable shadows
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         
-        const { id, type } = mesh.userData || {};
-        if (id || type) {
-          console.log(`Mesh ${index}: ${mesh.name || 'unnamed'} - id=${id}, type=${type}`);
-        }
-      });
-      
-      // 2) Create lookup by ID but keep original structure for now
-      const meshesById: { [key: string]: THREE.Mesh } = {};
-      const typeStats: { [key: string]: number } = {};
-      
-      allMeshes.forEach(mesh => {
-        const { id, type } = mesh.userData || {};
+        // Store metadata for easy access
+        mesh.userData = {
+          ...mesh.userData,
+          isDetachedFromGLB: true,
+          originalMetadata: metadata
+        };
         
-        // Index by ID for direct access
-        if (id) {
-          meshesById[id] = mesh;
-        }
-        
-        // Count by type for statistics
-        if (type) {
-          typeStats[type] = (typeStats[type] || 0) + 1;
-        }
+        detachedMeshes.push(mesh);
+        console.log(`Detached mesh: ${metadata.name || metadata.id} at position:`, worldPosition);
       });
       
-      console.log('Type statistics:', typeStats);
-      console.log('Meshes by ID count:', Object.keys(meshesById).length);
-
-      // 1. Compute the model's bounding box
-      const box = new THREE.Box3().setFromObject(root);
-      console.log('Original bounding box:', {
-        min: { x: box.min.x.toFixed(2), y: box.min.y.toFixed(2), z: box.min.z.toFixed(2) },
-        max: { x: box.max.x.toFixed(2), y: box.max.y.toFixed(2), z: box.max.z.toFixed(2) }
+      // 3. Calculate collective bounding box for centering
+      const collectiveBoundingBox = new THREE.Box3();
+      detachedMeshes.forEach(mesh => {
+        const meshBox = new THREE.Box3().setFromObject(mesh);
+        collectiveBoundingBox.union(meshBox);
       });
       
-      // 2. Choose pivot point - using center pivot as default
+      // 4. Center all meshes at origin as a collection
       const pivot = new THREE.Vector3();
-      box.getCenter(pivot);
-      console.log('Pivot point (center):', { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) });
+      collectiveBoundingBox.getCenter(pivot);
       
-      // Alternative: use minimum corner pivot (uncomment if you want minimum corner)
-      // const pivot = box.min.clone();
-      // console.log('Pivot point (minimum):', { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) });
-      
-      // 3. Offset the root group so that the pivot lands at (0,0,0)
-      root.position.sub(pivot);
-      console.log('Model position after centering:', { x: root.position.x.toFixed(2), y: root.position.y.toFixed(2), z: root.position.z.toFixed(2) });
-      
-      // Verify the new bounding box
-      const newBox = new THREE.Box3().setFromObject(root);
-      console.log('New bounding box (should be centered at origin):', {
-        min: { x: newBox.min.x.toFixed(2), y: newBox.min.y.toFixed(2), z: newBox.min.z.toFixed(2) },
-        max: { x: newBox.max.x.toFixed(2), y: newBox.max.y.toFixed(2), z: newBox.max.z.toFixed(2) }
+      console.log('Collective bounding box:', {
+        min: { x: collectiveBoundingBox.min.x.toFixed(2), y: collectiveBoundingBox.min.y.toFixed(2), z: collectiveBoundingBox.min.z.toFixed(2) },
+        max: { x: collectiveBoundingBox.max.x.toFixed(2), y: collectiveBoundingBox.max.y.toFixed(2), z: collectiveBoundingBox.max.z.toFixed(2) },
+        center: { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) }
       });
-
-      // Optional: Scale model to fit in view (max size of 4 units)
-      const size = box.getSize(new THREE.Vector3());
+      
+      // Apply centering offset to all meshes
+      detachedMeshes.forEach(mesh => {
+        mesh.position.sub(pivot);
+      });
+      
+      // 5. Optional scaling
+      const size = collectiveBoundingBox.getSize(new THREE.Vector3());
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
       
       if (scale !== 1) {
-        root.scale.setScalar(scale);
-        console.log(`Model scaled by factor: ${scale.toFixed(2)}`);
-      } else {
-        console.log('No scaling needed - model fits within 4x4x4 units');
+        detachedMeshes.forEach(mesh => {
+          mesh.position.multiplyScalar(scale);
+          mesh.scale.multiplyScalar(scale);
+        });
+        console.log(`All meshes scaled by factor: ${scale.toFixed(2)}`);
       }
-
-      // Create main container group and add the original scene
+      
+      // 6. Create main container group that holds references to the detached meshes
       const modelGroup = new THREE.Group();
-      modelGroup.add(root);
       modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
       
-      // Mark as loaded model for proper selection handling
+      // Store metadata and object references for management
       modelGroup.userData.isLoadedModel = true;
-      modelGroup.userData.meshesById = meshesById;
-      modelGroup.userData.typeStats = typeStats;
+      modelGroup.userData.objectsById = objectsById;
+      modelGroup.userData.detachedMeshes = detachedMeshes;
+      modelGroup.userData.meshCount = detachedMeshes.length;
       
-      // Mark all children as part of this loaded model
-      modelGroup.traverse((child) => {
-        if (child !== modelGroup) {
-          child.userData.isPartOfLoadedModel = true;
-          child.userData.loadedModelRoot = modelGroup;
-        }
+      // Add each detached mesh directly to the scene (not to the group)
+      detachedMeshes.forEach(mesh => {
+        scene.add(mesh);
+        
+        // Mark mesh as part of this loaded model for cleanup purposes
+        mesh.userData.loadedModelRoot = modelGroup;
+        mesh.userData.isPartOfLoadedModel = true;
       });
 
       const modelData: LoadedModel = {
         id: Date.now().toString(),
         name: file.name.replace(/\.(gltf|glb)$/i, ''),
-        object: modelGroup,
-        boundingBox: new THREE.Box3().setFromObject(modelGroup),
+        object: modelGroup, // This is just for reference, actual meshes are in scene
+        boundingBox: collectiveBoundingBox.clone(),
         size: file.size
       };
 
       // Remove previous model if exists
       if (currentModel) {
         console.log('Removing previous model from scene');
+        // Remove all detached meshes from the previous model
+        if (currentModel.object.userData.detachedMeshes) {
+          currentModel.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
+            scene.remove(mesh);
+          });
+        }
         scene.remove(currentModel.object);
         disposeObject(currentModel.object);
       }
 
-      console.log('Adding GLTF model to scene');
-      scene.add(modelGroup);
+      console.log(`Added ${detachedMeshes.length} separate mesh objects to scene`);
+      console.log('Objects accessible by ID:', Object.keys(objectsById));
+      
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
       
@@ -266,13 +305,19 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
     const model = loadedModels.find(m => m.id === modelId);
     if (!model) return;
 
-    // Remove current model
-    if (currentModel) {
-      scene.remove(currentModel.object);
+    // Remove current model's meshes
+    if (currentModel && currentModel.object.userData.detachedMeshes) {
+      currentModel.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
+        scene.remove(mesh);
+      });
     }
 
-    // Add selected model
-    scene.add(model.object);
+    // Add selected model's meshes
+    if (model.object.userData.detachedMeshes) {
+      model.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
+        scene.add(mesh);
+      });
+    }
     setCurrentModel(model);
   }, [scene, loadedModels, currentModel]);
 
@@ -283,7 +328,12 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
     if (!model) return;
 
     if (currentModel?.id === modelId) {
-      scene.remove(model.object);
+      // Remove all detached meshes from scene
+      if (model.object.userData.detachedMeshes) {
+        model.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
+          scene.remove(mesh);
+        });
+      }
       setCurrentModel(null);
     }
 
@@ -308,13 +358,19 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       // Dispose all loaded models
       loadedModels.forEach(model => {
         try {
+          // Remove detached meshes from scene
+          if (model.object.userData.detachedMeshes) {
+            model.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
+              if (scene) scene.remove(mesh);
+            });
+          }
           disposeObject(model.object);
         } catch (error) {
           console.warn('Error disposing model on cleanup:', error);
         }
       });
     };
-  }, [loadedModels, disposeObject]);
+  }, [loadedModels, disposeObject, scene]);
 
   return {
     loadedModels,
