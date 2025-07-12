@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import type { SceneObject } from '../types/model';
@@ -11,8 +10,13 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
   const { applyPointSelection } = usePointSelection();
   const { applyMeasurementSelection } = useMeasurementSelection();
   const { applyMeshSelection } = useMeshSelection();
-  const selectionMaterials = new SelectionMaterials();
+  const selectionMaterialsRef = useRef<SelectionMaterials | null>(null);
   const previousSelectedRef = useRef<SceneObject[]>([]);
+
+  // Initialize selection materials
+  if (!selectionMaterialsRef.current) {
+    selectionMaterialsRef.current = new SelectionMaterials();
+  }
 
   const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
     console.log(`Applying selection effects: ${selected ? 'SELECT' : 'DESELECT'} for object type: ${objectType}, object:`, object.name || object.type);
@@ -57,18 +61,16 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
 
     // Update reference for next comparison
     previousSelectedRef.current = [...selectedObjects];
-  }, [selectedObjects]);
+  }, [selectedObjects.map(obj => obj.id).join(',')]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       console.log('Selection effects: cleanup on unmount');
-      selectedObjects.forEach(selectedObject => {
-        if (selectedObject?.object) {
-          applySelectionEffects(selectedObject.object, false, selectedObject.type);
-        }
-      });
-      selectionMaterials.dispose();
+      if (selectionMaterialsRef.current) {
+        selectionMaterialsRef.current.dispose();
+        selectionMaterialsRef.current = null;
+      }
     };
   }, []);
 };
