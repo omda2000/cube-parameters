@@ -1,205 +1,104 @@
 
-import { useEffect, useCallback } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { invalidateIntersectableCache } from './utils/raycastUtils';
-import { useSelectTool } from './tools/useSelectTool';
-import { usePointTool } from './tools/usePointTool';
-import { useMeasureTool } from './tools/useMeasureTool';
-import { useMouseTracking } from './mouse/useMouseTracking';
+import { createRaycaster, getIntersectableObjects } from './utils/raycastUtils';
+import { useHoverEffects } from './useHoverEffects';
 import { useObjectData } from './mouse/useObjectData';
-import { useMouseInteractionState } from './mouse/useMouseInteractionState';
-import { useRaycastHandling } from './mouse/useRaycastHandling';
-import { getCursorForTool, setCursor } from './mouse/cursorUtils';
-import { useMaterialManager } from './useMaterialManager';
 
 export const useMouseInteraction = (
   renderer: THREE.WebGLRenderer | null,
-  camera: THREE.PerspectiveCamera | null,
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera | null,
   targetObject: THREE.Mesh | THREE.Group | null,
   scene: THREE.Scene | null,
   onObjectSelect?: (object: THREE.Object3D | null) => void,
   activeTool: 'select' | 'point' | 'measure' | 'move' = 'select',
-  controls?: OrbitControls | null,
+  controls?: any,
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
-  // Use enhanced material manager
-  const { materialManager, setHoverEffect, setSelectionEffect } = useMaterialManager();
+  const lastHoveredObjectRef = useRef<THREE.Object3D | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
   
-  // Use extracted hooks for state management
-  const { hoveredObject, setHoveredObject } = useMouseInteractionState();
-  const { mousePosition, mousePositionRef, throttledMouseMove, updateMousePosition } = useMouseTracking();
+  const { applyHoverEffect } = useHoverEffects();
   const { objectData, setObjectData, extractObjectData } = useObjectData();
 
-  // Initialize tools
-  const selectTool = useSelectTool(renderer, camera, scene, onObjectSelect);
-  const pointTool = usePointTool(renderer, camera, scene, onPointCreate, onObjectSelect);
-  const measureTool = useMeasureTool(renderer, camera, scene, onMeasureCreate, onObjectSelect);
-
-  // Enhanced raycast handling with material manager
-  const { handleRaycastHover } = useRaycastHandling({
-    renderer,
-    camera,
-    scene,
-    hoveredObject,
-    setHoveredObject,
-    materialManager,
-    extractObjectData,
-    setObjectData
-  });
-
-  useEffect(() => {
+  const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!renderer || !camera || !scene) return;
 
-    const handleMouseMove = throttledMouseMove((event: MouseEvent) => {
-      updateMousePosition(event.clientX, event.clientY);
+    // Update mouse position
+    setMousePosition({ x: event.clientX, y: event.clientY });
 
-      // Update cursor based on active tool
-      setCursor(renderer, getCursorForTool(activeTool));
+    const { raycaster, mouse } = createRaycaster();
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      // Handle measure tool preview
-      if (activeTool === 'measure') {
-        measureTool.handleMouseMove(event);
+    raycaster.setFromCamera(mouse, camera);
+    const intersectableObjects = getIntersectableObjects(scene);
+    const intersects = raycaster.intersectObjects(intersectableObjects, true);
+
+    const currentHoveredObject = intersects.length > 0 ? intersects[0].object : null;
+    const lastHoveredObject = lastHoveredObjectRef.current;
+
+    if (currentHoveredObject !== lastHoveredObject) {
+      // Remove hover effect from previously hovered object
+      if (lastHoveredObject) {
+        applyHoverEffect(lastHoveredObject, false);
       }
 
-      // Handle hover effects for select tool
-      if (activeTool === 'select') {
-        handleRaycastHover(event.clientX, event.clientY);
-      }
-    });
-
-    const updateHover = () => {
-      if (activeTool !== 'select') return;
-      handleRaycastHover(mousePositionRef.current.x, mousePositionRef.current.y);
-    };
-
-    const handleClick = (event: MouseEvent) => {
-      // Prevent default behavior and stop propagation to avoid conflicts
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Temporarily disable controls during selection
-      if (controls) {
-        controls.enabled = false;
-        // Re-enable controls after a short delay
-        setTimeout(() => {
-          if (controls) controls.enabled = true;
-        }, 100);
-      }
-
-      // Clear any existing hover effects before selection
-      if (hoveredObject && materialManager) {
-        setHoverEffect(hoveredObject, false);
-        setHoveredObject(null);
-      }
-
-      switch (activeTool) {
-        case 'select':
-          selectTool.handleClick(event);
-          break;
-        case 'point':
-          pointTool.handleClick(event);
-          break;
-        case 'measure':
-          measureTool.handleClick(event);
-          break;
-      }
-    };
-
-    const handleTouchEnd = (event: TouchEvent) => {
-      // Prevent default behavior and stop propagation
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Temporarily disable controls during selection
-      if (controls) {
-        controls.enabled = false;
-        setTimeout(() => {
-          if (controls) controls.enabled = true;
-        }, 100);
-      }
-
-      // Clear any existing hover effects before selection
-      if (hoveredObject && materialManager) {
-        setHoverEffect(hoveredObject, false);
-        setHoveredObject(null);
-      }
-
-      if (activeTool === 'select') {
-        selectTool.handleTouch(event);
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (hoveredObject && materialManager) {
-        setHoverEffect(hoveredObject, false);
-        setHoveredObject(null);
+      // Apply hover effect to currently hovered object
+      if (currentHoveredObject) {
+        applyHoverEffect(currentHoveredObject, true);
+        setObjectData(extractObjectData(currentHoveredObject));
+        setIsHovering(true);
+      } else {
         setObjectData(null);
+        setIsHovering(false);
       }
-      measureTool.cleanup();
-      setCursor(renderer, 'default');
-    };
 
-    const handleContextMenu = (event: MouseEvent) => {
-      event.preventDefault();
-      measureTool.handleRightClick();
-    };
-
-    // Add event listeners with proper priority and options
-    renderer.domElement.addEventListener('mousemove', handleMouseMove, { passive: true });
-    renderer.domElement.addEventListener('click', handleClick, { capture: true });
-    renderer.domElement.addEventListener('touchend', handleTouchEnd, { capture: true });
-    renderer.domElement.addEventListener('mouseleave', handleMouseLeave);
-    renderer.domElement.addEventListener('contextmenu', handleContextMenu);
-    controls?.addEventListener('change', updateHover);
-
-    return () => {
-      // Cleanup event listeners
-      renderer.domElement.removeEventListener('mousemove', handleMouseMove);
-      renderer.domElement.removeEventListener('click', handleClick, { capture: true } as any);
-      renderer.domElement.removeEventListener('touchend', handleTouchEnd, { capture: true } as any);
-      renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
-      renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
-      controls?.removeEventListener('change', updateHover);
-      
-      // Cleanup hover effects
-      if (hoveredObject && materialManager) {
-        setHoverEffect(hoveredObject, false);
-      }
-      
-      // Cleanup tools
-      measureTool.cleanup();
-    };
-  }, [
-    renderer, 
-    camera, 
-    scene, 
-    hoveredObject, 
-    activeTool, 
-    controls, 
-    selectTool, 
-    pointTool, 
-    measureTool, 
-    throttledMouseMove, 
-    updateMousePosition, 
-    handleRaycastHover,
-    setHoverEffect,
-    setHoveredObject,
-    setObjectData,
-    materialManager
-  ]);
-
-  // Invalidate intersection cache when scene changes
-  useEffect(() => {
-    if (scene) {
-      invalidateIntersectableCache();
+      lastHoveredObjectRef.current = currentHoveredObject;
     }
-  }, [scene, targetObject]);
+  }, [renderer, camera, scene, applyHoverEffect, setObjectData, extractObjectData]);
+
+  const handleClick = useCallback((event: MouseEvent) => {
+    if (!renderer || !camera || !scene || event.button !== 0) return;
+
+    event.stopPropagation();
+    event.preventDefault();
+
+    const isCtrlClick = event.ctrlKey || event.metaKey;
+    const { raycaster, mouse } = createRaycaster();
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersectableObjects = getIntersectableObjects(scene);
+    const intersects = raycaster.intersectObjects(intersectableObjects, true);
+    
+    if (intersects.length > 0 && onObjectSelect) {
+      const hitObject = intersects[0].object;
+      onObjectSelect(hitObject);
+    } else if (onObjectSelect && !isCtrlClick) {
+      onObjectSelect(null);
+    }
+  }, [renderer, camera, scene, onObjectSelect]);
+
+  // Cleanup hover effects when component unmounts
+  useEffect(() => {
+    return () => {
+      if (lastHoveredObjectRef.current) {
+        applyHoverEffect(lastHoveredObjectRef.current, false);
+      }
+    };
+  }, [applyHoverEffect]);
 
   return { 
+    handleMouseMove, 
+    handleClick, 
     objectData, 
     mousePosition, 
-    isHovering: !!hoveredObject 
+    isHovering 
   };
 };
