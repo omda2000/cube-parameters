@@ -4,6 +4,11 @@ import type { LoadedModel, SceneObject } from '../../../types/model';
 
 // Helper function to generate consistent object IDs (same as in useObjectSelection)
 const generateObjectId = (object: THREE.Object3D): string => {
+  // Use userData.id if available from GLB files
+  if (object.userData?.id) {
+    return `gltf_${object.userData.id}`;
+  }
+  
   if (object.userData.isPrimitive) {
     return `primitive_${object.uuid}`;
   } else if (object.userData.isPoint) {
@@ -20,6 +25,27 @@ const generateObjectId = (object: THREE.Object3D): string => {
     return `env_${object.uuid}`;
   }
   return `object_${object.uuid}`;
+};
+
+// Helper to get display name for objects
+const getObjectDisplayName = (object: THREE.Object3D, loadedModel?: LoadedModel): string => {
+  // Prefer loaded model name first
+  if (loadedModel) {
+    return loadedModel.name;
+  }
+  
+  // Then prefer user data id over object name
+  if (object.userData?.id) {
+    return object.userData.id;
+  }
+  
+  if (object.name) {
+    return object.name;
+  }
+  
+  // Fallback to type-based naming
+  const type = object.userData?.type || object.type;
+  return `${type}_${object.uuid.slice(0, 8)}`;
 };
 
 export const buildSceneObjects = (
@@ -76,7 +102,7 @@ export const buildSceneObjects = (
 
     const sceneObject: SceneObject = {
       id: objectId,
-      name: loadedModel ? loadedModel.name : (object.name || `${object.type}_${object.uuid.slice(0, 8)}`),
+      name: getObjectDisplayName(object, loadedModel),
       type: objectType,
       object: object,
       children: [],

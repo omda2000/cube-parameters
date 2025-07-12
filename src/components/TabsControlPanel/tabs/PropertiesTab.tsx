@@ -130,6 +130,47 @@ const PropertiesTab = () => {
           </Tooltip>
         </div>
 
+        {/* Object Data Section - Display GLB userData (id, type) */}
+        {selectedObject.object.userData && (selectedObject.object.userData.id || selectedObject.object.userData.type) && (
+          <>
+            <Separator className="bg-slate-600" />
+            <div className="space-y-2">
+              <div className="flex items-center gap-1 mb-2">
+                <Settings className="h-3 w-3 text-green-400" />
+                <Label className="text-xs text-slate-700 dark:text-slate-300">Object Data</Label>
+              </div>
+              
+              {selectedObject.object.userData.id && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">ID</Label>
+                  <div className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50 font-mono text-slate-300">
+                    {selectedObject.object.userData.id}
+                  </div>
+                </div>
+              )}
+              
+              {selectedObject.object.userData.type && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Type</Label>
+                  <div className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50">
+                    <span className="inline-flex items-center gap-1">
+                      <div className={`w-2 h-2 rounded-full ${
+                        selectedObject.object.userData.type === 'room' ? 'bg-blue-400' :
+                        selectedObject.object.userData.type === 'plot' ? 'bg-green-400' :
+                        selectedObject.object.userData.type === 'building' ? 'bg-orange-400' :
+                        selectedObject.object.userData.type === 'subroom' ? 'bg-purple-400' :
+                        selectedObject.object.userData.type === 'env_obj' ? 'bg-gray-400' :
+                        'bg-slate-400'
+                      }`} />
+                      {selectedObject.object.userData.type}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
         <Separator className="bg-slate-600" />
 
         {/* Current Material Info */}

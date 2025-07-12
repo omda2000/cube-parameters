@@ -6,6 +6,11 @@ import { useSelectionContext } from '../contexts/SelectionContext';
 
 // Helper function to generate consistent object IDs
 const generateObjectId = (object: THREE.Object3D): string => {
+  // Use userData.id if available from GLB files
+  if (object.userData?.id) {
+    return `gltf_${object.userData.id}`;
+  }
+  
   if (object.userData.isPrimitive) {
     return `primitive_${object.uuid}`;
   } else if (object.userData.isPoint) {
@@ -55,9 +60,13 @@ export const useObjectSelection = () => {
       const objectId = generateObjectId(object);
       const objectType = getObjectType(object);
       
+      // Extract userData from GLB files
+      const userData = object.userData || {};
+      const displayName = object.name || userData.id || `${object.type}_${object.uuid.slice(0, 8)}`;
+      
       const sceneObject: SceneObject = {
         id: objectId,
-        name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
+        name: displayName,
         type: objectType,
         object: object,
         children: [],
