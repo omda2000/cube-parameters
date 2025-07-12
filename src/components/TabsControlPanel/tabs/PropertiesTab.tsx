@@ -130,16 +130,17 @@ const PropertiesTab = () => {
           </Tooltip>
         </div>
 
-        {/* Object Data Section - Display GLB userData (id, type) */}
-        {selectedObject.object.userData && (selectedObject.object.userData.id || selectedObject.object.userData.type) && (
+        {/* GLB Object Data Section - Enhanced display */}
+        {selectedObject.object.userData && (
           <>
             <Separator className="bg-slate-600" />
             <div className="space-y-2">
               <div className="flex items-center gap-1 mb-2">
                 <Settings className="h-3 w-3 text-green-400" />
-                <Label className="text-xs text-slate-700 dark:text-slate-300">Object Data</Label>
+                <Label className="text-xs text-slate-700 dark:text-slate-300">GLB Object Data</Label>
               </div>
               
+              {/* ID */}
               {selectedObject.object.userData.id && (
                 <div className="space-y-1">
                   <Label className="text-xs text-slate-500">ID</Label>
@@ -149,6 +150,7 @@ const PropertiesTab = () => {
                 </div>
               )}
               
+              {/* Type */}
               {selectedObject.object.userData.type && (
                 <div className="space-y-1">
                   <Label className="text-xs text-slate-500">Type</Label>
@@ -167,197 +169,55 @@ const PropertiesTab = () => {
                   </div>
                 </div>
               )}
+
+              {/* Original Metadata */}
+              {selectedObject.object.userData.originalMetadata && (
+                <>
+                  {selectedObject.object.userData.originalMetadata.name && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-slate-500">Original Name</Label>
+                      <div className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50">
+                        {selectedObject.object.userData.originalMetadata.name}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedObject.object.userData.originalMetadata.params && 
+                   Object.keys(selectedObject.object.userData.originalMetadata.params).length > 0 && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-slate-500">Parameters</Label>
+                      <div className="max-h-24 overflow-y-auto p-2 text-xs border rounded-md bg-slate-700/50 font-mono">
+                        {Object.entries(selectedObject.object.userData.originalMetadata.params).map(([key, value]) => (
+                          <div key={key} className="flex justify-between gap-2 py-1">
+                            <span className="text-slate-400">{key}:</span>
+                            <span className="text-slate-200">{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Position Info */}
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Position</Label>
+                <div className="grid grid-cols-3 gap-1 text-xs">
+                  <div className="px-2 py-1 border rounded bg-slate-700/50 font-mono">
+                    X: {selectedObject.object.position.x.toFixed(2)}
+                  </div>
+                  <div className="px-2 py-1 border rounded bg-slate-700/50 font-mono">
+                    Y: {selectedObject.object.position.y.toFixed(2)}
+                  </div>
+                  <div className="px-2 py-1 border rounded bg-slate-700/50 font-mono">
+                    Z: {selectedObject.object.position.z.toFixed(2)}
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}
 
-        <Separator className="bg-slate-600" />
-
-        {/* Current Material Info */}
-        {selectedObject.type === 'mesh' && (
-          <div className="space-y-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <div className="flex items-center gap-1 mb-1">
-                    <Palette className="h-3 w-3 text-pink-400" />
-                    <Label className="text-xs text-slate-700 dark:text-slate-300">Material Name</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 ml-auto"
-                      onClick={() => setIsEditingMaterialName(!isEditingMaterialName)}
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  {isEditingMaterialName ? (
-                    <Input
-                      defaultValue={getMaterialName(selectedObject.object)}
-                      onBlur={(e) => handleMaterialNameChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleMaterialNameChange((e.target as HTMLInputElement).value);
-                        }
-                      }}
-                      className="h-7 text-xs"
-                      placeholder="Material name"
-                      autoFocus
-                    />
-                  ) : (
-                    <div 
-                      className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50 cursor-pointer flex items-center"
-                      onClick={() => setIsEditingMaterialName(true)}
-                    >
-                      {getMaterialName(selectedObject.object)}
-                    </div>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Click to edit material name</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
-
-        <Separator className="bg-slate-600" />
-
-        {/* Material Selection */}
-        <Card className="bg-slate-700/30 border-slate-600">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs flex items-center gap-1">
-              <Palette className="h-3 w-3 text-pink-400" />
-              Material Type
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Select
-              value={currentMaterialState?.type || 'default'}
-              onValueChange={handleMaterialTypeChange}
-            >
-              <SelectTrigger className="h-7 text-xs">
-                <SelectValue placeholder="Select material" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Default</SelectItem>
-                <SelectItem value="wood">Wood</SelectItem>
-                <SelectItem value="matPaint">Mat Paint</SelectItem>
-                <SelectItem value="metal">Metal</SelectItem>
-                <SelectItem value="plastic">Plastic</SelectItem>
-                <SelectItem value="glass">Glass</SelectItem>
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-
-        {/* Material Parameters */}
-        {currentMaterialState && currentMaterialState.type !== 'default' && (
-          <Card className="bg-slate-700/30 border-slate-600">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs flex items-center gap-1">
-                <Sliders className="h-3 w-3 text-cyan-400" />
-                Material Parameters
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-3">
-              {/* Diffusion */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Diffusion: {currentMaterialState.parameters.diffusion.toFixed(2)}</Label>
-                <Slider
-                  value={[currentMaterialState.parameters.diffusion]}
-                  onValueChange={([value]) => handleParameterChange('diffusion', value)}
-                  max={1}
-                  min={0}
-                  step={0.01}
-                  className="h-2"
-                />
-              </div>
-
-              {/* Opacity */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Opacity: {currentMaterialState.parameters.opacity.toFixed(2)}</Label>
-                <Slider
-                  value={[currentMaterialState.parameters.opacity]}
-                  onValueChange={([value]) => handleParameterChange('opacity', value)}
-                  max={1}
-                  min={0}
-                  step={0.01}
-                  className="h-2"
-                />
-              </div>
-
-              {/* Reflection */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Reflection: {currentMaterialState.parameters.reflection.toFixed(2)}</Label>
-                <Slider
-                  value={[currentMaterialState.parameters.reflection]}
-                  onValueChange={([value]) => handleParameterChange('reflection', value)}
-                  max={1}
-                  min={0}
-                  step={0.01}
-                  className="h-2"
-                />
-              </div>
-
-              {/* Refraction (only for glass) */}
-              {currentMaterialState.type === 'glass' && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-300">Refraction: {currentMaterialState.parameters.refraction.toFixed(2)}</Label>
-                  <Slider
-                    value={[currentMaterialState.parameters.refraction]}
-                    onValueChange={([value]) => handleParameterChange('refraction', value)}
-                    max={2}
-                    min={1}
-                    step={0.01}
-                    className="h-2"
-                  />
-                </div>
-              )}
-
-              {/* Edge */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Edge: {currentMaterialState.parameters.edge.toFixed(2)}</Label>
-                <Slider
-                  value={[currentMaterialState.parameters.edge]}
-                  onValueChange={([value]) => handleParameterChange('edge', value)}
-                  max={1}
-                  min={0}
-                  step={0.01}
-                  className="h-2"
-                />
-              </div>
-
-              {/* Thickness (for glass and translucent materials) */}
-              {(currentMaterialState.type === 'glass' || currentMaterialState.type === 'plastic') && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-300">Thickness: {currentMaterialState.parameters.thickness.toFixed(1)}</Label>
-                  <Slider
-                    value={[currentMaterialState.parameters.thickness]}
-                    onValueChange={([value]) => handleParameterChange('thickness', value)}
-                    max={10}
-                    min={0}
-                    step={0.1}
-                    className="h-2"
-                  />
-                </div>
-              )}
-
-              {/* Edge Line Pipe */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Edge Line: {currentMaterialState.parameters.edgeLinePipe.toFixed(2)}</Label>
-                <Slider
-                  value={[currentMaterialState.parameters.edgeLinePipe]}
-                  onValueChange={([value]) => handleParameterChange('edgeLinePipe', value)}
-                  max={1}
-                  min={0}
-                  step={0.01}
-                  className="h-2"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </TooltipProvider>
   );

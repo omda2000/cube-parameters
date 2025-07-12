@@ -37,7 +37,7 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
     applyMeshSelection(object, selected);
   };
 
-  // Handle selection changes
+  // Handle selection changes with better state management
   useEffect(() => {
     console.log('Selection effects: selectedObjects changed', selectedObjects.length, 'objects');
     const previousSelected = previousSelectedRef.current;
@@ -54,14 +54,28 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
     // Apply effects to newly selected objects
     selectedObjects.forEach(selectedObject => {
       if (selectedObject?.object) {
-        console.log('Applying selection effects to object:', selectedObject.name);
-        applySelectionEffects(selectedObject.object, true, selectedObject.type);
+        const wasSelected = previousSelected.some(obj => obj.id === selectedObject.id);
+        if (!wasSelected) {
+          console.log('Applying selection effects to newly selected object:', selectedObject.name);
+          applySelectionEffects(selectedObject.object, true, selectedObject.type);
+        }
       }
     });
 
     // Update reference for next comparison
     previousSelectedRef.current = [...selectedObjects];
-  }, [selectedObjects.map(obj => obj.id).join(',')]);
+  }, [selectedObjects]);
+
+  // Return cleanup function for manual cleanup if needed
+  return {
+    cleanupSelection: () => {
+      selectedObjects.forEach(selectedObject => {
+        if (selectedObject?.object) {
+          applySelectionEffects(selectedObject.object, false, selectedObject.type);
+        }
+      });
+    }
+  };
 
   // Cleanup on unmount
   useEffect(() => {
