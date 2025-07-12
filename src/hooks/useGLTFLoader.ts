@@ -131,9 +131,11 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const boundingBox = new THREE.Box3().setFromObject(object);
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
+      const minY = boundingBox.min.y;
 
-      // Center the model at origin
-      object.position.sub(center);
+      // Position the model so its bottom center is at origin (0,0,0)
+      object.position.set(-center.x, -minY, -center.z);
+      console.log('Model positioned with bottom center at origin');
 
       // Scale model to fit in view (max size of 4 units)
       const maxDimension = Math.max(size.x, size.y, size.z);

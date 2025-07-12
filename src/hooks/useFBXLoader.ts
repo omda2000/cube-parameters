@@ -228,9 +228,11 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       const boundingBox = new THREE.Box3().setFromObject(mergedObject);
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
+      const minY = boundingBox.min.y;
 
-      // Center the model at origin
-      mergedObject.position.sub(center);
+      // Position the model so its bottom center is at origin (0,0,0)
+      mergedObject.position.set(-center.x, -minY, -center.z);
+      console.log('Model positioned with bottom center at origin');
 
       // Scale model to fit in view (max size of 4 units)
       const maxDimension = Math.max(size.x, size.y, size.z);
@@ -249,6 +251,17 @@ export const useFBXLoader = (scene: THREE.Scene | null) => {
       const modelGroup = new THREE.Group();
       modelGroup.add(mergedObject);
       modelGroup.name = file.name.replace('.fbx', '');
+      
+      // Mark as loaded model for proper selection handling
+      modelGroup.userData.isLoadedModel = true;
+      
+      // Mark all children as part of this loaded model
+      modelGroup.traverse((child) => {
+        if (child !== modelGroup) {
+          child.userData.isPartOfLoadedModel = true;
+          child.userData.loadedModelRoot = modelGroup;
+        }
+      });
 
       const modelData: LoadedModel = {
         id: Date.now().toString(),

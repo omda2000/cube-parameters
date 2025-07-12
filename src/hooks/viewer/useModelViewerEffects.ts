@@ -47,6 +47,21 @@ export const useModelViewerEffects = ({
   // Selection handling
   const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
 
+  // Enhanced object selection handler with logging
+  const enhancedHandleObjectSelect = (object: THREE.Object3D | null, isMultiSelect = false) => {
+    console.log('Enhanced object select called:', { 
+      object: object?.name || object?.type, 
+      isMultiSelect,
+      hasSelectionContext: !!handleObjectSelect
+    });
+    
+    if (handleObjectSelect) {
+      handleObjectSelect(object, isMultiSelect);
+    } else {
+      console.warn('handleObjectSelect not available from selection context');
+    }
+  };
+
   // Selection visual effects
   useSelectionEffects(selectedObjects);
 
@@ -70,19 +85,30 @@ export const useModelViewerEffects = ({
     onMeasureCreate
   );
 
-  // Mouse interaction - use the current model's object if available
-  const targetObject = currentModel ? currentModel.object : null;
+  // Mouse interaction - use the scene instead of just current model for broader interaction
   const mouseInteractionResult = useMouseInteraction(
     renderer,
     camera,
-    targetObject,
+    scene, // Pass scene instead of currentModel.object for better object detection
     scene,
-    handleObjectSelect,
+    enhancedHandleObjectSelect, // Use enhanced handler with logging
     activeTool,
     controls,
     handlePointCreate,
     handleMeasureCreate
   );
+
+  // Debug logging for selection state
+  useEffect(() => {
+    console.log('Selection state changed:', {
+      selectedCount: selectedObjects.length,
+      selectedObjects: selectedObjects.map(obj => ({
+        id: obj.id,
+        name: obj.name,
+        type: obj.type
+      }))
+    });
+  }, [selectedObjects]);
 
   return {
     objectData: mouseInteractionResult.objectData,

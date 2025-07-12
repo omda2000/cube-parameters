@@ -11,31 +11,72 @@ export const useMeshSelection = () => {
     const outlineMap = outlineMapRef.current;
     const boundingBoxMap = boundingBoxMapRef.current;
 
-    console.log('Applying mesh selection effect:', { object: object.name || object.type, selected });
+    console.log('Applying mesh selection effect:', { 
+      object: object.name || object.type, 
+      selected,
+      objectType: object.constructor.name,
+      hasGeometry: object instanceof THREE.Mesh ? !!object.geometry : false
+    });
 
     if (selected) {
-      // Create blue outline if not already created for this object
-      if (!outlineMap.has(object)) {
-        const outline = createBlueOutline(object);
-        if (outline) {
-          outlineMap.set(object, outline);
-          if (object.parent) {
-            object.parent.add(outline);
-            console.log('Blue selection outline added to scene');
+      // Find the actual mesh to apply effects to
+      let targetMesh: THREE.Mesh | null = null;
+      
+      if (object instanceof THREE.Mesh) {
+        targetMesh = object;
+      } else if (object instanceof THREE.Group) {
+        // Find the first mesh in the group
+        object.traverse((child) => {
+          if (child instanceof THREE.Mesh && !targetMesh) {
+            targetMesh = child;
           }
-        }
+        });
       }
 
-      // Create bounding box if not already created for this object
-      if (!boundingBoxMap.has(object)) {
-        const boundingBox = createBoundingBoxOutline(object);
-        if (boundingBox) {
-          boundingBoxMap.set(object, boundingBox);
-          if (object.parent) {
-            object.parent.add(boundingBox);
-            console.log('Cyan bounding box added to scene');
+      if (targetMesh) {
+        console.log('Target mesh found for selection effects:', targetMesh.name || targetMesh.type);
+        
+        // Create blue outline if not already created for this object
+        if (!outlineMap.has(object)) {
+          const outline = createBlueOutline(targetMesh);
+          if (outline) {
+            outlineMap.set(object, outline);
+            // Add to scene root for better visibility
+            const scene = targetMesh.parent;
+            while (scene && scene.parent && scene.type !== 'Scene') {
+              scene = scene.parent as THREE.Scene;
+            }
+            if (scene && scene.type === 'Scene') {
+              scene.add(outline);
+              console.log('Blue selection outline added to scene');
+            } else {
+              targetMesh.parent?.add(outline);
+              console.log('Blue selection outline added to parent');
+            }
           }
         }
+
+        // Create bounding box if not already created for this object
+        if (!boundingBoxMap.has(object)) {
+          const boundingBox = createBoundingBoxOutline(targetMesh);
+          if (boundingBox) {
+            boundingBoxMap.set(object, boundingBox);
+            // Add to scene root for better visibility
+            const scene = targetMesh.parent;
+            while (scene && scene.parent && scene.type !== 'Scene') {
+              scene = scene.parent as THREE.Scene;
+            }
+            if (scene && scene.type === 'Scene') {
+              scene.add(boundingBox);
+              console.log('Cyan bounding box added to scene');
+            } else {
+              targetMesh.parent?.add(boundingBox);
+              console.log('Cyan bounding box added to parent');
+            }
+          }
+        }
+      } else {
+        console.warn('No mesh found in object for selection effects');
       }
     } else {
       // Remove outline for this object
