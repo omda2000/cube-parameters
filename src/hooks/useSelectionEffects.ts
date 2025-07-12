@@ -14,8 +14,8 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
   const selectionMaterials = new SelectionMaterials();
 
   const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
-    const overlayMaterial = selectionMaterials.getOverlayMaterial();
-
+    console.log(`Applying selection effects: ${selected} for object type: ${objectType}`);
+    
     // Handle points
     if (objectType === 'point') {
       applyPointSelection(object, selected);
@@ -32,10 +32,21 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
     applyMeshSelection(object, selected);
   };
 
-  // Apply/remove selection effects when selectedObjects changes
+  // Apply selection effects when selectedObjects changes
+  useEffect(() => {
+    console.log('Selection effects: applying to', selectedObjects.length, 'objects');
+    
+    selectedObjects.forEach(selectedObject => {
+      if (selectedObject?.object) {
+        applySelectionEffects(selectedObject.object, true, selectedObject.type);
+      }
+    });
+  }, [selectedObjects]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Cleanup on unmount
+      console.log('Selection effects: cleanup on unmount');
       selectedObjects.forEach(selectedObject => {
         if (selectedObject?.object) {
           applySelectionEffects(selectedObject.object, false, selectedObject.type);
@@ -44,22 +55,4 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
       selectionMaterials.dispose();
     };
   }, []);
-
-  useEffect(() => {
-    // Apply selection effects to all selected objects
-    selectedObjects.forEach(selectedObject => {
-      if (selectedObject?.object) {
-        applySelectionEffects(selectedObject.object, true, selectedObject.type);
-      }
-    });
-
-    return () => {
-      // Remove selection effects from all selected objects
-      selectedObjects.forEach(selectedObject => {
-        if (selectedObject?.object) {
-          applySelectionEffects(selectedObject.object, false, selectedObject.type);
-        }
-      });
-    };
-  }, [selectedObjects]);
 };
