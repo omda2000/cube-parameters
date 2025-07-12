@@ -25,9 +25,16 @@ export const useSceneTreeState = (
 
   // Build unified scene tree with filtering
   useEffect(() => {
-    console.log('Building scene objects', { showSelectedOnly, selectedObjects: selectedObjects.length, searchQuery });
+    console.log('Building scene objects', { 
+      sceneExists: !!scene, 
+      showSelectedOnly, 
+      selectedObjects: selectedObjects.length, 
+      searchQuery,
+      loadedModelsCount: loadedModels.length
+    });
     
     let objects = buildSceneObjects(scene, loadedModels, showPrimitives, selectedObjects);
+    console.log('Built scene objects:', objects.length, objects.map(o => o.name));
     
     // Apply selected-only filter FIRST
     if (showSelectedOnly && selectedObjects.length > 0) {

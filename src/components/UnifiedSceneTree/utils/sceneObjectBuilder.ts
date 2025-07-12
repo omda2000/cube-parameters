@@ -54,7 +54,16 @@ export const buildSceneObjects = (
   showPrimitives: boolean,
   selectedObjects: SceneObject[] = []
 ): SceneObject[] => {
-  if (!scene) return [];
+  if (!scene) {
+    console.log('No scene provided to buildSceneObjects');
+    return [];
+  }
+
+  console.log('Building scene objects with:', {
+    sceneChildren: scene.children.length,
+    loadedModels: loadedModels.length,
+    showPrimitives
+  });
 
   const sceneObjects: SceneObject[] = [];
   const selectedIds = new Set(selectedObjects.map(obj => obj.id));
@@ -126,17 +135,28 @@ export const buildSceneObjects = (
   };
 
   // Traverse the scene and build the tree
-  scene.children.forEach(child => {
+  scene.children.forEach((child, index) => {
+    console.log(`Processing scene child ${index}:`, {
+      name: child.name,
+      type: child.type,
+      isLoadedModel: child.userData?.isLoadedModel,
+      isHelper: child.userData?.isHelper,
+      hasChildren: child.children.length > 0
+    });
+    
     // Skip if this object has already been processed or is a helper
     if (processedObjects.has(child) || child.userData.isHelper) {
+      console.log('Skipping child (already processed or helper)');
       return;
     }
 
     // If this is a loaded model, process it as a single unit
     const loadedModel = loadedModelMap.get(child);
     if (loadedModel || child.userData.isLoadedModel) {
+      console.log('Processing as loaded model:', child.name);
       const sceneObject = createSceneObject(child);
       sceneObjects.push(sceneObject);
+      console.log('Added loaded model to scene objects:', sceneObject.name);
       
       // Mark this model and all its children as processed to prevent duplication
       processedObjects.add(child);
@@ -145,12 +165,17 @@ export const buildSceneObjects = (
       });
     } else if (!child.userData.isPartOfLoadedModel) {
       // Only process objects that are not part of a loaded model
+      console.log('Processing as standalone object:', child.name);
       const sceneObject = createSceneObject(child);
       sceneObjects.push(sceneObject);
+      console.log('Added standalone object to scene objects:', sceneObject.name);
       processedObjects.add(child);
+    } else {
+      console.log('Skipping object (part of loaded model):', child.name);
     }
   });
 
+  console.log('Built scene objects final result:', sceneObjects.length);
   return sceneObjects;
 };
 

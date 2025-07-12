@@ -148,9 +148,9 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         }
       });
       
-      // 2) Group by 'type' for better organization
-      const groupsByType: { [key: string]: THREE.Group } = {};
+      // 2) Create lookup by ID but keep original structure for now
       const meshesById: { [key: string]: THREE.Mesh } = {};
+      const typeStats: { [key: string]: number } = {};
       
       allMeshes.forEach(mesh => {
         const { id, type } = mesh.userData || {};
@@ -160,28 +160,13 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
           meshesById[id] = mesh;
         }
         
-        // Group by type
+        // Count by type for statistics
         if (type) {
-          if (!groupsByType[type]) {
-            groupsByType[type] = new THREE.Group();
-            groupsByType[type].name = `${type}_group`;
-            groupsByType[type].userData = { 
-              isTypeGroup: true, 
-              groupType: type,
-              meshCount: 0
-            };
-          }
-          
-          // Remove mesh from its current parent before adding to new group
-          if (mesh.parent) {
-            mesh.parent.remove(mesh);
-          }
-          groupsByType[type].add(mesh);
-          groupsByType[type].userData.meshCount++;
+          typeStats[type] = (typeStats[type] || 0) + 1;
         }
       });
       
-      console.log('Groups by type:', Object.keys(groupsByType));
+      console.log('Type statistics:', typeStats);
       console.log('Meshes by ID count:', Object.keys(meshesById).length);
 
       // Calculate bounding box for the entire model
@@ -189,34 +174,23 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
 
-      // Create main container group
-      const modelGroup = new THREE.Group();
-      modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
-      
-      // Add type groups to the main model group
-      Object.values(groupsByType).forEach(group => {
-        modelGroup.add(group);
-      });
-      
-      // If there are meshes without type, add them directly
-      allMeshes.forEach(mesh => {
-        if (!mesh.userData?.type && !mesh.parent) {
-          modelGroup.add(mesh);
-        }
-      });
-
       // Center the model at origin
-      modelGroup.position.sub(center);
+      root.position.sub(center);
 
       // Scale model to fit in view (max size of 4 units)
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
-      modelGroup.scale.setScalar(scale);
+      root.scale.setScalar(scale);
+
+      // Create main container group and add the original scene
+      const modelGroup = new THREE.Group();
+      modelGroup.add(root);
+      modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
       
       // Mark as loaded model for proper selection handling
       modelGroup.userData.isLoadedModel = true;
       modelGroup.userData.meshesById = meshesById;
-      modelGroup.userData.groupsByType = groupsByType;
+      modelGroup.userData.typeStats = typeStats;
       
       // Mark all children as part of this loaded model
       modelGroup.traverse((child) => {
