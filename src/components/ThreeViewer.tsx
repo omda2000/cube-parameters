@@ -30,19 +30,7 @@ interface ThreeViewerProps {
 }
 
 const ThreeViewer = memo((props: ThreeViewerProps) => {
-  // ALWAYS call all hooks in the same order - no conditional hooks
-  
-  // Core setup - always called first
-  const setupResult = useModelViewerSetup({
-    sunlight: props.sunlight,
-    ambientLight: props.ambientLight,
-    shadowQuality: props.shadowQuality,
-    environment: props.environment,
-    onModelsChange: props.onModelsChange,
-    onSceneReady: props.onSceneReady
-  });
-
-  // Extract values from setup result with safe defaults
+  // Core setup
   const {
     mountRef,
     scene,
@@ -59,68 +47,65 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
     performanceMetrics,
     isOrthographic,
     switchCamera
-  } = setupResult || {};
+  } = useModelViewerSetup({
+    sunlight: props.sunlight,
+    ambientLight: props.ambientLight,
+    shadowQuality: props.shadowQuality,
+    environment: props.environment,
+    onModelsChange: props.onModelsChange,
+    onSceneReady: props.onSceneReady
+  });
 
-  // Renderer optimization - always called
+  // Renderer optimization
   useOptimizedRenderer(renderer);
 
-  // Mobile mouse interaction - always called with safe defaults
-  const mobileInteractionResult = useMobileMouseInteraction(
-    renderer || null,
-    camera || null,
-    currentModel ? currentModel.object : null,
-    scene || null,
-    undefined, // onObjectSelect handled in effects
-    props.activeTool || 'select',
-    controls || null,
-    props.onPointCreate,
-    props.onMeasureCreate
-  );
-
-  // Extract values with safe defaults
+  // Mobile-optimized mouse interaction
   const {
     objectData,
     mousePosition,
     isHovering,
     isMobile
-  } = mobileInteractionResult || {
-    objectData: null,
-    mousePosition: { x: 0, y: 0 },
-    isHovering: false,
-    isMobile: false
-  };
+  } = useMobileMouseInteraction(
+    renderer,
+    camera,
+    currentModel ? currentModel.object : null,
+    scene,
+    undefined, // onObjectSelect handled in effects
+    props.activeTool,
+    controls,
+    props.onPointCreate,
+    props.onMeasureCreate
+  );
 
-  // Effects and interactions - always called with safe defaults
-  const effectsResult = useModelViewerEffects({
-    renderer: renderer || null,
-    camera: camera || null,
-    scene: scene || null,
-    controls: controls || null,
-    currentModel: currentModel || null,
-    activeTool: props.activeTool || 'select',
+  // Effects and interactions
+  const {
+    selectedObjects
+  } = useModelViewerEffects({
+    renderer,
+    camera,
+    scene,
+    controls,
+    currentModel,
+    activeTool: props.activeTool,
     onPointCreate: props.onPointCreate,
     onMeasureCreate: props.onMeasureCreate,
-    loadedModels: props.loadedModels || [],
-    loadFBXModel: loadFBXModel || (() => Promise.resolve()),
-    loadGLTFModel: loadGLTFModel || (() => Promise.resolve()),
-    switchToModel: switchToModel || (() => {}),
-    removeModel: removeModel || (() => {}),
+    loadedModels: props.loadedModels,
+    loadFBXModel,
+    loadGLTFModel,
+    switchToModel,
+    removeModel,
     onModelsChange: props.onModelsChange,
-    switchCamera: switchCamera || (() => {})
+    switchCamera
   });
 
-  // Extract selected objects with safe default
-  const { selectedObjects } = effectsResult || { selectedObjects: [] };
-
-  // Debug performance in development - always called
+  // Debug performance in development
   React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && performanceMetrics) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('ThreeViewer Performance Metrics:', performanceMetrics);
       console.log('Mobile Device:', isMobile);
     }
   }, [performanceMetrics, isMobile]);
 
-  // Early return after all hooks are called
   if (error) {
     return (
       <div className="w-full h-full flex items-center justify-center text-red-500">

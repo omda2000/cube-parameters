@@ -44,33 +44,16 @@ export const useModelViewerEffects = ({
   onModelsChange,
   switchCamera
 }: UseModelViewerEffectsProps) => {
-  // ALWAYS call all hooks in the same order - no conditional hooks
-  
-  // Selection handling - always called first
+  // Selection handling
   const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
 
-  // Enhanced object selection handler with logging - always defined
-  const enhancedHandleObjectSelect = (object: THREE.Object3D | null, isMultiSelect = false) => {
-    console.log('Enhanced object select called:', { 
-      object: object?.name || object?.type, 
-      isMultiSelect,
-      hasSelectionContext: !!handleObjectSelect
-    });
-    
-    if (handleObjectSelect) {
-      handleObjectSelect(object, isMultiSelect);
-    } else {
-      console.warn('handleObjectSelect not available from selection context');
-    }
-  };
-
-  // Selection visual effects - always called
+  // Selection visual effects
   useSelectionEffects(selectedObjects);
 
-  // Camera exposure - always called
+  // Camera exposure
   useCameraExposure(switchCamera);
 
-  // Models exposure - always called
+  // Models exposure with proper change detection
   useModelsExposure(
     loadedModels,
     currentModel,
@@ -81,42 +64,30 @@ export const useModelViewerEffects = ({
     onModelsChange
   );
 
-  // Tool handlers - always called
+  // Tool handlers
   const { handlePointCreate, handleMeasureCreate } = useToolHandlersViewer(
     onPointCreate,
     onMeasureCreate
   );
 
-  // Mouse interaction - always called with safe defaults
-  const mouseInteractionResult = useMouseInteraction(
+  // Mouse interaction - use the current model's object if available
+  const targetObject = currentModel ? currentModel.object : null;
+  const { objectData, mousePosition, isHovering } = useMouseInteraction(
     renderer,
     camera,
-    currentModel?.object || null, // Pass the model object instead of scene
+    targetObject,
     scene,
-    enhancedHandleObjectSelect, // Use enhanced handler with logging
+    handleObjectSelect,
     activeTool,
     controls,
     handlePointCreate,
     handleMeasureCreate
   );
 
-  // Debug logging for selection state - always called
-  useEffect(() => {
-    console.log('Selection state changed:', {
-      selectedCount: selectedObjects.length,
-      selectedObjects: selectedObjects.map(obj => ({
-        id: obj.id,
-        name: obj.name,
-        type: obj.type
-      }))
-    });
-  }, [selectedObjects]);
-
-  // Return consistent object structure
   return {
-    objectData: mouseInteractionResult?.objectData || null,
-    mousePosition: mouseInteractionResult?.mousePosition || { x: 0, y: 0 },
-    isHovering: mouseInteractionResult?.isHovering || false,
+    objectData,
+    mousePosition,
+    isHovering,
     selectedObjects
   };
 };

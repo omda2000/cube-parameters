@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import * as THREE from 'three';
 import type { SceneObject } from '../types/model';
+import { SelectionMaterials } from './utils/selectionMaterials';
 import { usePointSelection } from './selection/usePointSelection';
 import { useMeasurementSelection } from './selection/useMeasurementSelection';
 import { useMeshSelection } from './selection/useMeshSelection';
@@ -10,8 +11,11 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
   const { applyPointSelection } = usePointSelection();
   const { applyMeasurementSelection } = useMeasurementSelection();
   const { applyMeshSelection } = useMeshSelection();
+  const selectionMaterials = new SelectionMaterials();
 
   const applySelectionEffects = (object: THREE.Object3D, selected: boolean, objectType?: string) => {
+    const overlayMaterial = selectionMaterials.getOverlayMaterial();
+
     // Handle points
     if (objectType === 'point') {
       applyPointSelection(object, selected);
@@ -24,8 +28,8 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
       return;
     }
 
-    // Handle meshes - only apply outline and bounding box effects
-    applyMeshSelection(object, selected);
+    // Handle meshes
+    applyMeshSelection(object, selected, overlayMaterial);
   };
 
   // Apply/remove selection effects when selectedObjects changes
@@ -37,6 +41,7 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
           applySelectionEffects(selectedObject.object, false, selectedObject.type);
         }
       });
+      selectionMaterials.dispose();
     };
   }, []);
 

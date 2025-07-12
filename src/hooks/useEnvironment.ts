@@ -7,9 +7,6 @@ interface EnvironmentSettings {
   groundColor: string;
   skyColor: string;
   showGround: boolean;
-  background?: 'gradient' | 'solid' | 'transparent';
-  preset?: string;
-  cameraFov?: number;
 }
 
 export const useEnvironment = (
@@ -23,8 +20,6 @@ export const useEnvironment = (
   // Initialize environment objects once
   useEffect(() => {
     if (!scene || isInitialized.current) return;
-
-    console.log('Initializing environment with settings:', environment);
 
     // Ground plane - horizontal at Z=0
     const planeGeometry = new THREE.PlaneGeometry(20, 20);
@@ -45,7 +40,6 @@ export const useEnvironment = (
     plane.userData.isHelper = true;
     
     scene.add(plane);
-    console.log('Ground plane added to scene, visible:', plane.visible);
 
     // Sky color
     scene.background = new THREE.Color(environment.skyColor);
@@ -60,14 +54,13 @@ export const useEnvironment = (
       }
       isInitialized.current = false;
     };
-  }, [scene]);
+  }, [scene, environment.groundColor, environment.showGround, environment.skyColor]);
 
   // Update grid visibility and mark as helper
   useEffect(() => {
     if (gridHelper) {
       gridHelper.visible = environment.showGrid;
       gridHelper.userData.isHelper = true;
-      console.log('Grid visibility updated:', environment.showGrid);
     }
   }, [environment.showGrid, gridHelper]);
 
@@ -75,7 +68,6 @@ export const useEnvironment = (
   useEffect(() => {
     if (planeRef.current) {
       planeRef.current.visible = environment.showGround;
-      console.log('Ground plane visibility updated:', environment.showGround);
     }
   }, [environment.showGround]);
 
@@ -83,7 +75,6 @@ export const useEnvironment = (
   useEffect(() => {
     if (planeRef.current) {
       (planeRef.current.material as THREE.MeshStandardMaterial).color.set(environment.groundColor);
-      console.log('Ground color updated:', environment.groundColor);
     }
   }, [environment.groundColor]);
 
@@ -91,7 +82,6 @@ export const useEnvironment = (
   useEffect(() => {
     if (scene) {
       scene.background = new THREE.Color(environment.skyColor);
-      console.log('Sky color updated:', environment.skyColor);
     }
   }, [scene, environment.skyColor]);
 
