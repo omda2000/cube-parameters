@@ -217,102 +217,68 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         mesh.scale.copy(worldScale);
         
         // Enable shadows
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        
-        // Store metadata for easy access
-        mesh.userData = {
-          ...mesh.userData,
-          isDetachedFromGLB: true,
-          originalMetadata: metadata
-        };
-        
-        detachedMeshes.push(mesh);
-        console.log(`Detached mesh: ${metadata.name || metadata.id} at position:`, worldPosition);
-      });
+         mesh.castShadow = true;
+         mesh.receiveShadow = true;
+         
+         // Store metadata for easy access as specified in the prompt
+         mesh.userData = {
+           id: metadata.id,
+           type: metadata.type, 
+           name: metadata.name,
+           params: metadata.params,
+           isDetachedFromGLB: true,
+           originalMetadata: metadata
+         };
+         
+         detachedMeshes.push(mesh);
+         console.log(`Detached mesh: ${metadata.name || metadata.id} at position:`, worldPosition);
+       });
       
-      // 3. Calculate collective bounding box for centering
-      const collectiveBoundingBox = new THREE.Box3();
-      detachedMeshes.forEach(mesh => {
-        const meshBox = new THREE.Box3().setFromObject(mesh);
-        collectiveBoundingBox.union(meshBox);
-      });
-      
-      // 4. Center all meshes at origin as a collection
-      const pivot = new THREE.Vector3();
-      collectiveBoundingBox.getCenter(pivot);
-      
-      console.log('Collective bounding box:', {
-        min: { x: collectiveBoundingBox.min.x.toFixed(2), y: collectiveBoundingBox.min.y.toFixed(2), z: collectiveBoundingBox.min.z.toFixed(2) },
-        max: { x: collectiveBoundingBox.max.x.toFixed(2), y: collectiveBoundingBox.max.y.toFixed(2), z: collectiveBoundingBox.max.z.toFixed(2) },
-        center: { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) }
-      });
-      
-      // Apply centering offset to all meshes
-      detachedMeshes.forEach(mesh => {
-        mesh.position.sub(pivot);
-      });
-      
-      // 5. Optional scaling
-      const size = collectiveBoundingBox.getSize(new THREE.Vector3());
-      const maxDimension = Math.max(size.x, size.y, size.z);
-      const scale = maxDimension > 4 ? 4 / maxDimension : 1;
-      
-      if (scale !== 1) {
-        detachedMeshes.forEach(mesh => {
-          mesh.position.multiplyScalar(scale);
-          mesh.scale.multiplyScalar(scale);
-        });
-        console.log(`All meshes scaled by factor: ${scale.toFixed(2)}`);
-      }
-      
-      // 6. Create main container group that holds references to the detached meshes
-      const modelGroup = new THREE.Group();
-      modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
-      
-      // Store metadata and object references for management
-      modelGroup.userData.isLoadedModel = true;
-      modelGroup.userData.objectsById = objectsById;
-      modelGroup.userData.detachedMeshes = detachedMeshes;
-      modelGroup.userData.meshCount = detachedMeshes.length;
-      
-      // Add each detached mesh directly to the scene (not to the group)
-      detachedMeshes.forEach(mesh => {
-        scene.add(mesh);
-        
-        // Mark mesh as part of this loaded model for cleanup purposes
-        mesh.userData.loadedModelRoot = modelGroup;
-        mesh.userData.isPartOfLoadedModel = true;
-      });
+       // 3. Create container group following the prompt specification
+       const container = new THREE.Group();
+       container.name = file.name.replace(/\.(gltf|glb)$/i, '');
+       
+       // Add each detached mesh to the container first for bounding box calculation
+       detachedMeshes.forEach(mesh => {
+         container.add(mesh);
+       });
+       
+       // 4. Compute bounding box and recenter (following prompt step 3)
+       const box = new THREE.Box3().setFromObject(container);
+       const containerPivot = new THREE.Vector3();
+       box.getCenter(containerPivot);
+       container.position.sub(containerPivot);
+       
+       console.log('Container recentered using pivot:', { x: containerPivot.x.toFixed(2), y: containerPivot.y.toFixed(2), z: containerPivot.z.toFixed(2) });
+       
+       // Add the container to the scene (this makes all meshes children of the container)
+       scene.add(container);
 
-      const modelData: LoadedModel = {
-        id: Date.now().toString(),
-        name: file.name.replace(/\.(gltf|glb)$/i, ''),
-        object: modelGroup, // This is just for reference, actual meshes are in scene
-        boundingBox: collectiveBoundingBox.clone(),
-        size: file.size
-      };
+       
+       // Store metadata and object references for management
+       container.userData.isLoadedModel = true;
+       container.userData.objectsById = objectsById;
+       container.userData.detachedMeshes = detachedMeshes;
+       container.userData.meshCount = detachedMeshes.length;
+
+       const modelData: LoadedModel = {
+         id: Date.now().toString(),
+         name: file.name.replace(/\.(gltf|glb)$/i, ''),
+         object: container,
+         boundingBox: box.clone(),
+         size: file.size
+       };
 
       // Remove previous model if exists
       if (currentModel) {
         console.log('Removing previous model from scene');
-        // Remove all detached meshes from the previous model
-        if (currentModel.object.userData.detachedMeshes) {
-          currentModel.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
-            scene.remove(mesh);
-          });
-        }
         scene.remove(currentModel.object);
         disposeObject(currentModel.object);
       }
 
-      console.log(`Added ${detachedMeshes.length} separate mesh objects to scene`);
+      console.log(`Added container with ${detachedMeshes.length} mesh objects to scene`);
       console.log('Objects accessible by ID:', Object.keys(objectsById));
-      console.log('Scene children after adding meshes:', scene.children.length);
-      console.log('Detached meshes positions:', detachedMeshes.map(m => ({
-        name: m.name || m.userData.originalMetadata?.name || 'unnamed',
-        position: { x: m.position.x.toFixed(2), y: m.position.y.toFixed(2), z: m.position.z.toFixed(2) }
-      })));
+      console.log('Container position:', { x: container.position.x.toFixed(2), y: container.position.y.toFixed(2), z: container.position.z.toFixed(2) });
       
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
