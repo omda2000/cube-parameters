@@ -125,48 +125,98 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       
       console.log('GLTF parsed successfully:', gltf);
       
-      const object = gltf.scene;
+      const root = gltf.scene;
+      const allMeshes: THREE.Mesh[] = [];
+      
+      // 1) Flatten: gather all meshes under root
+      root.traverse(node => {
+        if (node.isMesh) {
+          allMeshes.push(node as THREE.Mesh);
+        }
+      });
+      
+      console.log(`Found ${allMeshes.length} meshes in GLB`);
+      
+      // Process meshes: enable shadows and log userData
+      allMeshes.forEach((mesh, index) => {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        const { id, type } = mesh.userData || {};
+        if (id || type) {
+          console.log(`Mesh ${index}: ${mesh.name || 'unnamed'} - id=${id}, type=${type}`);
+        }
+      });
+      
+      // 2) Group by 'type' for better organization
+      const groupsByType: { [key: string]: THREE.Group } = {};
+      const meshesById: { [key: string]: THREE.Mesh } = {};
+      
+      allMeshes.forEach(mesh => {
+        const { id, type } = mesh.userData || {};
+        
+        // Index by ID for direct access
+        if (id) {
+          meshesById[id] = mesh;
+        }
+        
+        // Group by type
+        if (type) {
+          if (!groupsByType[type]) {
+            groupsByType[type] = new THREE.Group();
+            groupsByType[type].name = `${type}_group`;
+            groupsByType[type].userData = { 
+              isTypeGroup: true, 
+              groupType: type,
+              meshCount: 0
+            };
+          }
+          
+          // Remove mesh from its current parent before adding to new group
+          if (mesh.parent) {
+            mesh.parent.remove(mesh);
+          }
+          groupsByType[type].add(mesh);
+          groupsByType[type].userData.meshCount++;
+        }
+      });
+      
+      console.log('Groups by type:', Object.keys(groupsByType));
+      console.log('Meshes by ID count:', Object.keys(meshesById).length);
 
-      // Calculate bounding box
-      const boundingBox = new THREE.Box3().setFromObject(object);
+      // Calculate bounding box for the entire model
+      const boundingBox = new THREE.Box3().setFromObject(root);
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
 
+      // Create main container group
+      const modelGroup = new THREE.Group();
+      modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
+      
+      // Add type groups to the main model group
+      Object.values(groupsByType).forEach(group => {
+        modelGroup.add(group);
+      });
+      
+      // If there are meshes without type, add them directly
+      allMeshes.forEach(mesh => {
+        if (!mesh.userData?.type && !mesh.parent) {
+          modelGroup.add(mesh);
+        }
+      });
+
       // Center the model at origin
-      object.position.sub(center);
+      modelGroup.position.sub(center);
 
       // Scale model to fit in view (max size of 4 units)
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
-      object.scale.setScalar(scale);
-
-      // Process meshes: enable shadows and extract userData from glTF extras
-      object.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          
-          // Extract id and type from userData (populated from glTF extras)
-          const { id, type } = child.userData || {};
-          if (id || type) {
-            console.log(`Mesh ${child.name || 'unnamed'} has id=${id}, type=${type}`);
-            // Ensure userData is properly set
-            child.userData = {
-              ...child.userData,
-              id,
-              type
-            };
-          }
-        }
-      });
-
-      // Create a Group to ensure proper typing
-      const modelGroup = new THREE.Group();
-      modelGroup.add(object);
-      modelGroup.name = file.name.replace(/\.(gltf|glb)$/i, '');
+      modelGroup.scale.setScalar(scale);
       
       // Mark as loaded model for proper selection handling
       modelGroup.userData.isLoadedModel = true;
+      modelGroup.userData.meshesById = meshesById;
+      modelGroup.userData.groupsByType = groupsByType;
       
       // Mark all children as part of this loaded model
       modelGroup.traverse((child) => {
