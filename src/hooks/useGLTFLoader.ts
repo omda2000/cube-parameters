@@ -130,7 +130,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
       
-      // 1. First pass: collect all meshes and their metadata
+      // 1. First pass: collect all meshes and parse metadata from mesh.name
       console.log('Starting mesh traversal...');
       gltf.scene.traverse(node => {
         console.log('Traversing node:', node.type, node.name || 'unnamed', 'isMesh:', node.isMesh);
@@ -138,32 +138,46 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
           
-          // Read metadata from userData
-          const { id, type, name, params } = mesh.userData || {};
-          
-          if (id) {
-            // Parse params if it's a JSON string
-            let parsedParams = {};
-            if (params && typeof params === 'string') {
-              try {
-                parsedParams = JSON.parse(params);
-              } catch (e) {
-                console.warn('Failed to parse params for object', id, ':', e);
-                parsedParams = { raw: params };
-              }
-            } else if (params && typeof params === 'object') {
-              parsedParams = params;
+          // Parse metadata from mesh.name as JSON
+          let metadata = null;
+          if (mesh.name) {
+            try {
+              // Try to parse mesh.name as JSON
+              metadata = JSON.parse(mesh.name);
+              console.log(`Parsed metadata from mesh.name:`, metadata);
+            } catch (e) {
+              console.warn('Failed to parse mesh.name as JSON for mesh:', mesh.name, ':', e);
+              // Fallback: use name as-is
+              metadata = { 
+                id: mesh.uuid.slice(0, 8), 
+                type: 'unknown', 
+                name: mesh.name, 
+                params: {} 
+              };
             }
-            
-            console.log(`Found mesh with metadata: id=${id}, type=${type}, name=${name}`);
+          }
+          
+          if (metadata && metadata.id) {
+            console.log(`Found mesh with metadata: id=${metadata.id}, type=${metadata.type}, name=${metadata.name}`);
             
             // Store as a standalone object
-            objectsById[id] = {
+            objectsById[metadata.id] = {
               mesh: mesh,
-              metadata: { id, type, name, params: parsedParams }
+              metadata: metadata
             };
           } else {
-            console.log(`Mesh without ID found: ${mesh.name || 'unnamed'}`);
+            console.log(`Mesh without valid metadata found: ${mesh.name || 'unnamed'}`);
+            // Create fallback metadata
+            const fallbackId = `mesh_${allMeshes.length - 1}_${mesh.uuid.slice(0, 8)}`;
+            objectsById[fallbackId] = {
+              mesh: mesh,
+              metadata: { 
+                id: fallbackId, 
+                type: 'unknown', 
+                name: mesh.name || `Mesh_${allMeshes.length - 1}`, 
+                params: {} 
+              }
+            };
           }
         }
       });
