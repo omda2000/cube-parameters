@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import * as THREE from 'three';
 
 interface ObjectData {
@@ -15,59 +15,55 @@ interface ObjectData {
 
 export const useObjectData = () => {
   const [objectData, setObjectData] = useState<ObjectData | null>(null);
-  const isInitialized = useRef(false);
 
-  // Ensure proper initialization
-  useEffect(() => {
-    isInitialized.current = true;
-    return () => {
-      isInitialized.current = false;
-    };
-  }, []);
-
-  // Memoize object data extraction to avoid recalculation
+  // Simplified object data extraction without initialization checks
   const extractObjectData = useCallback((object: THREE.Object3D): ObjectData => {
-    if (!isInitialized.current) {
+    let vertices = 0;
+    let triangles = 0;
+
+    try {
+      if (object instanceof THREE.Mesh && object.geometry) {
+        const geometry = object.geometry;
+        if (geometry.attributes.position) {
+          vertices = geometry.attributes.position.count;
+        }
+        if (geometry.index) {
+          triangles = geometry.index.count / 3;
+        } else {
+          triangles = vertices / 3;
+        }
+      }
+
       return {
-        name: 'Loading...',
-        type: 'Object3D',
+        name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
+        type: object.type,
+        vertices: vertices > 0 ? vertices : undefined,
+        triangles: triangles > 0 ? Math.floor(triangles) : undefined,
+        position: object.position.clone(),
+        rotation: object.rotation.clone(),
+        scale: object.scale.clone(),
+        visible: object.visible
+      };
+    } catch (error) {
+      console.error('Error extracting object data:', error);
+      // Return fallback data instead of null
+      return {
+        name: object.name || 'Unknown Object',
+        type: object.type || 'Object3D',
         position: new THREE.Vector3(),
         rotation: new THREE.Euler(),
         scale: new THREE.Vector3(1, 1, 1),
         visible: true
       };
     }
-
-    let vertices = 0;
-    let triangles = 0;
-
-    if (object instanceof THREE.Mesh && object.geometry) {
-      const geometry = object.geometry;
-      if (geometry.attributes.position) {
-        vertices = geometry.attributes.position.count;
-      }
-      if (geometry.index) {
-        triangles = geometry.index.count / 3;
-      } else {
-        triangles = vertices / 3;
-      }
-    }
-
-    return {
-      name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
-      type: object.type,
-      vertices: vertices > 0 ? vertices : undefined,
-      triangles: triangles > 0 ? Math.floor(triangles) : undefined,
-      position: object.position.clone(),
-      rotation: object.rotation.clone(),
-      scale: object.scale.clone(),
-      visible: object.visible
-    };
   }, []);
 
+  // Simple state setter with error handling
   const safeSetObjectData = useCallback((data: ObjectData | null) => {
-    if (isInitialized.current) {
+    try {
       setObjectData(data);
+    } catch (error) {
+      console.error('Error setting object data:', error);
     }
   }, []);
 

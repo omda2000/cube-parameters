@@ -50,7 +50,7 @@ export const useMobileMouseInteraction = (
     onMeasureCreate
   );
 
-  // Mobile-specific zoom handling
+  // Mobile-specific zoom handling with error boundaries
   const handlePinchZoom = useCallback((scale: number, center: { x: number; y: number }) => {
     if (!mobile || !camera || !controls) {
       return;
@@ -69,7 +69,7 @@ export const useMobileMouseInteraction = (
     }
   }, [mobile, camera, controls]);
 
-  // Mobile-specific double tap to fit
+  // Mobile-specific double tap to fit with null checks
   const handleDoubleTap = useCallback((position: { x: number; y: number }) => {
     if (!mobile || !camera || !controls || !scene) {
       return;
@@ -99,7 +99,7 @@ export const useMobileMouseInteraction = (
     }
   }, [mobile, camera, controls, scene]);
 
-  // Three finger tap to reset view
+  // Three finger tap to reset view with error handling
   const handleThreeFingerTap = useCallback(() => {
     if (!mobile || !camera || !controls) {
       return;
@@ -130,7 +130,7 @@ export const useMobileMouseInteraction = (
     }
   );
 
-  // Mobile-specific touch feedback
+  // Mobile-specific touch feedback with improved error handling
   useEffect(() => {
     if (!mobile || !renderer) {
       return;
@@ -143,7 +143,9 @@ export const useMobileMouseInteraction = (
         try {
           canvas.style.filter = 'brightness(1.1)';
           setTimeout(() => {
-            canvas.style.filter = 'brightness(1)';
+            if (canvas && canvas.style) {
+              canvas.style.filter = 'brightness(1)';
+            }
           }, 100);
         } catch (error) {
           console.error('Error adding touch feedback:', error);
