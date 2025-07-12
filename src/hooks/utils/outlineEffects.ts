@@ -23,6 +23,39 @@ export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | 
   return null;
 };
 
+export const createBoundingBoxOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
+  try {
+    // Calculate bounding box
+    const box = new THREE.Box3().setFromObject(object);
+    
+    if (box.isEmpty()) return null;
+
+    // Create wireframe geometry for the bounding box
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    
+    const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const edges = new THREE.EdgesGeometry(geometry);
+    
+    const material = new THREE.LineBasicMaterial({ 
+      color: 0x00ffff, 
+      linewidth: 2,
+      transparent: true,
+      opacity: 0.6
+    });
+    
+    const boundingBox = new THREE.LineSegments(edges, material);
+    boundingBox.position.copy(center);
+    boundingBox.userData.isHelper = true;
+    boundingBox.userData.isBoundingBox = true;
+    
+    return boundingBox;
+  } catch (error) {
+    console.error('Error creating bounding box outline:', error);
+    return null;
+  }
+};
+
 export const createPointSelectionEffect = (pointObject: THREE.Object3D): THREE.Mesh | null => {
   if (pointObject instanceof THREE.Mesh) {
     const geometry = new THREE.SphereGeometry(0.12, 16, 16);

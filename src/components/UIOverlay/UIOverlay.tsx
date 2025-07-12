@@ -6,6 +6,7 @@ import OrganizedControlPanel from '../OrganizedControlPanel/OrganizedControlPane
 import OrganizedMeasurePanel from '../OrganizedMeasurePanel/OrganizedMeasurePanel';
 import EnhancedStatusBar from '../EnhancedStatusBar/EnhancedStatusBar';
 import NotificationBell from '../NotificationBell/NotificationBell';
+import BestPlayer from '../BestPlayer/BestPlayer';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -37,6 +38,7 @@ interface UIOverlayProps {
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
   modelCount: number;
+  showBestPlayer?: boolean;
 }
 
 const UIOverlay = ({
@@ -59,7 +61,8 @@ const UIOverlay = ({
   onResetView,
   shadeType,
   onShadeTypeChange,
-  modelCount
+  modelCount,
+  showBestPlayer = false
 }: UIOverlayProps) => {
   return (
     <>
@@ -75,6 +78,9 @@ const UIOverlay = ({
           activeTool={activeTool}
         />
       </div>
+
+      {/* Best Player Component */}
+      <BestPlayer visible={showBestPlayer} />
 
       {/* Left Sidebar - properly positioned to avoid overlaps */}
       <LeftSidebar
