@@ -123,13 +123,17 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       }
       
       console.log('GLTF parsed successfully:', gltf);
+      console.log('Scene children count:', gltf.scene.children.length);
+      console.log('Scene structure:', gltf.scene);
       
       // Extract & Detach Meshes approach - make each mesh a separate top-level object
       const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
       
       // 1. First pass: collect all meshes and their metadata
+      console.log('Starting mesh traversal...');
       gltf.scene.traverse(node => {
+        console.log('Traversing node:', node.type, node.name || 'unnamed', 'isMesh:', node.isMesh);
         if (node.isMesh) {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
@@ -164,7 +168,30 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         }
       });
       
-      console.log(`Found ${allMeshes.length} meshes, ${Object.keys(objectsById).length} with valid IDs`);
+      console.log(`Mesh traversal complete. Found ${allMeshes.length} meshes, ${Object.keys(objectsById).length} with valid IDs`);
+      
+      if (allMeshes.length === 0) {
+        console.error('No meshes found in GLB file!');
+        throw new Error('No meshes found in the GLB file. Please check that the file contains 3D geometry.');
+      }
+      
+      if (Object.keys(objectsById).length === 0) {
+        console.warn('No meshes with ID metadata found. Adding all meshes without metadata...');
+        // Fallback: add all meshes even without metadata
+        allMeshes.forEach((mesh, index) => {
+          const fallbackId = `mesh_${index}_${mesh.uuid.slice(0, 8)}`;
+          objectsById[fallbackId] = {
+            mesh: mesh,
+            metadata: { 
+              id: fallbackId, 
+              type: 'unknown', 
+              name: mesh.name || `Mesh_${index}`, 
+              params: {} 
+            }
+          };
+        });
+        console.log(`Added ${Object.keys(objectsById).length} meshes with fallback IDs`);
+      }
       
       // 2. Detach meshes from their parent groups and position them properly
       const detachedMeshes: THREE.Mesh[] = [];
@@ -281,6 +308,11 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
 
       console.log(`Added ${detachedMeshes.length} separate mesh objects to scene`);
       console.log('Objects accessible by ID:', Object.keys(objectsById));
+      console.log('Scene children after adding meshes:', scene.children.length);
+      console.log('Detached meshes positions:', detachedMeshes.map(m => ({
+        name: m.name || m.userData.originalMetadata?.name || 'unnamed',
+        position: { x: m.position.x.toFixed(2), y: m.position.y.toFixed(2), z: m.position.z.toFixed(2) }
+      })));
       
       setLoadedModels(prev => [...prev, modelData]);
       setCurrentModel(modelData);
