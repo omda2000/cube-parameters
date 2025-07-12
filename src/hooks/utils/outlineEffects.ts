@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 
 export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
@@ -18,54 +19,6 @@ export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | 
     outline.userData.isHelper = true;
     
     return outline;
-  }
-  return null;
-};
-
-export const createYellowOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
-  if (object instanceof THREE.Mesh) {
-    const edges = new THREE.EdgesGeometry(object.geometry);
-    const outlineMaterial = new THREE.LineBasicMaterial({ 
-      color: 0xffaa00, 
-      linewidth: 2,
-      transparent: true,
-      opacity: 0.6
-    });
-    const outline = new THREE.LineSegments(edges, outlineMaterial);
-    
-    // Match the object's transform
-    outline.position.copy(object.position);
-    outline.rotation.copy(object.rotation);
-    outline.scale.copy(object.scale);
-    outline.userData.isHelper = true;
-    
-    return outline;
-  }
-  return null;
-};
-
-export const createBoundingBoxOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
-  if (object instanceof THREE.Mesh) {
-    // Calculate bounding box
-    const box = new THREE.Box3().setFromObject(object);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    
-    // Create box geometry for wireframe
-    const boxGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
-    const edges = new THREE.EdgesGeometry(boxGeometry);
-    const wireframeMaterial = new THREE.LineBasicMaterial({
-      color: 0x00ffff,
-      linewidth: 1,
-      transparent: true,
-      opacity: 0.4
-    });
-    
-    const wireframe = new THREE.LineSegments(edges, wireframeMaterial);
-    wireframe.position.copy(center);
-    wireframe.userData.isHelper = true;
-    
-    return wireframe;
   }
   return null;
 };

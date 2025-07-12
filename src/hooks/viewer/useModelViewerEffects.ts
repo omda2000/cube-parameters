@@ -72,7 +72,7 @@ export const useModelViewerEffects = ({
 
   // Mouse interaction - use the current model's object if available
   const targetObject = currentModel ? currentModel.object : null;
-  const mouseInteractionResult = useMouseInteraction(
+  const { objectData, mousePosition, isHovering } = useMouseInteraction(
     renderer,
     camera,
     targetObject,
@@ -85,9 +85,9 @@ export const useModelViewerEffects = ({
   );
 
   return {
-    objectData: mouseInteractionResult.objectData,
-    mousePosition: mouseInteractionResult.mousePosition,
-    isHovering: mouseInteractionResult.isHovering,
+    objectData,
+    mousePosition,
+    isHovering,
     selectedObjects
   };
 };
