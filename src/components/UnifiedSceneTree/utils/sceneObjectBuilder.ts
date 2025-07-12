@@ -163,15 +163,26 @@ export const buildSceneObjects = (
       child.traverse(descendant => {
         processedObjects.add(descendant);
       });
-    } else if (!child.userData.isPartOfLoadedModel) {
-      // Only process objects that are not part of a loaded model
-      console.log('Processing as standalone object:', child.name);
-      const sceneObject = createSceneObject(child);
-      sceneObjects.push(sceneObject);
-      console.log('Added standalone object to scene objects:', sceneObject.name);
-      processedObjects.add(child);
     } else {
-      console.log('Skipping object (part of loaded model):', child.name);
+      // Check if this is a detached GLB mesh that should be shown as individual object
+      const isDetachedGLBMesh = child.userData?.isDetachedFromGLB === true;
+      
+      if (isDetachedGLBMesh) {
+        console.log('Processing detached GLB mesh as individual object:', child.name || child.type);
+        const sceneObject = createSceneObject(child);
+        sceneObjects.push(sceneObject);
+        console.log('Added detached GLB mesh to scene objects:', sceneObject.name);
+        processedObjects.add(child);
+      } else if (!child.userData.isPartOfLoadedModel) {
+        // Only process objects that are not part of a loaded model
+        console.log('Processing as standalone object:', child.name);
+        const sceneObject = createSceneObject(child);
+        sceneObjects.push(sceneObject);
+        console.log('Added standalone object to scene objects:', sceneObject.name);
+        processedObjects.add(child);
+      } else {
+        console.log('Skipping object (part of loaded model):', child.name || child.type);
+      }
     }
   });
 
