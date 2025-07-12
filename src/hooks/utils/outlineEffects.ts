@@ -7,7 +7,9 @@ export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | 
       color: 0x0088ff, 
       linewidth: 3,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.9,
+      depthTest: false, // Ensure visibility over other objects
+      depthWrite: false
     });
     const outline = new THREE.LineSegments(edges, outlineMaterial);
     
@@ -16,6 +18,10 @@ export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | 
     outline.rotation.copy(object.rotation);
     outline.scale.copy(object.scale);
     outline.userData.isHelper = true;
+    outline.userData.selectionOutline = true;
+    
+    // Ensure it renders on top
+    outline.renderOrder = 1;
     
     return outline;
   }
@@ -29,7 +35,9 @@ export const createYellowOutline = (object: THREE.Object3D): THREE.LineSegments 
       color: 0xffaa00, 
       linewidth: 2,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.7,
+      depthTest: false, // Ensure visibility over other objects
+      depthWrite: false
     });
     const outline = new THREE.LineSegments(edges, outlineMaterial);
     
@@ -38,6 +46,10 @@ export const createYellowOutline = (object: THREE.Object3D): THREE.LineSegments 
     outline.rotation.copy(object.rotation);
     outline.scale.copy(object.scale);
     outline.userData.isHelper = true;
+    outline.userData.hoverOutline = true;
+    
+    // Ensure it renders on top but below selection
+    outline.renderOrder = 0;
     
     return outline;
   }
@@ -58,12 +70,18 @@ export const createBoundingBoxOutline = (object: THREE.Object3D): THREE.LineSegm
       color: 0x00ffff,
       linewidth: 1,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.5,
+      depthTest: false,
+      depthWrite: false
     });
     
     const wireframe = new THREE.LineSegments(edges, wireframeMaterial);
     wireframe.position.copy(center);
     wireframe.userData.isHelper = true;
+    wireframe.userData.boundingBox = true;
+    
+    // Render above hover but below selection outline
+    wireframe.renderOrder = 0.5;
     
     return wireframe;
   }

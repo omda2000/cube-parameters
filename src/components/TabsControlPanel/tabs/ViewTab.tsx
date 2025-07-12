@@ -1,4 +1,3 @@
-
 import { Eye, Grid3X3, Camera, Monitor, Layers } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -28,6 +27,7 @@ const ViewTab = ({
   const handleBackgroundChange = (value: string) => {
     const newEnvironment = { ...environment, background: value as any };
     setEnvironment(newEnvironment);
+    console.log('Background changed to:', value);
     
     const updateSceneBackground = (window as any).__updateSceneBackground;
     if (updateSceneBackground) {
@@ -44,6 +44,7 @@ const ViewTab = ({
   const handleGridToggle = (checked: boolean) => {
     const newEnvironment = { ...environment, showGrid: checked };
     setEnvironment(newEnvironment);
+    console.log('Grid toggled:', checked);
     
     const updateSceneGrid = (window as any).__updateSceneGrid;
     if (updateSceneGrid) {
@@ -60,6 +61,7 @@ const ViewTab = ({
   const handleGroundPlaneToggle = (checked: boolean) => {
     const newEnvironment = { ...environment, showGround: checked };
     setEnvironment(newEnvironment);
+    console.log('Ground plane toggled:', checked);
     
     addMessage({
       type: 'info',

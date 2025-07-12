@@ -20,7 +20,7 @@ export const useMouseInteraction = (
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   
-  const { applyHoverEffect } = useHoverEffects();
+  const { applyHoverEffect, cleanupHoverEffects } = useHoverEffects();
   const { objectData, setObjectData, extractObjectData } = useObjectData();
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
@@ -52,6 +52,7 @@ export const useMouseInteraction = (
         applyHoverEffect(currentHoveredObject, true);
         setObjectData(extractObjectData(currentHoveredObject));
         setIsHovering(true);
+        console.log('Hovering object:', currentHoveredObject.name || currentHoveredObject.type);
       } else {
         setObjectData(null);
         setIsHovering(false);
@@ -79,8 +80,10 @@ export const useMouseInteraction = (
     
     if (intersects.length > 0 && onObjectSelect) {
       const hitObject = intersects[0].object;
+      console.log('Object selected:', hitObject.name || hitObject.type);
       onObjectSelect(hitObject);
     } else if (onObjectSelect && !isCtrlClick) {
+      console.log('Selection cleared');
       onObjectSelect(null);
     }
   }, [renderer, camera, scene, onObjectSelect]);
@@ -88,11 +91,9 @@ export const useMouseInteraction = (
   // Cleanup hover effects when component unmounts
   useEffect(() => {
     return () => {
-      if (lastHoveredObjectRef.current) {
-        applyHoverEffect(lastHoveredObjectRef.current, false);
-      }
+      cleanupHoverEffects();
     };
-  }, [applyHoverEffect]);
+  }, [cleanupHoverEffects]);
 
   return { 
     handleMouseMove, 
