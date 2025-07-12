@@ -78,144 +78,126 @@ const PropertiesTab = () => {
     );
   }
 
+  // Try to parse metadata from name if it exists and userData is empty
+  const parseMetadataFromName = (object: THREE.Object3D) => {
+    if (object.name && (!object.userData || Object.keys(object.userData).length === 0)) {
+      try {
+        return JSON.parse(object.name);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const metadataFromName = parseMetadataFromName(selectedObject.object);
+  const hasMetadata = selectedObject.object.userData && Object.keys(selectedObject.object.userData).length > 0;
+  const hasNameMetadata = metadataFromName !== null;
+
   return (
     <TooltipProvider>
-      <div className="space-y-3 p-2">
-        {/* Header */}
-        <div className="flex items-center gap-1 mb-2">
-          <Settings className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Properties</span>
+      <div className="space-y-4 p-3">
+        {/* Properties Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Settings className="h-4 w-4 text-slate-400" />
+            <span className="text-sm font-medium text-slate-300">Properties</span>
+          </div>
+
+          {/* Object Name */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Tag className="h-3 w-3 text-slate-400" />
+              <Label className="text-xs text-slate-400">Object Name</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0 ml-auto"
+                onClick={() => setIsEditingObjectName(!isEditingObjectName)}
+              >
+                <Edit3 className="h-3 w-3" />
+              </Button>
+            </div>
+            {isEditingObjectName ? (
+              <Input
+                value={selectedObject.name}
+                onChange={(e) => handlePropertyChange('name', e.target.value)}
+                onBlur={() => setIsEditingObjectName(false)}
+                onKeyDown={(e) => e.key === 'Enter' && setIsEditingObjectName(false)}
+                className="h-8 text-sm bg-slate-800/60 border-slate-600 text-slate-200"
+                placeholder="Object name"
+                autoFocus
+              />
+            ) : (
+              <div 
+                className="h-8 px-3 py-1 text-sm border border-slate-600 rounded-md bg-slate-800/60 cursor-pointer flex items-center text-slate-200"
+                onClick={() => setIsEditingObjectName(true)}
+              >
+                {selectedObject.name || metadataFromName?.id || 'Unnamed Object'}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Object name */}
-        <div className="space-y-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Tag className="h-3 w-3 text-slate-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Object Name</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 ml-auto"
-                    onClick={() => setIsEditingObjectName(!isEditingObjectName)}
-                  >
-                    <Edit3 className="h-3 w-3" />
-                  </Button>
-                </div>
-                {isEditingObjectName ? (
-                  <Input
-                    value={selectedObject.name}
-                    onChange={(e) => handlePropertyChange('name', e.target.value)}
-                    onBlur={() => setIsEditingObjectName(false)}
-                    onKeyDown={(e) => e.key === 'Enter' && setIsEditingObjectName(false)}
-                    className="h-7 text-xs"
-                    placeholder="Object name"
-                    autoFocus
-                  />
-                ) : (
-                  <div 
-                    className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50 cursor-pointer flex items-center"
-                    onClick={() => setIsEditingObjectName(true)}
-                  >
-                    {selectedObject.name || 'Unnamed Object'}
-                  </div>
-                )}
+        {/* GLB Object Data Section */}
+        {(hasMetadata || hasNameMetadata) && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4 text-green-400" />
+              <Label className="text-sm text-slate-300">GLB Object Data</Label>
+            </div>
+            
+            {/* ID */}
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">ID</Label>
+              <div className="h-8 px-3 py-1 text-sm border border-slate-600 rounded-md bg-slate-800/60 font-mono text-slate-200">
+                {selectedObject.object.userData?.id || metadataFromName?.id || 'N/A'}
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click to edit object name</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* GLB Object Data Section - Enhanced display */}
-        {selectedObject.object.userData && (
-          <>
-            <Separator className="bg-slate-600" />
-            <div className="space-y-2">
-              <div className="flex items-center gap-1 mb-2">
-                <Settings className="h-3 w-3 text-green-400" />
-                <Label className="text-xs text-slate-700 dark:text-slate-300">GLB Object Data</Label>
+            </div>
+            
+            {/* Type */}
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">Type</Label>
+              <div className="h-8 px-3 py-1 text-sm border border-slate-600 rounded-md bg-slate-800/60 flex items-center text-slate-200">
+                <span className="inline-flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    (selectedObject.object.userData?.type || metadataFromName?.type) === 'room' ? 'bg-blue-400' :
+                    (selectedObject.object.userData?.type || metadataFromName?.type) === 'plot' ? 'bg-green-400' :
+                    (selectedObject.object.userData?.type || metadataFromName?.type) === 'building' ? 'bg-orange-400' :
+                    (selectedObject.object.userData?.type || metadataFromName?.type) === 'subroom' ? 'bg-purple-400' :
+                    (selectedObject.object.userData?.type || metadataFromName?.type) === 'env_obj' ? 'bg-gray-400' :
+                    'bg-slate-400'
+                  }`} />
+                  {selectedObject.object.userData?.type || metadataFromName?.type || 'unknown'}
+                </span>
               </div>
-              
-              {/* ID */}
-              {selectedObject.object.userData.id && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-500">ID</Label>
-                  <div className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50 font-mono text-slate-300">
-                    {selectedObject.object.userData.id}
-                  </div>
-                </div>
-              )}
-              
-              {/* Type */}
-              {selectedObject.object.userData.type && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-500">Type</Label>
-                  <div className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50">
-                    <span className="inline-flex items-center gap-1">
-                      <div className={`w-2 h-2 rounded-full ${
-                        selectedObject.object.userData.type === 'room' ? 'bg-blue-400' :
-                        selectedObject.object.userData.type === 'plot' ? 'bg-green-400' :
-                        selectedObject.object.userData.type === 'building' ? 'bg-orange-400' :
-                        selectedObject.object.userData.type === 'subroom' ? 'bg-purple-400' :
-                        selectedObject.object.userData.type === 'env_obj' ? 'bg-gray-400' :
-                        'bg-slate-400'
-                      }`} />
-                      {selectedObject.object.userData.type}
-                    </span>
-                  </div>
-                </div>
-              )}
+            </div>
 
-              {/* Original Metadata */}
-              {selectedObject.object.userData.originalMetadata && (
-                <>
-                  {selectedObject.object.userData.originalMetadata.name && (
-                    <div className="space-y-1">
-                      <Label className="text-xs text-slate-500">Original Name</Label>
-                      <div className="h-7 px-3 py-1 text-xs border rounded-md bg-slate-700/50">
-                        {selectedObject.object.userData.originalMetadata.name}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {selectedObject.object.userData.originalMetadata.params && 
-                   Object.keys(selectedObject.object.userData.originalMetadata.params).length > 0 && (
-                    <div className="space-y-1">
-                      <Label className="text-xs text-slate-500">Parameters</Label>
-                      <div className="max-h-24 overflow-y-auto p-2 text-xs border rounded-md bg-slate-700/50 font-mono">
-                        {Object.entries(selectedObject.object.userData.originalMetadata.params).map(([key, value]) => (
-                          <div key={key} className="flex justify-between gap-2 py-1">
-                            <span className="text-slate-400">{key}:</span>
-                            <span className="text-slate-200">{String(value)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+            {/* Original Name - Show the full JSON or parsed name */}
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">Original Name</Label>
+              <div className="min-h-8 px-3 py-2 text-xs border border-slate-600 rounded-md bg-slate-800/60 font-mono text-slate-200 break-all">
+                {selectedObject.object.userData?.originalMetadata?.name || 
+                 (hasNameMetadata ? selectedObject.object.name : 'N/A')}
+              </div>
+            </div>
 
-              {/* Position Info */}
-              <div className="space-y-1">
-                <Label className="text-xs text-slate-500">Position</Label>
-                <div className="grid grid-cols-3 gap-1 text-xs">
-                  <div className="px-2 py-1 border rounded bg-slate-700/50 font-mono">
-                    X: {selectedObject.object.position.x.toFixed(2)}
-                  </div>
-                  <div className="px-2 py-1 border rounded bg-slate-700/50 font-mono">
-                    Y: {selectedObject.object.position.y.toFixed(2)}
-                  </div>
-                  <div className="px-2 py-1 border rounded bg-slate-700/50 font-mono">
-                    Z: {selectedObject.object.position.z.toFixed(2)}
-                  </div>
+            {/* Position */}
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">Position</Label>
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div className="px-3 py-1 border border-slate-600 rounded bg-slate-800/60 font-mono text-slate-200">
+                  X: {selectedObject.object.position.x.toFixed(2)}
+                </div>
+                <div className="px-3 py-1 border border-slate-600 rounded bg-slate-800/60 font-mono text-slate-200">
+                  Y: {selectedObject.object.position.y.toFixed(2)}
+                </div>
+                <div className="px-3 py-1 border border-slate-600 rounded bg-slate-800/60 font-mono text-slate-200">
+                  Z: {selectedObject.object.position.z.toFixed(2)}
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
 
       </div>
