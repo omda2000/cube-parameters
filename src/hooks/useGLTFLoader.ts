@@ -169,21 +169,27 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       console.log('Type statistics:', typeStats);
       console.log('Meshes by ID count:', Object.keys(meshesById).length);
 
-      // Calculate bounding box for the entire model
-      const boundingBox = new THREE.Box3().setFromObject(root);
-      const center = boundingBox.getCenter(new THREE.Vector3());
-      const size = boundingBox.getSize(new THREE.Vector3());
+      // 1. Compute the model's bounding box
+      const box = new THREE.Box3().setFromObject(root);
+      
+      // 2. Choose pivot point - using center pivot as default
+      const pivot = new THREE.Vector3();
+      box.getCenter(pivot);
+      
+      // Alternative: use minimum corner pivot
+      // const pivot = box.min.clone();
+      
+      // 3. Offset the root group so that the pivot lands at (0,0,0)
+      root.position.sub(pivot);
+      
+      console.log(`Model re-centered: pivot at (${pivot.x.toFixed(2)}, ${pivot.y.toFixed(2)}, ${pivot.z.toFixed(2)}) moved to origin`);
 
-      // Position the model at exact origin (0,0,0)
-      root.position.set(0, 0, 0);
-      root.position.sub(center);
-
-      // Scale model to fit in view (max size of 4 units)
+      // Optional: Scale model to fit in view (max size of 4 units)
+      const size = box.getSize(new THREE.Vector3());
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = maxDimension > 4 ? 4 / maxDimension : 1;
       root.scale.setScalar(scale);
       
-      console.log(`Model positioned at origin. Center offset: ${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)}`);
       console.log(`Model scaled by factor: ${scale.toFixed(2)}`);
 
       // Create main container group and add the original scene
