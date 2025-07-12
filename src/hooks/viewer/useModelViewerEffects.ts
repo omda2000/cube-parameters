@@ -85,11 +85,11 @@ export const useModelViewerEffects = ({
     onMeasureCreate
   );
 
-  // Mouse interaction - use the scene instead of just current model for broader interaction
+  // Mouse interaction - use currentModel.object instead of scene for type compatibility
   const mouseInteractionResult = useMouseInteraction(
     renderer,
     camera,
-    scene, // Pass scene instead of currentModel.object for better object detection
+    currentModel?.object || null, // Pass the model object instead of scene
     scene,
     enhancedHandleObjectSelect, // Use enhanced handler with logging
     activeTool,

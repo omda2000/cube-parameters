@@ -42,7 +42,7 @@ export const useMeshSelection = () => {
           if (outline) {
             outlineMap.set(object, outline);
             // Add to scene root for better visibility
-            const scene = targetMesh.parent;
+            let scene = targetMesh.parent;
             while (scene && scene.parent && scene.type !== 'Scene') {
               scene = scene.parent as THREE.Scene;
             }
@@ -62,7 +62,7 @@ export const useMeshSelection = () => {
           if (boundingBox) {
             boundingBoxMap.set(object, boundingBox);
             // Add to scene root for better visibility
-            const scene = targetMesh.parent;
+            let scene = targetMesh.parent;
             while (scene && scene.parent && scene.type !== 'Scene') {
               scene = scene.parent as THREE.Scene;
             }
