@@ -1,30 +1,31 @@
 
 import { useRef } from 'react';
 import * as THREE from 'three';
-import { createBlueOutline } from '../utils/outlineEffects';
-import { applyMaterialOverlay, restoreOriginalMaterials } from '../utils/materialEffects';
+import { createSelectionEffects } from '../utils/outlineEffects';
 
 export const useMeshSelection = () => {
-  const originalMaterialsRef =
-    useRef<Map<THREE.Object3D, THREE.Material | THREE.Material[]>>(new Map());
   const outlineMapRef = useRef<Map<THREE.Object3D, THREE.LineSegments>>(new Map());
+  const boundingBoxMapRef = useRef<Map<THREE.Object3D, THREE.LineSegments>>(new Map());
 
-  const applyMeshSelection = (object: THREE.Object3D, selected: boolean, overlayMaterial: THREE.Material) => {
-    const originalMaterials = originalMaterialsRef.current;
+  const applyMeshSelection = (object: THREE.Object3D, selected: boolean) => {
     const outlineMap = outlineMapRef.current;
+    const boundingBoxMap = boundingBoxMapRef.current;
 
     if (selected) {
-      // Create blue outline if not already created for this object
+      // Create selection effects if not already created for this object
       if (!outlineMap.has(object)) {
-        const outline = createBlueOutline(object);
+        const { outline, boundingBox } = createSelectionEffects(object);
+        
         if (outline) {
           outlineMap.set(object, outline);
           object.parent?.add(outline);
         }
+        
+        if (boundingBox) {
+          boundingBoxMap.set(object, boundingBox);
+          object.parent?.add(boundingBox);
+        }
       }
-
-      // Apply red overlay
-      applyMaterialOverlay(object, overlayMaterial, originalMaterials);
     } else {
       // Remove outline for this object
       const outline = outlineMap.get(object);
@@ -35,8 +36,14 @@ export const useMeshSelection = () => {
         outlineMap.delete(object);
       }
 
-      // Restore original materials
-      restoreOriginalMaterials(object, originalMaterials);
+      // Remove bounding box for this object
+      const boundingBox = boundingBoxMap.get(object);
+      if (boundingBox) {
+        boundingBox.parent?.remove(boundingBox);
+        boundingBox.geometry.dispose();
+        (boundingBox.material as THREE.Material).dispose();
+        boundingBoxMap.delete(object);
+      }
     }
   };
 

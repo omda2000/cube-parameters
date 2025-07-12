@@ -12,6 +12,7 @@ import { useMouseInteractionState } from './mouse/useMouseInteractionState';
 import { useRaycastHandling } from './mouse/useRaycastHandling';
 import { getCursorForTool, setCursor } from './mouse/cursorUtils';
 import { useMaterialManager } from './useMaterialManager';
+import { useHoverEffects } from './selection/useHoverEffects';
 
 export const useMouseInteraction = (
   renderer: THREE.WebGLRenderer | null,
@@ -24,8 +25,9 @@ export const useMouseInteraction = (
   onPointCreate?: (point: { x: number; y: number; z: number }) => void,
   onMeasureCreate?: (start: THREE.Vector3, end: THREE.Vector3) => void
 ) => {
-  // Use enhanced material manager
+  // Use enhanced material manager and hover effects
   const { materialManager, setHoverEffect, setSelectionEffect } = useMaterialManager();
+  const { applyHoverEffect } = useHoverEffects();
   
   // Use extracted hooks for state management
   const { hoveredObject, setHoveredObject } = useMouseInteractionState();
@@ -89,8 +91,9 @@ export const useMouseInteraction = (
       }
 
       // Clear any existing hover effects before selection
-      if (hoveredObject && materialManager) {
+      if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
+        applyHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
 
@@ -121,8 +124,9 @@ export const useMouseInteraction = (
       }
 
       // Clear any existing hover effects before selection
-      if (hoveredObject && materialManager) {
+      if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
+        applyHoverEffect(hoveredObject, false);
         setHoveredObject(null);
       }
 
@@ -132,8 +136,9 @@ export const useMouseInteraction = (
     };
 
     const handleMouseLeave = () => {
-      if (hoveredObject && materialManager) {
+      if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
+        applyHoverEffect(hoveredObject, false);
         setHoveredObject(null);
         setObjectData(null);
       }
@@ -164,8 +169,9 @@ export const useMouseInteraction = (
       controls?.removeEventListener('change', updateHover);
       
       // Cleanup hover effects
-      if (hoveredObject && materialManager) {
+      if (hoveredObject) {
         setHoverEffect(hoveredObject, false);
+        applyHoverEffect(hoveredObject, false);
       }
       
       // Cleanup tools
@@ -185,6 +191,7 @@ export const useMouseInteraction = (
     updateMousePosition, 
     handleRaycastHover,
     setHoverEffect,
+    applyHoverEffect,
     setHoveredObject,
     setObjectData,
     materialManager

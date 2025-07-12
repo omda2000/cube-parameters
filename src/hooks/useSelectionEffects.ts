@@ -29,7 +29,7 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
     }
 
     // Handle meshes
-    applyMeshSelection(object, selected, overlayMaterial);
+    applyMeshSelection(object, selected);
   };
 
   // Apply/remove selection effects when selectedObjects changes

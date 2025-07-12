@@ -95,13 +95,14 @@ export class EnhancedMaterialManager {
     if (this.isDisposed || !object) return;
     
     try {
-      const currentState = this.objectStates.get(object);
-      if (currentState && currentState.isSelected && !hover) {
-        // Don't remove hover if object is selected, just update state
-        this.setObjectState(object, { isHovered: hover });
-        return;
-      }
-      this.setObjectState(object, { isHovered: hover });
+      // Only store state, don't apply material changes for hover/selection
+      const currentState = this.objectStates.get(object) || {
+        type: 'default',
+        parameters: this.getDefaultParameters(),
+        isHovered: false,
+        isSelected: false
+      };
+      this.objectStates.set(object, { ...currentState, isHovered: hover });
     } catch (error) {
       console.error('Error setting hover effect:', error);
     }
@@ -111,7 +112,14 @@ export class EnhancedMaterialManager {
     if (this.isDisposed || !object) return;
     
     try {
-      this.setObjectState(object, { isSelected: selected });
+      // Only store state, don't apply material changes for hover/selection
+      const currentState = this.objectStates.get(object) || {
+        type: 'default',
+        parameters: this.getDefaultParameters(),
+        isHovered: false,
+        isSelected: false
+      };
+      this.objectStates.set(object, { ...currentState, isSelected: selected });
     } catch (error) {
       console.error('Error setting selection effect:', error);
     }
@@ -165,20 +173,14 @@ export class EnhancedMaterialManager {
     try {
       let materialToApply: THREE.Material;
 
-      // Priority: selection > hover > custom material > original
-      if (state.isSelected) {
-        materialToApply = this.selectionMaterial;
-      } else if (state.isHovered) {
-        materialToApply = this.hoverMaterial;
-      } else if (state.type !== 'default') {
+      // Only apply custom materials, not hover/selection effects
+      if (state.type !== 'default') {
         materialToApply = this.createCustomMaterial(state.type, state.parameters);
+        this.applyMaterialToObject(object, materialToApply);
       } else {
         // Restore original material
         this.restoreOriginalMaterial(object);
-        return;
       }
-
-      this.applyMaterialToObject(object, materialToApply);
     } catch (error) {
       console.error('Error applying material by priority:', error);
     }

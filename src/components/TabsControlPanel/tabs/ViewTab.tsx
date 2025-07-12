@@ -1,5 +1,5 @@
 
-import { Eye, Grid3X3, Camera, Monitor } from 'lucide-react';
+import { Eye, Grid3X3, Camera, Monitor, Layers } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -85,6 +85,22 @@ const ViewTab = ({
     });
   };
 
+  const handleGroundToggle = (checked: boolean) => {
+    const newEnvironment = { ...environment, showGround: checked };
+    setEnvironment(newEnvironment);
+    
+    const updateSceneGround = (window as any).__updateSceneGround;
+    if (updateSceneGround) {
+      updateSceneGround(checked);
+    }
+    
+    addMessage({
+      type: 'info',
+      title: 'Ground Plane Toggle',
+      description: `Ground plane ${checked ? 'enabled' : 'disabled'}`,
+    });
+  };
+
   return (
     <TooltipProvider>
       <div className="space-y-2 p-1">
@@ -120,6 +136,27 @@ const ViewTab = ({
             </TooltipTrigger>
             <TooltipContent>
               <p>Toggle Grid Visibility</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Ground Plane controls */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Layers className="h-3 w-3 text-slate-700 dark:text-slate-300" />
+                    <Label className="text-xs text-slate-100">Ground</Label>
+                  </div>
+                  <Switch
+                    checked={environment.showGround}
+                    onCheckedChange={handleGroundToggle}
+                  />
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Ground Plane Visibility</p>
             </TooltipContent>
           </Tooltip>
         </div>

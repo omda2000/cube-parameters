@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import * as THREE from 'three';
 import { createRaycaster, getIntersectableObjects } from '../utils/raycastUtils';
 import { EnhancedMaterialManager } from '../utils/enhancedMaterialManager';
+import { useHoverEffects } from '../selection/useHoverEffects';
 
 interface UseRaycastHandlingProps {
   renderer: THREE.WebGLRenderer | null;
@@ -25,6 +26,7 @@ export const useRaycastHandling = ({
   extractObjectData,
   setObjectData
 }: UseRaycastHandlingProps) => {
+  const { applyHoverEffect } = useHoverEffects();
   const handleRaycastHover = useCallback((clientX: number, clientY: number) => {
     if (!renderer || !camera || !scene || !materialManager) return;
 
@@ -53,19 +55,21 @@ export const useRaycastHandling = ({
       // Remove hover from previous object
       if (hoveredObject) {
         materialManager.setHoverEffect(hoveredObject, false);
+        applyHoverEffect(hoveredObject, false);
         setObjectData(null);
       }
 
       // Add hover to new object
       if (newHoveredObject) {
         materialManager.setHoverEffect(newHoveredObject, true);
+        applyHoverEffect(newHoveredObject, true);
         const data = extractObjectData(newHoveredObject);
         setObjectData(data);
       }
 
       setHoveredObject(newHoveredObject);
     }
-  }, [renderer, camera, scene, hoveredObject, setHoveredObject, materialManager, extractObjectData, setObjectData]);
+  }, [renderer, camera, scene, hoveredObject, setHoveredObject, materialManager, extractObjectData, setObjectData, applyHoverEffect]);
 
   return { handleRaycastHover };
 };

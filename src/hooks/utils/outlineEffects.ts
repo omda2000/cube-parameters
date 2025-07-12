@@ -80,3 +80,59 @@ export const createMeasurementSelectionEffect = (measurementGroup: THREE.Group):
 
   return selectionGroup;
 };
+
+export const createHoverOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
+  if (object instanceof THREE.Mesh) {
+    const edges = new THREE.EdgesGeometry(object.geometry);
+    const hoverMaterial = new THREE.LineBasicMaterial({ 
+      color: 0xffaa00, // Yellow for hover
+      linewidth: 2,
+      transparent: true,
+      opacity: 0.8
+    });
+    const outline = new THREE.LineSegments(edges, hoverMaterial);
+    
+    // Match the object's transform
+    outline.position.copy(object.position);
+    outline.rotation.copy(object.rotation);
+    outline.scale.copy(object.scale);
+    outline.userData.isHelper = true;
+    
+    return outline;
+  }
+  return null;
+};
+
+export const createBoundingBoxWireframe = (object: THREE.Object3D): THREE.LineSegments | null => {
+  if (object instanceof THREE.Mesh) {
+    // Calculate bounding box
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    
+    // Create box geometry for wireframe
+    const boxGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const edges = new THREE.EdgesGeometry(boxGeometry);
+    const wireframeMaterial = new THREE.LineBasicMaterial({ 
+      color: 0x00ffff, // Cyan for bounding box
+      linewidth: 1,
+      transparent: true,
+      opacity: 0.6
+    });
+    const wireframe = new THREE.LineSegments(edges, wireframeMaterial);
+    
+    // Position the wireframe at the object's bounding box center
+    wireframe.position.copy(center);
+    wireframe.userData.isHelper = true;
+    
+    return wireframe;
+  }
+  return null;
+};
+
+export const createSelectionEffects = (object: THREE.Object3D): { outline: THREE.LineSegments | null; boundingBox: THREE.LineSegments | null } => {
+  return {
+    outline: createBlueOutline(object),
+    boundingBox: createBoundingBoxWireframe(object)
+  };
+};
