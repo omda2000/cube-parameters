@@ -56,8 +56,6 @@ const UIContainer = () => {
     activeTab: uiState.activeControlTab,
     isOrthographic: uiState.isOrthographic,
     onCameraToggle: handleCameraToggle,
-    showBestPlayer: uiState.showBestPlayer,
-    onBestPlayerToggle: uiState.setShowBestPlayer,
     ...sceneState
   };
 
@@ -83,7 +81,6 @@ const UIContainer = () => {
       shadeType={shadeType}
       onShadeTypeChange={setShadeType}
       modelCount={sceneState.loadedModels.length}
-      showBestPlayer={uiState.showBestPlayer}
     />
   );
 };

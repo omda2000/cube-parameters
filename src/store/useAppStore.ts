@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
@@ -25,13 +26,11 @@ interface UIStateSlice {
   activeControlTab: string;
   activeTool: 'select' | 'point' | 'measure';
   isOrthographic: boolean;
-  showBestPlayer: boolean;
   setShowControlPanel: (show: boolean) => void;
   setShowMeasurePanel: (show: boolean) => void;
   setActiveControlTab: (tab: string) => void;
   setActiveTool: (tool: 'select' | 'point' | 'measure') => void;
   setIsOrthographic: (orthographic: boolean) => void;
-  setShowBestPlayer: (show: boolean) => void;
 }
 
 // Scene State Slice
@@ -72,13 +71,11 @@ export const useAppStore = create<AppStore>()(
       activeControlTab: 'scene',
       activeTool: 'select',
       isOrthographic: false,
-      showBestPlayer: false,
       setShowControlPanel: (showControlPanel) => set({ showControlPanel }, false, 'setShowControlPanel'),
       setShowMeasurePanel: (showMeasurePanel) => set({ showMeasurePanel }, false, 'setShowMeasurePanel'),
       setActiveControlTab: (activeControlTab) => set({ activeControlTab }, false, 'setActiveControlTab'),
       setActiveTool: (activeTool) => set({ activeTool }, false, 'setActiveTool'),
       setIsOrthographic: (isOrthographic) => set({ isOrthographic }, false, 'setIsOrthographic'),
-      setShowBestPlayer: (showBestPlayer) => set({ showBestPlayer }, false, 'setShowBestPlayer'),
 
       // Scene State
       loadedModels: [],
@@ -136,13 +133,11 @@ export const useUIState = () => useAppStore(
     activeControlTab: state.activeControlTab,
     activeTool: state.activeTool,
     isOrthographic: state.isOrthographic,
-    showBestPlayer: state.showBestPlayer,
     setShowControlPanel: state.setShowControlPanel,
     setShowMeasurePanel: state.setShowMeasurePanel,
     setActiveControlTab: state.setActiveControlTab,
     setActiveTool: state.setActiveTool,
     setIsOrthographic: state.setIsOrthographic,
-    setShowBestPlayer: state.setShowBestPlayer,
   }))
 );
 
