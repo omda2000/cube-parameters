@@ -66,17 +66,6 @@ export const useSelectionEffects = (selectedObjects: SceneObject[]) => {
     previousSelectedRef.current = [...selectedObjects];
   }, [selectedObjects]);
 
-  // Return cleanup function for manual cleanup if needed
-  return {
-    cleanupSelection: () => {
-      selectedObjects.forEach(selectedObject => {
-        if (selectedObject?.object) {
-          applySelectionEffects(selectedObject.object, false, selectedObject.type);
-        }
-      });
-    }
-  };
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {

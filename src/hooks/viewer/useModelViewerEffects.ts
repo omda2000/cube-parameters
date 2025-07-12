@@ -48,7 +48,7 @@ export const useModelViewerEffects = ({
   const { selectedObjects, clearSelection, handleObjectSelect } = useObjectSelection();
 
   // Selection visual effects
-  const { cleanupSelection } = useSelectionEffects(selectedObjects);
+  useSelectionEffects(selectedObjects);
 
   // Camera exposure
   useCameraExposure(switchCamera);
