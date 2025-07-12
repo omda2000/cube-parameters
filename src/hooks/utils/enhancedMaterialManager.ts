@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 import { ResourceManager } from './ResourceManager';
 
@@ -25,36 +24,11 @@ export class EnhancedMaterialManager {
   private originalMaterials = new WeakMap<THREE.Object3D, THREE.Material | THREE.Material[]>();
   private objectStates = new WeakMap<THREE.Object3D, MaterialState>();
   private resourceManager = ResourceManager.getInstance();
-  private hoverMaterial: THREE.MeshStandardMaterial;
-  private selectionMaterial: THREE.MeshStandardMaterial;
   private trackedObjects = new Set<THREE.Object3D>();
   private isDisposed = false;
 
   constructor() {
-    try {
-      this.hoverMaterial = this.resourceManager.getMaterial('hover', () => 
-        new THREE.MeshStandardMaterial({
-          color: 0xffaa00,
-          emissive: 0x442200,
-          emissiveIntensity: 0.4,
-          transparent: false
-        })
-      ) as THREE.MeshStandardMaterial;
-
-      this.selectionMaterial = this.resourceManager.getMaterial('selection', () => 
-        new THREE.MeshStandardMaterial({
-          color: 0x00ff00,
-          emissive: 0x004400,
-          emissiveIntensity: 0.3,
-          transparent: false
-        })
-      ) as THREE.MeshStandardMaterial;
-    } catch (error) {
-      console.error('Error initializing EnhancedMaterialManager:', error);
-      // Fallback materials
-      this.hoverMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa00 });
-      this.selectionMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    }
+    // No need for hover and selection materials since we're not changing colors
   }
 
   setObjectState(object: THREE.Object3D, updates: Partial<MaterialState>) {
@@ -84,7 +58,7 @@ export class EnhancedMaterialManager {
       const newState = { ...currentState, ...updates };
       this.objectStates.set(object, newState);
 
-      // Apply material based on priority: selection > hover > custom > original
+      // Only apply custom materials, not hover/selection color changes
       this.applyMaterialByPriority(object, newState);
     } catch (error) {
       console.error('Error setting object state:', error);
@@ -95,12 +69,7 @@ export class EnhancedMaterialManager {
     if (this.isDisposed || !object) return;
     
     try {
-      const currentState = this.objectStates.get(object);
-      if (currentState && currentState.isSelected && !hover) {
-        // Don't remove hover if object is selected, just update state
-        this.setObjectState(object, { isHovered: hover });
-        return;
-      }
+      // Only update state, don't apply color changes
       this.setObjectState(object, { isHovered: hover });
     } catch (error) {
       console.error('Error setting hover effect:', error);
@@ -111,6 +80,7 @@ export class EnhancedMaterialManager {
     if (this.isDisposed || !object) return;
     
     try {
+      // Only update state, don't apply color changes
       this.setObjectState(object, { isSelected: selected });
     } catch (error) {
       console.error('Error setting selection effect:', error);
@@ -163,22 +133,14 @@ export class EnhancedMaterialManager {
 
   private applyMaterialByPriority(object: THREE.Object3D, state: MaterialState) {
     try {
-      let materialToApply: THREE.Material;
-
-      // Priority: selection > hover > custom material > original
-      if (state.isSelected) {
-        materialToApply = this.selectionMaterial;
-      } else if (state.isHovered) {
-        materialToApply = this.hoverMaterial;
-      } else if (state.type !== 'default') {
-        materialToApply = this.createCustomMaterial(state.type, state.parameters);
+      // Only apply custom materials, ignore hover and selection states
+      if (state.type !== 'default') {
+        const materialToApply = this.createCustomMaterial(state.type, state.parameters);
+        this.applyMaterialToObject(object, materialToApply);
       } else {
         // Restore original material
         this.restoreOriginalMaterial(object);
-        return;
       }
-
-      this.applyMaterialToObject(object, materialToApply);
     } catch (error) {
       console.error('Error applying material by priority:', error);
     }
