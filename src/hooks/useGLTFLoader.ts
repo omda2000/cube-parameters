@@ -58,7 +58,8 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
   }, []);
 
   const loadGLTFModel = useCallback(async (file: File) => {
-    console.log('Starting GLTF load process:', file.name);
+    console.log('🔄 Starting GLTF load process:', file.name, 'Size:', file.size);
+    console.log('🔄 File type:', file.type, 'Extension:', file.name.split('.').pop());
     
     if (!scene) {
       console.error('Scene not available for GLTF loading');
@@ -76,6 +77,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
 
     setIsLoading(true);
     setError(null);
+    console.log('🔄 Loading state set, about to process file...');
 
     try {
       // Validate file
@@ -101,15 +103,22 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         return;
       }
       
-      console.log('Parsing GLTF data...');
+      console.log('🔄 Parsing GLTF data...');
       
       // Use Promise-based parsing
       const gltf = await new Promise<any>((resolve, reject) => {
+        console.log('🔄 Calling loader.parse...');
         loaderRef.current!.parse(
           arrayBuffer, 
           '', 
-          (result) => resolve(result),
-          (error) => reject(error)
+          (result) => {
+            console.log('✅ GLTF parse success:', result);
+            resolve(result);
+          },
+          (error) => {
+            console.error('❌ GLTF parse error:', error);
+            reject(error);
+          }
         );
       });
       
