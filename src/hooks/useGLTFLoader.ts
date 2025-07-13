@@ -129,6 +129,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       // Extract & Detach Meshes approach - make each mesh a separate top-level object
       const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
+      let projectUnits = 'Meters';  // default fallback
       
       // 1. First pass: collect all meshes and parse metadata from mesh.name
       console.log('Starting mesh traversal...');
@@ -157,10 +158,21 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
             }
           }
           
+          // If this is the project_data marker, grab units
+          if (metadata && metadata.id === 'project_data' && metadata.units) {
+            projectUnits = metadata.units;
+            console.log(`Found project data with units: ${projectUnits}`);
+          }
+          
           if (metadata && metadata.id) {
             console.log(`Found mesh with metadata: id=${metadata.id}, type=${metadata.type}, name=${metadata.name}`);
             
-            // Store as a standalone object
+            // Detach from parent to make each mesh a top-level object
+            if (mesh.parent) {
+              mesh.parent.remove(mesh);
+            }
+            
+            // Store as a standalone object (overwrite project_data too if desired)
             objectsById[metadata.id] = {
               mesh: mesh,
               metadata: metadata
@@ -169,6 +181,12 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
             console.log(`Mesh without valid metadata found: ${mesh.name || 'unnamed'}`);
             // Create fallback metadata
             const fallbackId = `mesh_${allMeshes.length - 1}_${mesh.uuid.slice(0, 8)}`;
+            
+            // Detach from parent
+            if (mesh.parent) {
+              mesh.parent.remove(mesh);
+            }
+            
             objectsById[fallbackId] = {
               mesh: mesh,
               metadata: { 
@@ -183,6 +201,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       });
       
       console.log(`Mesh traversal complete. Found ${allMeshes.length} meshes, ${Object.keys(objectsById).length} with valid IDs`);
+      console.log(`Project units detected: ${projectUnits}`);
       
       if (allMeshes.length === 0) {
         console.error('No meshes found in GLB file!');
@@ -194,6 +213,12 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         // Fallback: add all meshes even without metadata
         allMeshes.forEach((mesh, index) => {
           const fallbackId = `mesh_${index}_${mesh.uuid.slice(0, 8)}`;
+          
+          // Detach from parent
+          if (mesh.parent) {
+            mesh.parent.remove(mesh);
+          }
+          
           objectsById[fallbackId] = {
             mesh: mesh,
             metadata: { 
@@ -207,73 +232,69 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         console.log(`Added ${Object.keys(objectsById).length} meshes with fallback IDs`);
       }
       
-      // 2. Detach meshes from their parent groups and position them properly
-      const detachedMeshes: THREE.Mesh[] = [];
+      // 2. Compute Scale Factor (convert projectUnits into meters for Three.js)
+      const unitScales: { [key: string]: number } = {
+        Millimeters: 0.001,
+        Centimeters: 0.01,
+        Meters: 1.0,
+        Inches: 0.0254,
+        Feet: 0.3048,
+        Yards: 0.9144
+      };
+      const scale = unitScales[projectUnits] || 1.0;
+      console.log(`Applying scale factor: ${scale} (from ${projectUnits} to meters)`);
       
+      // 3. Create container group and recenter & scale the model
+      const container = new THREE.Group();
+      container.name = file.name.replace(/\.(gltf|glb)$/i, '');
+      
+      // Add each mesh to the container for bounding box calculation
       Object.values(objectsById).forEach(({ mesh, metadata }) => {
-        // Store world position before detaching
-        const worldPosition = new THREE.Vector3();
-        const worldRotation = new THREE.Euler();
-        const worldScale = new THREE.Vector3();
-        
-        mesh.getWorldPosition(worldPosition);
-        mesh.getWorldQuaternion(new THREE.Quaternion().setFromEuler(worldRotation));
-        mesh.getWorldScale(worldScale);
-        
-        // Detach from parent group
-        if (mesh.parent) {
-          mesh.parent.remove(mesh);
-        }
-        
-        // Apply world transform to maintain position
-        mesh.position.copy(worldPosition);
-        mesh.rotation.copy(worldRotation);
-        mesh.scale.copy(worldScale);
-        
         // Enable shadows
-         mesh.castShadow = true;
-         mesh.receiveShadow = true;
-         
-         // Store metadata for easy access as specified in the prompt
-         mesh.userData = {
-           id: metadata.id,
-           type: metadata.type, 
-           name: metadata.name,
-           params: metadata.params,
-           isDetachedFromGLB: true,
-           originalMetadata: metadata
-         };
-         
-         detachedMeshes.push(mesh);
-         console.log(`Detached mesh: ${metadata.name || metadata.id} at position:`, worldPosition);
-       });
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        // Store metadata for easy access
+        mesh.userData = {
+          id: metadata.id,
+          type: metadata.type, 
+          name: metadata.name,
+          params: metadata.params,
+          units: projectUnits,
+          isDetachedFromGLB: true,
+          originalMetadata: metadata
+        };
+        
+        container.add(mesh);
+        console.log(`Added mesh: ${metadata.name || metadata.id}`);
+      });
       
-       // 3. Create container group following the prompt specification
-       const container = new THREE.Group();
-       container.name = file.name.replace(/\.(gltf|glb)$/i, '');
-       
-       // Add each detached mesh to the container first for bounding box calculation
-       detachedMeshes.forEach(mesh => {
-         container.add(mesh);
-       });
-       
-       // 4. Compute bounding box and recenter (following prompt step 3)
-       const box = new THREE.Box3().setFromObject(container);
-       const containerPivot = new THREE.Vector3();
-       box.getCenter(containerPivot);
-       container.position.sub(containerPivot);
-       
-       console.log('Container recentered using pivot:', { x: containerPivot.x.toFixed(2), y: containerPivot.y.toFixed(2), z: containerPivot.z.toFixed(2) });
-       
-       // Add the container to the scene (this makes all meshes children of the container)
-       scene.add(container);
+      // 4. Center the container
+      const box = new THREE.Box3().setFromObject(container);
+      const pivot = box.getCenter(new THREE.Vector3());
+      container.position.sub(pivot);
+      
+      // 5. Apply global scale
+      container.scale.setScalar(scale);
+      
+      console.log('Model recentered and scaled:', { 
+        pivot: { x: pivot.x.toFixed(2), y: pivot.y.toFixed(2), z: pivot.z.toFixed(2) },
+        scale: scale,
+        units: projectUnits
+      });
+      
+      // Add everything to the scene
+      scene.add(container);
 
        
        // Store metadata and object references for management
+       const meshes = Object.values(objectsById).map(obj => obj.mesh);
        container.userData.isLoadedModel = true;
        container.userData.objectsById = objectsById;
-       container.userData.detachedMeshes = detachedMeshes;
-       container.userData.meshCount = detachedMeshes.length;
+       container.userData.detachedMeshes = meshes;
+       container.userData.meshCount = meshes.length;
+       container.userData.projectUnits = projectUnits;
+       container.userData.scale = scale;
 
        const modelData: LoadedModel = {
          id: Date.now().toString(),
@@ -290,7 +311,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
         disposeObject(currentModel.object);
       }
 
-      console.log(`Added container with ${detachedMeshes.length} mesh objects to scene`);
+      console.log(`Added container with ${meshes.length} mesh objects to scene`);
       console.log('Objects accessible by ID:', Object.keys(objectsById));
       console.log('Container position:', { x: container.position.x.toFixed(2), y: container.position.y.toFixed(2), z: container.position.z.toFixed(2) });
       
@@ -317,19 +338,13 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
     const model = loadedModels.find(m => m.id === modelId);
     if (!model) return;
 
-    // Remove current model's meshes
-    if (currentModel && currentModel.object.userData.detachedMeshes) {
-      currentModel.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
-        scene.remove(mesh);
-      });
+    // Remove current model
+    if (currentModel) {
+      scene.remove(currentModel.object);
     }
 
-    // Add selected model's meshes
-    if (model.object.userData.detachedMeshes) {
-      model.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
-        scene.add(mesh);
-      });
-    }
+    // Add selected model
+    scene.add(model.object);
     setCurrentModel(model);
   }, [scene, loadedModels, currentModel]);
 
@@ -340,12 +355,8 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
     if (!model) return;
 
     if (currentModel?.id === modelId) {
-      // Remove all detached meshes from scene
-      if (model.object.userData.detachedMeshes) {
-        model.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
-          scene.remove(mesh);
-        });
-      }
+      // Remove model from scene
+      scene.remove(model.object);
       setCurrentModel(null);
     }
 
@@ -370,12 +381,8 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       // Dispose all loaded models
       loadedModels.forEach(model => {
         try {
-          // Remove detached meshes from scene
-          if (model.object.userData.detachedMeshes) {
-            model.object.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
-              if (scene) scene.remove(mesh);
-            });
-          }
+          // Remove model from scene
+          if (scene) scene.remove(model.object);
           disposeObject(model.object);
         } catch (error) {
           console.warn('Error disposing model on cleanup:', error);
