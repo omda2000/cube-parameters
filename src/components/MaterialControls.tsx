@@ -2,6 +2,7 @@
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Box, Palette, Info } from "lucide-react";
+import { useUnits } from '@/contexts/UnitsContext';
 
 interface Dimensions {
   length: number;
@@ -26,6 +27,8 @@ const MaterialControls = ({
   objectName,
   setObjectName
 }: MaterialControlsProps) => {
+  const { formatValue, convertValue } = useUnits();
+  
   const handleChange = (value: number, dimension: 'length' | 'width' | 'height') => {
     setDimensions(prev => ({
       ...prev,
@@ -83,7 +86,7 @@ const MaterialControls = ({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Length</label>
-                <span className="text-sm text-indigo-300 font-mono">{dimensions.length.toFixed(1)}m</span>
+                <span className="text-sm text-indigo-300 font-mono">{formatValue(convertValue(dimensions.length))}</span>
               </div>
               <Slider
                 value={[dimensions.length]}
@@ -97,7 +100,7 @@ const MaterialControls = ({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Width</label>
-                <span className="text-sm text-indigo-300 font-mono">{dimensions.width.toFixed(1)}m</span>
+                <span className="text-sm text-indigo-300 font-mono">{formatValue(convertValue(dimensions.width))}</span>
               </div>
               <Slider
                 value={[dimensions.width]}
@@ -111,7 +114,7 @@ const MaterialControls = ({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-sm font-medium">Height</label>
-                <span className="text-sm text-indigo-300 font-mono">{dimensions.height.toFixed(1)}m</span>
+                <span className="text-sm text-indigo-300 font-mono">{formatValue(convertValue(dimensions.height))}</span>
               </div>
               <Slider
                 value={[dimensions.height]}

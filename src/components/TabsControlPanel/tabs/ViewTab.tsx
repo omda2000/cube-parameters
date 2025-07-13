@@ -85,21 +85,6 @@ const ViewTab = ({
     });
   };
 
-  const handleGroundToggle = (checked: boolean) => {
-    const newEnvironment = { ...environment, showGround: checked };
-    setEnvironment(newEnvironment);
-    
-    const updateSceneGround = (window as any).__updateSceneGround;
-    if (updateSceneGround) {
-      updateSceneGround(checked);
-    }
-    
-    addMessage({
-      type: 'info',
-      title: 'Ground Plane Toggle',
-      description: `Ground plane ${checked ? 'enabled' : 'disabled'}`,
-    });
-  };
 
   return (
     <TooltipProvider>
@@ -139,26 +124,6 @@ const ViewTab = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* Ground Plane controls */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Layers className="h-3 w-3 text-slate-700 dark:text-slate-300" />
-                    <Label className="text-xs text-slate-100">Ground</Label>
-                  </div>
-                  <Switch
-                    checked={environment.showGround}
-                    onCheckedChange={handleGroundToggle}
-                  />
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle Ground Plane Visibility</p>
-            </TooltipContent>
-          </Tooltip>
         </div>
 
         <Separator className="bg-slate-600" />

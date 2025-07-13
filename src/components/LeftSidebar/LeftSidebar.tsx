@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Box, Settings, Eye, HelpCircle, Lightbulb } from 'lucide-react';
+import { Box, Settings, Eye, HelpCircle, Lightbulb, Cog } from 'lucide-react';
 
 interface LeftSidebarProps {
   activeTab: string;
@@ -16,6 +16,7 @@ const LeftSidebar = ({ activeTab, onTabChange, isPanelOpen }: LeftSidebarProps) 
     { id: 'properties', label: 'Object Properties', icon: Settings, description: 'Edit object properties and materials' },
     { id: 'lighting', label: 'Lighting & Environment', icon: Lightbulb, description: 'Control lighting and environment settings' },
     { id: 'environment', label: 'View Settings', icon: Eye, description: 'Camera and rendering options' },
+    { id: 'settings', label: 'Settings', icon: Cog, description: 'App settings and units configuration' },
     { id: 'help', label: 'User Guide', icon: HelpCircle, description: 'Touch and desktop controls guide' },
   ];
 

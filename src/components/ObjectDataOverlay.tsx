@@ -1,6 +1,7 @@
 
 import React from 'react';
 import * as THREE from 'three';
+import { useUnits } from '@/contexts/UnitsContext';
 
 interface ObjectData {
   name: string;
@@ -20,6 +21,8 @@ interface ObjectDataOverlayProps {
 }
 
 const ObjectDataOverlay = ({ objectData, mousePosition, visible }: ObjectDataOverlayProps) => {
+  const { formatValue, convertValue } = useUnits();
+  
   if (!visible || !objectData) return null;
 
   return (
@@ -58,9 +61,17 @@ const ObjectDataOverlay = ({ objectData, mousePosition, visible }: ObjectDataOve
         <div className="text-xs">
           <div className="text-slate-400">Position:</div>
           <div className="text-white font-mono">
-            X: {objectData.position.x.toFixed(2)}<br/>
-            Y: {objectData.position.y.toFixed(2)}<br/>
-            Z: {objectData.position.z.toFixed(2)}
+            X: {formatValue(convertValue(objectData.position.x))}<br/>
+            Y: {formatValue(convertValue(objectData.position.y))}<br/>
+            Z: {formatValue(convertValue(objectData.position.z))}
+          </div>
+        </div>
+        <div className="text-xs">
+          <div className="text-slate-400">Scale:</div>
+          <div className="text-white font-mono">
+            X: {objectData.scale.x.toFixed(2)}<br/>
+            Y: {objectData.scale.y.toFixed(2)}<br/>
+            Z: {objectData.scale.z.toFixed(2)}
           </div>
         </div>
       </div>
