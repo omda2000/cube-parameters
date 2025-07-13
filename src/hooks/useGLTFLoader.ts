@@ -123,6 +123,12 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       }
       
       console.log('GLTF parsed successfully:', gltf);
+      
+      // Validate that the GLTF has a scene
+      if (!gltf || !gltf.scene) {
+        throw new Error('Invalid GLTF file: No scene found in the file. Please check that this is a valid GLTF/GLB file with 3D content.');
+      }
+      
       console.log('Scene children count:', gltf.scene.children.length);
       console.log('Scene structure:', gltf.scene);
       
