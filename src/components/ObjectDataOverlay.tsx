@@ -5,13 +5,9 @@ import { useUnits } from '@/contexts/UnitsContext';
 
 interface ObjectData {
   name: string;
+  id: string;
   type: string;
-  vertices?: number;
-  triangles?: number;
   position: THREE.Vector3;
-  rotation: THREE.Euler;
-  scale: THREE.Vector3;
-  visible: boolean;
 }
 
 interface ObjectDataOverlayProps {
@@ -31,47 +27,27 @@ const ObjectDataOverlay = ({ objectData, mousePosition, visible }: ObjectDataOve
       style={{ 
         left: mousePosition.x + 15, 
         top: mousePosition.y - 10,
-        maxWidth: '250px'
+        maxWidth: '200px'
       }}
     >
       <div className="space-y-2">
         <div className="font-semibold text-cyan-400">{objectData.name}</div>
-        <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="text-xs space-y-1">
+          <div>
+            <span className="text-slate-400">ID:</span>
+            <span className="text-white ml-1">{objectData.id}</span>
+          </div>
           <div>
             <span className="text-slate-400">Type:</span>
-            <div className="text-white">{objectData.type}</div>
+            <span className="text-white ml-1">{objectData.type}</span>
           </div>
-          {objectData.vertices && (
-            <div>
-              <span className="text-slate-400">Vertices:</span>
-              <div className="text-white">{objectData.vertices.toLocaleString()}</div>
-            </div>
-          )}
-          {objectData.triangles && (
-            <div>
-              <span className="text-slate-400">Triangles:</span>
-              <div className="text-white">{objectData.triangles.toLocaleString()}</div>
-            </div>
-          )}
           <div>
-            <span className="text-slate-400">Visible:</span>
-            <div className="text-white">{objectData.visible ? 'Yes' : 'No'}</div>
-          </div>
-        </div>
-        <div className="text-xs">
-          <div className="text-slate-400">Position:</div>
-          <div className="text-white font-mono">
-            X: {formatValue(convertValue(objectData.position.x))}<br/>
-            Y: {formatValue(convertValue(objectData.position.y))}<br/>
-            Z: {formatValue(convertValue(objectData.position.z))}
-          </div>
-        </div>
-        <div className="text-xs">
-          <div className="text-slate-400">Scale:</div>
-          <div className="text-white font-mono">
-            X: {objectData.scale.x.toFixed(2)}<br/>
-            Y: {objectData.scale.y.toFixed(2)}<br/>
-            Z: {objectData.scale.z.toFixed(2)}
+            <span className="text-slate-400">Position:</span>
+            <div className="text-white font-mono ml-1">
+              X: {formatValue(convertValue(objectData.position.x))}<br/>
+              Y: {formatValue(convertValue(objectData.position.y))}<br/>
+              Z: {formatValue(convertValue(objectData.position.z))}
+            </div>
           </div>
         </div>
       </div>

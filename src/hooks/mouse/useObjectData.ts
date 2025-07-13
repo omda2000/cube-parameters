@@ -4,13 +4,9 @@ import * as THREE from 'three';
 
 interface ObjectData {
   name: string;
+  id: string;
   type: string;
-  vertices?: number;
-  triangles?: number;
   position: THREE.Vector3;
-  rotation: THREE.Euler;
-  scale: THREE.Vector3;
-  visible: boolean;
 }
 
 export const useObjectData = () => {
@@ -30,38 +26,32 @@ export const useObjectData = () => {
     if (!isInitialized.current) {
       return {
         name: 'Loading...',
+        id: 'loading',
         type: 'Object3D',
-        position: new THREE.Vector3(),
-        rotation: new THREE.Euler(),
-        scale: new THREE.Vector3(1, 1, 1),
-        visible: true
+        position: new THREE.Vector3()
       };
     }
 
-    let vertices = 0;
-    let triangles = 0;
-
-    if (object instanceof THREE.Mesh && object.geometry) {
-      const geometry = object.geometry;
-      if (geometry.attributes.position) {
-        vertices = geometry.attributes.position.count;
-      }
-      if (geometry.index) {
-        triangles = geometry.index.count / 3;
-      } else {
-        triangles = vertices / 3;
-      }
+    // Generate consistent ID using the same logic as scene tree
+    let objectId = '';
+    if (object.userData?.id) {
+      objectId = object.userData.id;
+    } else if (object.userData?.isPrimitive) {
+      objectId = `primitive_${object.uuid.slice(0, 8)}`;
+    } else if (object.userData?.isPoint) {
+      objectId = `point_${object.uuid.slice(0, 8)}`;
+    } else {
+      objectId = `${object.type}_${object.uuid.slice(0, 8)}`;
     }
 
+    // Use userData name if available, otherwise fallback to object name
+    const displayName = object.userData?.name || object.name || `${object.type}_${object.uuid.slice(0, 8)}`;
+
     return {
-      name: object.name || `${object.type}_${object.uuid.slice(0, 8)}`,
-      type: object.type,
-      vertices: vertices > 0 ? vertices : undefined,
-      triangles: triangles > 0 ? Math.floor(triangles) : undefined,
-      position: object.position.clone(),
-      rotation: object.rotation.clone(),
-      scale: object.scale.clone(),
-      visible: object.visible
+      name: displayName,
+      id: objectId,
+      type: object.userData?.type || object.type,
+      position: object.position.clone()
     };
   }, []);
 

@@ -150,15 +150,24 @@ export const buildSceneObjects = (
       return;
     }
 
-    // If this is a loaded model, process it as a single unit
+    // If this is a loaded model container, extract individual meshes instead of showing the container
     const loadedModel = loadedModelMap.get(child);
     if (loadedModel || child.userData.isLoadedModel) {
-      console.log('Processing as loaded model:', child.name);
-      const sceneObject = createSceneObject(child);
-      sceneObjects.push(sceneObject);
-      console.log('Added loaded model to scene objects:', sceneObject.name);
+      console.log('Processing loaded model container, extracting individual models:', child.name);
       
-      // Mark this model and all its children as processed to prevent duplication
+      // Instead of adding the container, add each detached mesh as individual objects
+      if (child.userData.detachedMeshes) {
+        child.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
+          if (!processedObjects.has(mesh)) {
+            console.log('Adding individual model from GLB:', mesh.userData?.name || mesh.name);
+            const sceneObject = createSceneObject(mesh);
+            sceneObjects.push(sceneObject);
+            processedObjects.add(mesh);
+          }
+        });
+      }
+      
+      // Mark container as processed to avoid duplication
       processedObjects.add(child);
       child.traverse(descendant => {
         processedObjects.add(descendant);
