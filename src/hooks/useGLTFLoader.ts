@@ -153,14 +153,23 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
           let metadata = null;
           
           if (gltf.parser?.json) {
+            console.log('🔍 GLTF Parser available, checking associations...');
+            console.log('🔍 GLTF JSON nodes:', gltf.parser.json.nodes);
+            console.log('🔍 Parser associations for mesh:', gltf.parser.associations.get(mesh));
+            
             const nodeIndex = gltf.parser.associations.get(mesh)?.nodes?.[0];
+            console.log('🔍 Node index for mesh:', nodeIndex);
+            
             if (typeof nodeIndex === 'number' && gltf.parser.json.nodes?.[nodeIndex]) {
               const gltfNode = gltf.parser.json.nodes[nodeIndex];
-              console.log('Processing node:', nodeIndex, 'Name:', gltfNode.name, 'Extras:', gltfNode.extras);
+              console.log('🔍 Processing GLTF node:', nodeIndex);
+              console.log('🔍 Node data:', gltfNode);
+              console.log('🔍 Node name:', gltfNode.name);
+              console.log('🔍 Node extras:', gltfNode.extras);
               
               if (gltfNode.extras?.object_params) {
                 const objectParams = gltfNode.extras.object_params;
-                console.log(`Found object_params in GLTF node ${nodeIndex}:`, objectParams);
+                console.log(`✅ Found object_params in GLTF node ${nodeIndex}:`, objectParams);
                 
                 // Use exact values from GLTF extras.object_params without fallbacks
                 metadata = {
@@ -170,20 +179,27 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
                   type: objectParams.type,
                   function: objectParams.function
                 };
-                console.log(`Preserved exact metadata from extras.object_params:`, metadata);
-              } else if (gltfNode.name) {
-                console.log('No object_params found, using node name:', gltfNode.name);
-                // Fallback: use GLTF node name
-                metadata = {
-                  id: gltfNode.name,
-                  name: gltfNode.name,
-                  parent_id: 'none',
-                  type: 'mesh',
-                  function: 'none'
-                };
-                console.log(`Fallback metadata from GLTF node name:`, metadata);
+                console.log(`✅ Preserved exact metadata from extras.object_params:`, metadata);
+              } else {
+                console.log('❌ No object_params found in node extras');
+                if (gltfNode.name) {
+                  console.log('🔄 Using node name as fallback:', gltfNode.name);
+                  // Fallback: use GLTF node name
+                  metadata = {
+                    id: gltfNode.name,
+                    name: gltfNode.name,
+                    parent_id: 'none',
+                    type: 'mesh',
+                    function: 'none'
+                  };
+                  console.log(`🔄 Fallback metadata from GLTF node name:`, metadata);
+                }
               }
+            } else {
+              console.log('❌ No valid node index found for mesh');
             }
+          } else {
+            console.log('❌ No GLTF parser available');
           }
           
           // Final fallback if no metadata found
