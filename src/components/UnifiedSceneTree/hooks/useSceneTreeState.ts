@@ -103,28 +103,31 @@ export const useSceneTreeState = (
   const toggleVisibility = useCallback((sceneObject: SceneObject) => {
     console.log('Toggling visibility for:', sceneObject.name, 'current:', sceneObject.object.visible);
     
-    // Toggle visibility
-    sceneObject.object.visible = !sceneObject.object.visible;
+    const newVisibility = !sceneObject.object.visible;
     
-    // Force scene update by traversing and updating materials if needed
+    // Toggle visibility for the main object
+    sceneObject.object.visible = newVisibility;
+    
+    // For meshes, also traverse children and apply visibility
     sceneObject.object.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.visible = sceneObject.object.visible;
-        // Force material update
-        if (child.material) {
-          if (Array.isArray(child.material)) {
-            child.material.forEach(mat => mat.needsUpdate = true);
-          } else {
-            child.material.needsUpdate = true;
-          }
+      child.visible = newVisibility;
+      // Force material update
+      if (child instanceof THREE.Mesh && child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach(mat => mat.needsUpdate = true);
+        } else {
+          child.material.needsUpdate = true;
         }
       }
     });
     
+    // Update the sceneObject's visibility property
+    sceneObject.visible = newVisibility;
+    
     // Trigger re-render
     triggerUpdate();
     
-    console.log('Visibility toggled to:', sceneObject.object.visible);
+    console.log('Visibility toggled to:', newVisibility);
   }, [triggerUpdate]);
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {

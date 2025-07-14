@@ -68,7 +68,7 @@ const SceneObjectNode = ({
             <div className="w-6" />
           )}
           
-          <NodeIcon type={sceneObject.type} />
+          <NodeIcon type={sceneObject.type} objectType={sceneObject.object?.userData?.type} />
           
           <span className={`truncate flex-1 ${isObjectSelected ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
             {sceneObject.name}

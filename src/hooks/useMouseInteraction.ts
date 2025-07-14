@@ -87,7 +87,7 @@ export const useMouseInteraction = (
         // Re-enable controls after a short delay
         setTimeout(() => {
           if (controls) controls.enabled = true;
-        }, 100);
+        }, 50);
       }
 
       // Clear any existing hover effects before selection

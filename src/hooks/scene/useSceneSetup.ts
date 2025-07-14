@@ -16,7 +16,13 @@ export const useSceneSetup = () => {
     const meshes: THREE.Mesh[] = [];
     
     sceneRef.current.traverse((child) => {
-      if (child instanceof THREE.Mesh && !child.userData.isHelper) {
+      if (child instanceof THREE.Mesh && 
+          !child.userData.isHelper && 
+          child.type !== 'GridHelper' && 
+          child.type !== 'AxesHelper' &&
+          !child.userData.isPrimitive &&
+          !child.userData.isPoint &&
+          !child.userData.isMeasurementGroup) {
         meshes.push(child);
       }
     });
@@ -30,13 +36,17 @@ export const useSceneSetup = () => {
     // Calculate grid size based on bounding box with minimum 10x10m
     const size = box.getSize(new THREE.Vector3());
     const maxDimension = Math.max(size.x, size.z);
-    const gridSize = Math.max(maxDimension * 1.5, 10); // 1.5x the model size or minimum 10m
-    const divisions = Math.max(Math.ceil(gridSize), 10); // 1m x 1m grid units
+    
+    // Ensure grid covers the entire bounding box with padding
+    const gridSize = meshes.length > 0 ? Math.max(maxDimension * 2, 10) : 10; // 2x the model size for full coverage or minimum 10m
+    const divisions = Math.ceil(gridSize); // 1m x 1m grid units
 
     console.log('🔄 Updating adaptive grid:', { 
       boundingBox: { x: size.x, y: size.y, z: size.z },
+      maxDimension,
       gridSize, 
-      divisions 
+      divisions,
+      meshCount: meshes.length
     });
 
     // Remove old grid and create new one

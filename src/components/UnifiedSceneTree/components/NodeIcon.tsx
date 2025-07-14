@@ -1,11 +1,27 @@
 
-import { Box, Triangle, Sun, TreePine, MapPin, Ruler } from 'lucide-react';
+import { Box, Triangle, Sun, TreePine, MapPin, Ruler, Home, Building2, Square } from 'lucide-react';
 
 interface NodeIconProps {
   type: string;
+  objectType?: string; // From userData.type for specific object types
 }
 
-const NodeIcon = ({ type }: NodeIconProps) => {
+const NodeIcon = ({ type, objectType }: NodeIconProps) => {
+  // First check for specific object types from userData
+  if (objectType) {
+    switch (objectType.toLowerCase()) {
+      case 'plot':
+        return <Square className="h-4 w-4 text-green-500" />;
+      case 'building':
+        return <Building2 className="h-4 w-4 text-blue-500" />;
+      case 'room':
+        return <Home className="h-4 w-4 text-purple-500" />;
+      default:
+        break;
+    }
+  }
+  
+  // Then check for general types
   switch (type) {
     case 'mesh':
       return <Triangle className="h-4 w-4 text-green-400" />;
