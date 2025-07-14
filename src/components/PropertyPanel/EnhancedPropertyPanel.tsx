@@ -104,7 +104,7 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">ID</Label>
               <Input
-                value={gltfMetadata?.id || selectedObject.id}
+                value={selectedObject.id}
                 readOnly
                 className="mt-1 bg-slate-100 dark:bg-slate-800"
               />
@@ -113,7 +113,7 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Type</Label>
               <Input
-                value={gltfMetadata?.type || selectedObject.type}
+                value={selectedObject.type}
                 readOnly
                 className="mt-1 bg-slate-100 dark:bg-slate-800"
               />

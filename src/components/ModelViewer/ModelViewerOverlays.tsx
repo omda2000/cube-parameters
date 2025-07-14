@@ -3,7 +3,6 @@ import React, { memo } from 'react';
 import * as THREE from 'three';
 import ObjectDataOverlay from '../ObjectDataOverlay';
 import SelectionOverlay from '../SelectionOverlay/SelectionOverlay';
-import ObjectPropertyOverlay from '../ObjectPropertyOverlay/ObjectPropertyOverlay';
 
 interface ModelViewerOverlaysProps {
   objectData: any;
@@ -26,9 +25,6 @@ const ModelViewerOverlays = memo(({
         visible={isHovering}
       />
       <SelectionOverlay 
-        selectedObject={selectedObjects.length > 0 ? selectedObjects[0] : null} 
-      />
-      <ObjectPropertyOverlay 
         selectedObject={selectedObjects.length > 0 ? selectedObjects[0] : null} 
       />
     </>
