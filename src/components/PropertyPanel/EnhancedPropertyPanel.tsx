@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,25 +59,64 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
     }
   };
 
-  // Extract GLTF metadata from extras.object_params
+  // Extract GLTF metadata from userData (previously extracted from extras.object_params)
   const extractGLTFMetadata = (object: THREE.Object3D) => {
     const userData = object.userData;
     
-    // Check if we have the required Rhino metadata fields
-    if (userData?.id && userData?.name !== undefined && userData?.parent_id !== undefined && 
-        userData?.type && userData?.function !== undefined) {
+    console.log('Extracting GLTF metadata from userData:', userData);
+    
+    // Check if we have the required Rhino metadata fields in userData
+    // Handle both direct userData access and nested object_params structure
+    const metadataSource = userData?.object_params || userData;
+    
+    console.log('Metadata source:', metadataSource);
+    
+    // Check for required fields - allow empty strings as valid values
+    const hasId = metadataSource?.id !== undefined;
+    const hasName = metadataSource?.name !== undefined;
+    const hasParentId = metadataSource?.parent_id !== undefined;
+    const hasType = metadataSource?.type !== undefined;
+    const hasFunction = metadataSource?.function !== undefined;
+    
+    console.log('Field availability:', {
+      hasId,
+      hasName,
+      hasParentId,
+      hasType,
+      hasFunction,
+      actualValues: {
+        id: metadataSource?.id,
+        name: metadataSource?.name,
+        parent_id: metadataSource?.parent_id,
+        type: metadataSource?.type,
+        function: metadataSource?.function
+      }
+    });
+    
+    if (hasId && hasName && hasParentId && hasType && hasFunction) {
       return {
-        id: userData.id,
-        name: userData.name,
-        parent_id: userData.parent_id,
-        type: userData.type,
-        function: userData.function,
+        id: String(metadataSource.id),
+        name: metadataSource.name === "" ? "(empty)" : String(metadataSource.name),
+        parent_id: metadataSource.parent_id === "" ? "(empty)" : String(metadataSource.parent_id),
+        type: String(metadataSource.type),
+        function: metadataSource.function === "" ? "(empty)" : String(metadataSource.function),
         hasValidMetadata: true
       };
     }
+    
+    // Provide detailed error information
+    const missingFields = [];
+    if (!hasId) missingFields.push('id');
+    if (!hasName) missingFields.push('name');
+    if (!hasParentId) missingFields.push('parent_id');
+    if (!hasType) missingFields.push('type');
+    if (!hasFunction) missingFields.push('function');
+    
     return {
       hasValidMetadata: false,
-      error: 'Missing required metadata from GLTF extras.object_params'
+      error: `Missing required Rhino metadata fields: ${missingFields.join(', ')}`,
+      availableFields: Object.keys(metadataSource || {}),
+      rawUserData: userData
     };
   };
 
@@ -98,14 +138,27 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <Settings className="h-4 w-4" />
-                  <span className="text-sm font-medium">Metadata Error</span>
+                  <span className="text-sm font-medium">Rhino Metadata Missing</span>
                 </div>
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                   {gltfMetadata.error}
                 </p>
                 <p className="text-xs text-red-500 dark:text-red-400 mt-1">
-                  Expected fields from GLTF extras.object_params: id, name, parent_id, type, function
+                  Expected: id, name, parent_id, type, function from GLTF extras.object_params
                 </p>
+                {gltfMetadata.availableFields && gltfMetadata.availableFields.length > 0 && (
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                    Available fields: {gltfMetadata.availableFields.join(', ')}
+                  </p>
+                )}
+                <details className="mt-2">
+                  <summary className="text-xs cursor-pointer text-slate-600 dark:text-slate-400">
+                    Show raw userData (debug)
+                  </summary>
+                  <pre className="text-xs mt-1 p-2 bg-slate-100 dark:bg-slate-800 rounded overflow-auto max-h-32">
+                    {JSON.stringify(gltfMetadata.rawUserData, null, 2)}
+                  </pre>
+                </details>
               </div>
             </div>
           ) : (
@@ -124,7 +177,7 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
               <div>
                 <Label className="text-xs text-slate-500">Name</Label>
                 <Input
-                  value={gltfMetadata.name || '(empty)'}
+                  value={gltfMetadata.name}
                   readOnly
                   className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
                 />
@@ -142,7 +195,7 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
               <div>
                 <Label className="text-xs text-slate-500">Function</Label>
                 <Input
-                  value={gltfMetadata.function || '(empty)'}
+                  value={gltfMetadata.function}
                   readOnly
                   className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
                 />
@@ -151,7 +204,7 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
               <div>
                 <Label className="text-xs text-slate-500">Parent ID</Label>
                 <Input
-                  value={gltfMetadata.parent_id || '(empty)'}
+                  value={gltfMetadata.parent_id}
                   readOnly
                   className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
                 />
