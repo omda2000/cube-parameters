@@ -58,19 +58,26 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
     }
   };
 
-  // Extract GLTF metadata if available
+  // Extract GLTF metadata from extras.object_params
   const extractGLTFMetadata = (object: THREE.Object3D) => {
     const userData = object.userData;
-    if (userData?.id) {
+    
+    // Check if we have the required Rhino metadata fields
+    if (userData?.id && userData?.name !== undefined && userData?.parent_id !== undefined && 
+        userData?.type && userData?.function !== undefined) {
       return {
         id: userData.id,
-        name: userData.name || selectedObject.name,
+        name: userData.name,
+        parent_id: userData.parent_id,
         type: userData.type,
-        function: userData.function || 'N/A',
-        parentId: userData.parent_id || 'None'
+        function: userData.function,
+        hasValidMetadata: true
       };
     }
-    return null;
+    return {
+      hasValidMetadata: false,
+      error: 'Missing required metadata from GLTF extras.object_params'
+    };
   };
 
   const gltfMetadata = extractGLTFMetadata(selectedObject.object);
@@ -85,40 +92,76 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Basic Properties */}
-          <div className="space-y-3">
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  value={selectedObject.name}
-                  onChange={(e) => onPropertyChange('name', e.target.value)}
-                  className="flex-1"
-                />
-                <Button size="sm" variant="outline">
-                  <Edit3 className="h-4 w-4" />
-                </Button>
+          {/* GLTF Object Properties from Rhino */}
+          {!gltfMetadata.hasValidMetadata ? (
+            <div className="space-y-3">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <Settings className="h-4 w-4" />
+                  <span className="text-sm font-medium">Metadata Error</span>
+                </div>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  {gltfMetadata.error}
+                </p>
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+                  Expected fields from GLTF extras.object_params: id, name, parent_id, type, function
+                </p>
               </div>
             </div>
+          ) : (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Rhino Object Properties</Label>
+              
+              <div>
+                <Label className="text-xs text-slate-500">ID</Label>
+                <Input
+                  value={gltfMetadata.id}
+                  readOnly
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
 
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">ID</Label>
-              <Input
-                value={gltfMetadata?.id || selectedObject.id}
-                readOnly
-                className="mt-1 bg-slate-100 dark:bg-slate-800"
-              />
+              <div>
+                <Label className="text-xs text-slate-500">Name</Label>
+                <Input
+                  value={gltfMetadata.name || '(empty)'}
+                  readOnly
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Type</Label>
+                <Input
+                  value={gltfMetadata.type}
+                  readOnly
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Function</Label>
+                <Input
+                  value={gltfMetadata.function || '(empty)'}
+                  readOnly
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Parent ID</Label>
+                <Input
+                  value={gltfMetadata.parent_id || '(empty)'}
+                  readOnly
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
             </div>
+          )}
 
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Type</Label>
-              <Input
-                value={gltfMetadata?.type || selectedObject.type}
-                readOnly
-                className="mt-1 bg-slate-100 dark:bg-slate-800"
-              />
-            </div>
-
+          {/* Basic Object Info */}
+          <Separator />
+          <div className="space-y-3">
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Visibility</Label>
               <div className="flex items-center gap-2 mt-1">
@@ -132,30 +175,6 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
                   {selectedObject.visible ? 'Visible' : 'Hidden'}
                 </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Standard Object Properties (as specified in user requirements) */}
-          <Separator />
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Object Properties</Label>
-            
-            <div>
-              <Label className="text-xs text-slate-500">Function</Label>
-              <Input
-                value={gltfMetadata?.function || 'N/A'}
-                readOnly
-                className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-slate-500">Parent ID</Label>
-              <Input
-                value={gltfMetadata?.parentId || 'None'}
-                readOnly
-                className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-              />
             </div>
           </div>
 
