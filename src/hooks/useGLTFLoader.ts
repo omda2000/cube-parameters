@@ -149,78 +149,52 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
           
-          // Parse metadata from extras.object_params (as specified in the prompt)
+          // Extract metadata from extras.object_params using GLTF parser associations
           let metadata = null;
-          if (node.userData?.extras?.object_params || node.extras?.object_params) {
-            try {
-              // Extract object_params from node extras
-              const objectParams = node.userData?.extras?.object_params || node.extras?.object_params;
-              console.log(`Found object_params in extras:`, objectParams);
+          
+          if (gltf.parser?.json) {
+            const nodeIndex = gltf.parser.associations.get(mesh)?.nodes?.[0];
+            if (typeof nodeIndex === 'number' && gltf.parser.json.nodes?.[nodeIndex]) {
+              const gltfNode = gltf.parser.json.nodes[nodeIndex];
+              console.log('Processing node:', nodeIndex, 'Name:', gltfNode.name, 'Extras:', gltfNode.extras);
               
-              // Validate that we have the required fields
-              if (objectParams.id && objectParams.name && objectParams.type) {
+              if (gltfNode.extras?.object_params) {
+                const objectParams = gltfNode.extras.object_params;
+                console.log(`Found object_params in GLTF node ${nodeIndex}:`, objectParams);
+                
                 metadata = {
-                  id: objectParams.id,
-                  name: objectParams.name,
+                  id: objectParams.id || `mesh_${allMeshes.length - 1}`,
+                  name: objectParams.name || gltfNode.name || node.name || `Mesh_${allMeshes.length - 1}`,
                   parent_id: objectParams.parent_id || 'none',
-                  type: objectParams.type,
+                  type: objectParams.type || 'mesh',
                   function: objectParams.function || 'none'
                 };
                 console.log(`Parsed metadata from extras.object_params:`, metadata);
-              } else {
-                console.warn('object_params missing required fields (id, name, type):', objectParams);
-                throw new Error('Invalid object_params structure');
-              }
-              
-            } catch (e) {
-              console.warn('Failed to parse extras.object_params for node:', node.name, ':', e);
-              // Fallback: use name as-is and generate required fields
-              metadata = { 
-                id: mesh.uuid.slice(0, 8), 
-                name: node.name || `Mesh_${allMeshes.length - 1}`,
-                parent_id: 'none',
-                type: 'unknown', 
-                function: 'none'
-              };
-            }
-          } else {
-            console.log('No extras.object_params found, checking node.name...');
-            // Fallback: try to parse node.name as JSON
-            if (node.name) {
-              try {
-                const parsedName = JSON.parse(node.name);
-                if (parsedName.id && parsedName.name && parsedName.type) {
-                  metadata = {
-                    id: parsedName.id,
-                    name: parsedName.name,
-                    parent_id: parsedName.parent_id || 'none',
-                    type: parsedName.type,
-                    function: parsedName.function || 'none'
-                  };
-                  console.log(`Fallback: parsed metadata from node.name:`, metadata);
-                } else {
-                  throw new Error('Invalid name structure');
-                }
-              } catch (e) {
-                // Final fallback: create basic metadata
-                metadata = { 
-                  id: mesh.uuid.slice(0, 8), 
-                  name: node.name || `Mesh_${allMeshes.length - 1}`,
+              } else if (gltfNode.name) {
+                console.log('No object_params found, using node name:', gltfNode.name);
+                // Fallback: use GLTF node name
+                metadata = {
+                  id: gltfNode.name,
+                  name: gltfNode.name,
                   parent_id: 'none',
-                  type: 'unknown', 
+                  type: 'mesh',
                   function: 'none'
                 };
+                console.log(`Fallback metadata from GLTF node name:`, metadata);
               }
-            } else {
-              // No name at all - create fallback metadata
-              metadata = { 
-                id: mesh.uuid.slice(0, 8), 
-                name: `Mesh_${allMeshes.length - 1}`,
-                parent_id: 'none',
-                type: 'unknown', 
-                function: 'none'
-              };
             }
+          }
+          
+          // Final fallback if no metadata found
+          if (!metadata) {
+            console.log('No GLTF metadata found, creating fallback...');
+            metadata = {
+              id: `mesh_${allMeshes.length - 1}_${mesh.uuid.slice(0, 8)}`,
+              name: node.name || `Mesh_${allMeshes.length - 1}`,
+              parent_id: 'none',
+              type: 'mesh',
+              function: 'none'
+            };
           }
           
           if (metadata && metadata.id) {
