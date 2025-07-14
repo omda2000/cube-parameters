@@ -59,18 +59,24 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
     }
   };
 
-  // Extract GLTF metadata from userData (previously extracted from extras.object_params)
+  // Extract GLTF metadata - check userData.object_params first, then direct userData
   const extractGLTFMetadata = (object: THREE.Object3D) => {
     const userData = object.userData;
     
     console.log('🔍 PropertyPanel: Extracting GLTF metadata from object:', object.name);
     console.log('🔍 PropertyPanel: userData:', userData);
     
-    // Check if we have the required Rhino metadata fields in userData
-    // The metadata should be stored directly in userData (not nested)
-    const metadataSource = userData;
+    // First check for object_params (Three.js auto-maps extras → userData)
+    let metadataSource = userData?.object_params;
+    console.log('🔍 PropertyPanel: object_params found:', metadataSource);
     
-    console.log('🔍 PropertyPanel: Metadata source:', metadataSource);
+    // Fallback to direct userData if no object_params
+    if (!metadataSource) {
+      console.log('🔍 PropertyPanel: No object_params, checking direct userData');
+      metadataSource = userData;
+    }
+    
+    console.log('🔍 PropertyPanel: Final metadata source:', metadataSource);
     
     // Check for required fields - allow empty strings as valid values  
     const hasId = metadataSource?.id !== undefined;

@@ -7,8 +7,9 @@ const PropertiesTab = () => {
 
   const selectedObject = selectedObjects.length > 0 ? selectedObjects[0] : null;
   
-  console.log('PropertiesTab - Selected object:', selectedObject);
-  console.log('PropertiesTab - Object userData:', selectedObject?.object?.userData);
+  console.log('🏷️ PropertiesTab - Selected object:', selectedObject);
+  console.log('🏷️ PropertiesTab - Object userData:', selectedObject?.object?.userData);
+  console.log('🏷️ PropertiesTab - Object userData.object_params:', selectedObject?.object?.userData?.object_params);
 
   // Handle property changes
   const handlePropertyChange = (property: string, value: any) => {

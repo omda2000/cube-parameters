@@ -130,76 +130,47 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
       
-      // 1. First pass: collect all meshes and parse metadata from extras.object_params
+      // 1. First pass: collect all meshes and read metadata from userData.object_params
       console.log('Starting mesh traversal...');
-      console.log('GLTF structure:', { 
-        nodes: gltf.parser?.json?.nodes?.length || 'unknown',
-        scenes: gltf.parser?.json?.scenes?.length || 'unknown'
-      });
       
-      // Log full GLTF structure for debugging
-      if (gltf.parser?.json) {
-        console.log('GLTF JSON:', JSON.stringify(gltf.parser.json, null, 2));
-      }
       gltf.scene.traverse(node => {
         console.log('Traversing node:', node.type, node.name || 'unnamed', 'isMesh:', node.isMesh);
         console.log('Node userData:', node.userData);
-        console.log('Node extras:', node.extras);
+        
         if (node.isMesh) {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
           
-          // Extract metadata from extras.object_params using GLTF parser associations
+          // Three.js automatically maps GLTF extras → userData
+          // Check for object_params that should contain our 5 required fields
           let metadata = null;
           
-          if (gltf.parser?.json) {
-            console.log('🔍 GLTF Parser available, checking associations...');
-            console.log('🔍 GLTF JSON nodes:', gltf.parser.json.nodes);
-            console.log('🔍 Parser associations for mesh:', gltf.parser.associations.get(mesh));
+          console.log(`🔍 Checking mesh "${mesh.name}" userData:`, mesh.userData);
+          
+          if (mesh.userData?.object_params) {
+            const objectParams = mesh.userData.object_params;
+            console.log(`✅ Found object_params in userData:`, objectParams);
             
-            const nodeIndex = gltf.parser.associations.get(mesh)?.nodes?.[0];
-            console.log('🔍 Node index for mesh:', nodeIndex);
-            
-            if (typeof nodeIndex === 'number' && gltf.parser.json.nodes?.[nodeIndex]) {
-              const gltfNode = gltf.parser.json.nodes[nodeIndex];
-              console.log('🔍 Processing GLTF node:', nodeIndex);
-              console.log('🔍 Node data:', gltfNode);
-              console.log('🔍 Node name:', gltfNode.name);
-              console.log('🔍 Node extras:', gltfNode.extras);
-              
-              if (gltfNode.extras?.object_params) {
-                const objectParams = gltfNode.extras.object_params;
-                console.log(`✅ Found object_params in GLTF node ${nodeIndex}:`, objectParams);
-                
-                // Use exact values from GLTF extras.object_params without fallbacks
-                metadata = {
-                  id: objectParams.id,
-                  name: objectParams.name,
-                  parent_id: objectParams.parent_id,
-                  type: objectParams.type,
-                  function: objectParams.function
-                };
-                console.log(`✅ Preserved exact metadata from extras.object_params:`, metadata);
-              } else {
-                console.log('❌ No object_params found in node extras');
-                if (gltfNode.name) {
-                  console.log('🔄 Using node name as fallback:', gltfNode.name);
-                  // Fallback: use GLTF node name
-                  metadata = {
-                    id: gltfNode.name,
-                    name: gltfNode.name,
-                    parent_id: 'none',
-                    type: 'mesh',
-                    function: 'none'
-                  };
-                  console.log(`🔄 Fallback metadata from GLTF node name:`, metadata);
-                }
-              }
-            } else {
-              console.log('❌ No valid node index found for mesh');
-            }
+            // Use exact values from GLTF extras.object_params
+            metadata = {
+              id: objectParams.id,
+              name: objectParams.name,
+              parent_id: objectParams.parent_id,
+              type: objectParams.type,
+              function: objectParams.function
+            };
+            console.log(`✅ Extracted metadata from object_params:`, metadata);
           } else {
-            console.log('❌ No GLTF parser available');
+            console.log('❌ No object_params found in userData, creating fallback');
+            // Fallback metadata
+            metadata = {
+              id: mesh.name || `mesh_${allMeshes.length - 1}_${mesh.uuid.slice(0, 8)}`,
+              name: mesh.name || `Mesh_${allMeshes.length - 1}`,
+              parent_id: 'none',
+              type: 'mesh',
+              function: 'none'
+            };
+            console.log(`🔄 Fallback metadata:`, metadata);
           }
           
           // Final fallback if no metadata found
@@ -293,15 +264,20 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
          mesh.castShadow = true;
          mesh.receiveShadow = true;
          
-         // Store metadata for easy access as specified in the prompt
+         // Store metadata in the format expected by property panel
+         // Keep object_params if it exists, or store metadata directly
          mesh.userData = {
+           // Preserve original object_params if it was found
+           ...(mesh.userData?.object_params ? { object_params: mesh.userData.object_params } : {}),
+           // Store metadata directly in userData for easy access
            id: metadata.id,
            name: metadata.name,
            parent_id: metadata.parent_id,
            type: metadata.type, 
            function: metadata.function,
            isDetachedFromGLB: true,
-           originalMetadata: metadata
+           originalMetadata: metadata,
+           loadedModelId: Date.now().toString()
          };
          
          console.log(`✅ Stored metadata in mesh.userData for "${mesh.name}":`, {
