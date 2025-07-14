@@ -162,14 +162,15 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
                 const objectParams = gltfNode.extras.object_params;
                 console.log(`Found object_params in GLTF node ${nodeIndex}:`, objectParams);
                 
+                // Use exact values from GLTF extras.object_params without fallbacks
                 metadata = {
-                  id: objectParams.id || `mesh_${allMeshes.length - 1}`,
-                  name: objectParams.name || gltfNode.name || node.name || `Mesh_${allMeshes.length - 1}`,
-                  parent_id: objectParams.parent_id || 'none',
-                  type: objectParams.type || 'mesh',
-                  function: objectParams.function || 'none'
+                  id: objectParams.id,
+                  name: objectParams.name,
+                  parent_id: objectParams.parent_id,
+                  type: objectParams.type,
+                  function: objectParams.function
                 };
-                console.log(`Parsed metadata from extras.object_params:`, metadata);
+                console.log(`Preserved exact metadata from extras.object_params:`, metadata);
               } else if (gltfNode.name) {
                 console.log('No object_params found, using node name:', gltfNode.name);
                 // Fallback: use GLTF node name
