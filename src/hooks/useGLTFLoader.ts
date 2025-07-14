@@ -132,8 +132,19 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       
       // 1. First pass: collect all meshes and parse metadata from extras.object_params
       console.log('Starting mesh traversal...');
+      console.log('GLTF structure:', { 
+        nodes: gltf.parser?.json?.nodes?.length || 'unknown',
+        scenes: gltf.parser?.json?.scenes?.length || 'unknown'
+      });
+      
+      // Log full GLTF structure for debugging
+      if (gltf.parser?.json) {
+        console.log('GLTF JSON:', JSON.stringify(gltf.parser.json, null, 2));
+      }
       gltf.scene.traverse(node => {
         console.log('Traversing node:', node.type, node.name || 'unnamed', 'isMesh:', node.isMesh);
+        console.log('Node userData:', node.userData);
+        console.log('Node extras:', node.extras);
         if (node.isMesh) {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
