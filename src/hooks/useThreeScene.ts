@@ -13,7 +13,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
   const resourceManagerRef = useRef<ResourceManager>(ResourceManager.getInstance());
 
   // Set up scene components
-  const { sceneRef, ucsHelperRef, gridHelperRef } = useSceneSetup();
+  const { sceneRef, ucsHelperRef, gridHelperRef, updateAdaptiveGrid } = useSceneSetup();
   
   const { 
     perspectiveCameraRef, 
@@ -66,6 +66,7 @@ export const useThreeScene = (mountRef: React.RefObject<HTMLDivElement>) => {
     gridHelperRef,
     performanceMetrics: metrics,
     isOrthographic,
-    switchCamera
+    switchCamera,
+    updateAdaptiveGrid
   };
 };

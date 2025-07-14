@@ -69,17 +69,25 @@ export const useShadeType = (sceneRef: React.RefObject<THREE.Scene | null>) => {
             break;
 
           case 'hidden':
-            // Restore material and remove edge helpers then hide
-            if (mesh.userData.originalMaterial) {
-              mesh.material = mesh.userData.originalMaterial;
+            // For hidden mode, show geometry in white/grey color with edges
+            mesh.visible = true;
+            
+            // Create a white/grey material for hidden mode
+            const hiddenMaterial = new THREE.MeshLambertMaterial({ 
+              color: 0xcccccc, // Light grey color
+              transparent: true,
+              opacity: 0.8
+            });
+            mesh.material = hiddenMaterial;
+            
+            // Add wireframe edges if not already present
+            if (!mesh.userData.edgesHelper && mesh.geometry) {
+              const edges = new THREE.EdgesGeometry(mesh.geometry);
+              const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x333333 });
+              const edgesHelper = new THREE.LineSegments(edges, edgesMaterial);
+              mesh.add(edgesHelper);
+              mesh.userData.edgesHelper = edgesHelper;
             }
-            if (mesh.userData.edgesHelper) {
-              mesh.remove(mesh.userData.edgesHelper);
-              mesh.userData.edgesHelper.geometry.dispose();
-              (mesh.userData.edgesHelper.material as THREE.Material).dispose();
-              delete mesh.userData.edgesHelper;
-            }
-            mesh.visible = false;
             break;
 
           case 'shaded-with-edges':

@@ -264,21 +264,25 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
          mesh.castShadow = true;
          mesh.receiveShadow = true;
          
-         // Store metadata in the format expected by property panel
-         // Keep object_params if it exists, or store metadata directly
+         // Store metadata in userData for property panel access
+         console.log(`💾 Storing metadata in mesh userData for "${mesh.name}":`, metadata);
+         
+         // Keep existing userData and add our metadata
          mesh.userData = {
-           // Preserve original object_params if it was found
-           ...(mesh.userData?.object_params ? { object_params: mesh.userData.object_params } : {}),
-           // Store metadata directly in userData for easy access
+           ...mesh.userData, // Preserve any existing userData including object_params
+           // Store the 5 required Rhino fields directly in userData
            id: metadata.id,
            name: metadata.name,
            parent_id: metadata.parent_id,
            type: metadata.type, 
            function: metadata.function,
+           // Additional tracking fields
            isDetachedFromGLB: true,
            originalMetadata: metadata,
            loadedModelId: Date.now().toString()
          };
+         
+         console.log(`✅ Final userData for "${mesh.name}":`, mesh.userData);
          
          console.log(`✅ Stored metadata in mesh.userData for "${mesh.name}":`, {
            id: mesh.userData.id,

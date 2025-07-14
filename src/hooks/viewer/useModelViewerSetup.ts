@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { useThreeScene } from '../useThreeScene';
 import { useLighting } from '../useLighting';
@@ -46,7 +46,8 @@ export const useModelViewerSetup = ({
     gridHelperRef,
     performanceMetrics,
     isOrthographic,
-    switchCamera
+    switchCamera,
+    updateAdaptiveGrid
   } = useThreeScene(mountRef);
 
   // FBX model loading
@@ -60,16 +61,24 @@ export const useModelViewerSetup = ({
     removeModel: fbxRemoveModel
   } = useFBXLoader(sceneRef.current);
 
-  // GLTF model loading
+  // GLTF model loading with adaptive grid callback
   const {
     loadedModels: gltfModels,
     currentModel: gltfCurrentModel,
     isLoading: gltfLoading,
     error: gltfError,
-    loadGLTFModel,
+    loadGLTFModel: baseLoadGLTFModel,
     switchToModel: gltfSwitchToModel,
     removeModel: gltfRemoveModel
   } = useGLTFLoader(sceneRef.current);
+  
+  // Wrap GLTF loader to trigger adaptive grid update
+  const loadGLTFModel = useCallback(async (file: File) => {
+    const result = await baseLoadGLTFModel(file);
+    // Update grid after model is loaded
+    setTimeout(() => updateAdaptiveGrid(), 100);
+    return result;
+  }, [baseLoadGLTFModel, updateAdaptiveGrid]);
 
   // Combine models from both loaders
   const loadedModels = [...fbxModels, ...gltfModels];
