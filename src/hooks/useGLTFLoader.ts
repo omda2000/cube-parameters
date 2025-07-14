@@ -288,6 +288,14 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
            originalMetadata: metadata
          };
          
+         console.log(`✅ Stored metadata in mesh.userData for "${mesh.name}":`, {
+           id: mesh.userData.id,
+           name: mesh.userData.name,
+           parent_id: mesh.userData.parent_id,
+           type: mesh.userData.type,
+           function: mesh.userData.function
+         });
+         
          detachedMeshes.push(mesh);
          console.log(`Detached mesh: ${metadata.name || metadata.id} at position:`, worldPosition);
        });

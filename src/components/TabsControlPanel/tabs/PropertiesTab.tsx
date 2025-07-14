@@ -6,6 +6,9 @@ const PropertiesTab = () => {
   const { selectedObjects } = useSelectionContext();
 
   const selectedObject = selectedObjects.length > 0 ? selectedObjects[0] : null;
+  
+  console.log('PropertiesTab - Selected object:', selectedObject);
+  console.log('PropertiesTab - Object userData:', selectedObject?.object?.userData);
 
   // Handle property changes
   const handlePropertyChange = (property: string, value: any) => {
