@@ -130,7 +130,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
       
-      // 1. First pass: collect all meshes and parse metadata from node.name as JSON
+      // 1. First pass: collect all meshes and parse metadata from extras.object_params
       console.log('Starting mesh traversal...');
       gltf.scene.traverse(node => {
         console.log('Traversing node:', node.type, node.name || 'unnamed', 'isMesh:', node.isMesh);
@@ -138,22 +138,31 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
           
-          // Parse metadata from node.name as JSON (as specified in the prompt)
+          // Parse metadata from extras.object_params (as specified in the prompt)
           let metadata = null;
-          if (node.name) {
+          if (node.userData?.extras?.object_params || node.extras?.object_params) {
             try {
-              // Try to parse node.name as JSON containing the 5 required fields
-              metadata = JSON.parse(node.name);
-              console.log(`Parsed metadata from node.name:`, metadata);
+              // Extract object_params from node extras
+              const objectParams = node.userData?.extras?.object_params || node.extras?.object_params;
+              console.log(`Found object_params in extras:`, objectParams);
               
               // Validate that we have the required fields
-              if (!metadata.id || !metadata.name || !metadata.type) {
-                console.warn('Metadata missing required fields (id, name, type):', metadata);
-                throw new Error('Invalid metadata structure');
+              if (objectParams.id && objectParams.name && objectParams.type) {
+                metadata = {
+                  id: objectParams.id,
+                  name: objectParams.name,
+                  parent_id: objectParams.parent_id || 'none',
+                  type: objectParams.type,
+                  function: objectParams.function || 'none'
+                };
+                console.log(`Parsed metadata from extras.object_params:`, metadata);
+              } else {
+                console.warn('object_params missing required fields (id, name, type):', objectParams);
+                throw new Error('Invalid object_params structure');
               }
               
             } catch (e) {
-              console.warn('Failed to parse node.name as JSON for node:', node.name, ':', e);
+              console.warn('Failed to parse extras.object_params for node:', node.name, ':', e);
               // Fallback: use name as-is and generate required fields
               metadata = { 
                 id: mesh.uuid.slice(0, 8), 
@@ -164,14 +173,43 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
               };
             }
           } else {
-            // No name at all - create fallback metadata
-            metadata = { 
-              id: mesh.uuid.slice(0, 8), 
-              name: `Mesh_${allMeshes.length - 1}`,
-              parent_id: 'none',
-              type: 'unknown', 
-              function: 'none'
-            };
+            console.log('No extras.object_params found, checking node.name...');
+            // Fallback: try to parse node.name as JSON
+            if (node.name) {
+              try {
+                const parsedName = JSON.parse(node.name);
+                if (parsedName.id && parsedName.name && parsedName.type) {
+                  metadata = {
+                    id: parsedName.id,
+                    name: parsedName.name,
+                    parent_id: parsedName.parent_id || 'none',
+                    type: parsedName.type,
+                    function: parsedName.function || 'none'
+                  };
+                  console.log(`Fallback: parsed metadata from node.name:`, metadata);
+                } else {
+                  throw new Error('Invalid name structure');
+                }
+              } catch (e) {
+                // Final fallback: create basic metadata
+                metadata = { 
+                  id: mesh.uuid.slice(0, 8), 
+                  name: node.name || `Mesh_${allMeshes.length - 1}`,
+                  parent_id: 'none',
+                  type: 'unknown', 
+                  function: 'none'
+                };
+              }
+            } else {
+              // No name at all - create fallback metadata
+              metadata = { 
+                id: mesh.uuid.slice(0, 8), 
+                name: `Mesh_${allMeshes.length - 1}`,
+                parent_id: 'none',
+                type: 'unknown', 
+                function: 'none'
+              };
+            }
           }
           
           if (metadata && metadata.id) {
