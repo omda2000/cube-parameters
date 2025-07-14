@@ -60,9 +60,18 @@ export const useObjectSelection = () => {
       const objectId = generateObjectId(object);
       const objectType = getObjectType(object);
       
-      // Extract userData from GLB files
-      const userData = object.userData || {};
-      const displayName = object.name || userData.id || `${object.type}_${object.uuid.slice(0, 8)}`;
+      // Extract display name using the same logic as scene builder
+      let displayName = '';
+      if (object.userData?.name) {
+        displayName = object.userData.name;
+      } else if (object.userData?.id) {
+        displayName = object.userData.id;
+      } else if (object.name) {
+        displayName = object.name;
+      } else {
+        const type = object.userData?.type || object.type;
+        displayName = `${type}_${object.uuid.slice(0, 8)}`;
+      }
       
       const sceneObject: SceneObject = {
         id: objectId,

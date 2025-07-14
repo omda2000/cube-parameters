@@ -268,26 +268,24 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
          console.log(`Detached mesh: ${metadata.name || metadata.id} at position:`, worldPosition);
        });
       
-       // 3. Create container group following the prompt specification
+       // 3. Create container group and add individual meshes to scene
        const container = new THREE.Group();
        container.name = file.name.replace(/\.(gltf|glb)$/i, '');
        
-       // Add each detached mesh to the container first for bounding box calculation
+       // Add each detached mesh directly to the scene so they appear in hierarchy
        detachedMeshes.forEach(mesh => {
-         container.add(mesh);
+         scene.add(mesh);
+         // Mark mesh as belonging to this loaded model
+         mesh.userData.loadedModelId = Date.now().toString();
+         mesh.userData.isDetachedFromGLB = true;
        });
        
-       // 4. Compute bounding box and recenter (following prompt step 3)
-       const box = new THREE.Box3().setFromObject(container);
-       const containerPivot = new THREE.Vector3();
-       box.getCenter(containerPivot);
-       container.position.sub(containerPivot);
+       // 4. Compute bounding box from all meshes
+       const tempContainer = new THREE.Group();
+       detachedMeshes.forEach(mesh => tempContainer.add(mesh.clone()));
+       const box = new THREE.Box3().setFromObject(tempContainer);
        
-       console.log('Container recentered using pivot:', { x: containerPivot.x.toFixed(2), y: containerPivot.y.toFixed(2), z: containerPivot.z.toFixed(2) });
-       
-       // Add the container to the scene (this makes all meshes children of the container)
-       scene.add(container);
-
+       console.log(`Added ${detachedMeshes.length} individual meshes to scene`);
        
        // Store metadata and object references for management
        container.userData.isLoadedModel = true;

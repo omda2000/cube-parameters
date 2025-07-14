@@ -34,6 +34,11 @@ const getObjectDisplayName = (object: THREE.Object3D, loadedModel?: LoadedModel)
     return loadedModel.name;
   }
   
+  // For GLB objects, prefer userData.name (from metadata) over object.name
+  if (object.userData?.name) {
+    return object.userData.name;
+  }
+  
   // Then prefer user data id over object name
   if (object.userData?.id) {
     return object.userData.id;
@@ -139,7 +144,7 @@ export const buildSceneObjects = (
     console.log(`Processing scene child ${index}:`, {
       name: child.name,
       type: child.type,
-      isLoadedModel: child.userData?.isLoadedModel,
+      isDetachedFromGLB: child.userData?.isDetachedFromGLB,
       isHelper: child.userData?.isHelper,
       hasChildren: child.children.length > 0
     });
@@ -150,31 +155,21 @@ export const buildSceneObjects = (
       return;
     }
 
-    // If this is a loaded model container, extract individual meshes instead of showing the container
-    const loadedModel = loadedModelMap.get(child);
-    if (loadedModel || child.userData.isLoadedModel) {
-      console.log('Processing loaded model container, extracting individual models:', child.name);
-      
-      // Traverse all meshes in the loaded model and add them as individual objects
-      child.traverse((descendant) => {
-        if (descendant instanceof THREE.Mesh && descendant !== child && !processedObjects.has(descendant)) {
-          console.log('Adding individual mesh from GLB:', descendant.userData?.name || descendant.name || descendant.type);
-          const sceneObject = createSceneObject(descendant);
-          sceneObjects.push(sceneObject);
-          processedObjects.add(descendant);
-        }
-      });
-      
-      // Mark container as processed to avoid duplication
+    // Handle detached GLB meshes (individual model objects)
+    if (child.userData?.isDetachedFromGLB && child instanceof THREE.Mesh) {
+      console.log('Processing detached GLB mesh:', child.userData?.name || child.name || child.type);
+      const sceneObject = createSceneObject(child);
+      sceneObjects.push(sceneObject);
+      console.log('Added detached GLB mesh to scene objects:', sceneObject.name);
       processedObjects.add(child);
-    } else {
-      // Skip helpers and already processed objects
-      if (child.userData.isHelper || processedObjects.has(child)) {
-        console.log('Skipping helper or already processed object:', child.name || child.type);
-        return;
-      }
-      
-      // Process all other objects (points, measurements, primitives, etc.)
+    } 
+    // Handle loaded model containers (should be empty now since meshes are detached)
+    else if (loadedModelMap.has(child) || child.userData.isLoadedModel) {
+      console.log('Skipping empty loaded model container:', child.name);
+      processedObjects.add(child);
+    }
+    // Handle all other objects (points, measurements, primitives, etc.)
+    else {
       console.log('Processing as standalone object:', child.name || child.type);
       const sceneObject = createSceneObject(child);
       sceneObjects.push(sceneObject);
