@@ -3,7 +3,7 @@ import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
 import ViewTab from './tabs/ViewTab';
-import SettingsTab from './tabs/SettingsTab';
+import SettingsPanel from '../SettingsPanel/SettingsPanel';
 import HelpPanel from '../HelpPanel/HelpPanel';
 import * as THREE from 'three';
 import type { 
@@ -106,7 +106,7 @@ const TabsControlPanel = ({
       case 'help':
         return <HelpPanel />;
       case 'settings':
-        return <SettingsTab />;
+        return <SettingsPanel />;
       default:
         return null;
     }

@@ -130,7 +130,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
       const objectsById: { [key: string]: { mesh: THREE.Mesh, metadata: any } } = {};
       const allMeshes: THREE.Mesh[] = [];
       
-      // 1. First pass: collect all meshes and parse metadata from mesh.name
+      // 1. First pass: collect all meshes and parse metadata from node.name as JSON
       console.log('Starting mesh traversal...');
       gltf.scene.traverse(node => {
         console.log('Traversing node:', node.type, node.name || 'unnamed', 'isMesh:', node.isMesh);
@@ -138,23 +138,40 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
           const mesh = node as THREE.Mesh;
           allMeshes.push(mesh);
           
-          // Parse metadata from mesh.name as JSON
+          // Parse metadata from node.name as JSON (as specified in the prompt)
           let metadata = null;
-          if (mesh.name) {
+          if (node.name) {
             try {
-              // Try to parse mesh.name as JSON
-              metadata = JSON.parse(mesh.name);
-              console.log(`Parsed metadata from mesh.name:`, metadata);
+              // Try to parse node.name as JSON containing the 5 required fields
+              metadata = JSON.parse(node.name);
+              console.log(`Parsed metadata from node.name:`, metadata);
+              
+              // Validate that we have the required fields
+              if (!metadata.id || !metadata.name || !metadata.type) {
+                console.warn('Metadata missing required fields (id, name, type):', metadata);
+                throw new Error('Invalid metadata structure');
+              }
+              
             } catch (e) {
-              console.warn('Failed to parse mesh.name as JSON for mesh:', mesh.name, ':', e);
-              // Fallback: use name as-is
+              console.warn('Failed to parse node.name as JSON for node:', node.name, ':', e);
+              // Fallback: use name as-is and generate required fields
               metadata = { 
                 id: mesh.uuid.slice(0, 8), 
+                name: node.name || `Mesh_${allMeshes.length - 1}`,
+                parent_id: 'none',
                 type: 'unknown', 
-                name: mesh.name, 
-                params: {} 
+                function: 'none'
               };
             }
+          } else {
+            // No name at all - create fallback metadata
+            metadata = { 
+              id: mesh.uuid.slice(0, 8), 
+              name: `Mesh_${allMeshes.length - 1}`,
+              parent_id: 'none',
+              type: 'unknown', 
+              function: 'none'
+            };
           }
           
           if (metadata && metadata.id) {
@@ -173,9 +190,10 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
               mesh: mesh,
               metadata: { 
                 id: fallbackId, 
+                name: mesh.name || `Mesh_${allMeshes.length - 1}`,
+                parent_id: 'none',
                 type: 'unknown', 
-                name: mesh.name || `Mesh_${allMeshes.length - 1}`, 
-                params: {} 
+                function: 'none'
               }
             };
           }
@@ -198,9 +216,10 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
             mesh: mesh,
             metadata: { 
               id: fallbackId, 
+              name: mesh.name || `Mesh_${index}`,
+              parent_id: 'none',
               type: 'unknown', 
-              name: mesh.name || `Mesh_${index}`, 
-              params: {} 
+              function: 'none'
             }
           };
         });
@@ -237,9 +256,10 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
          // Store metadata for easy access as specified in the prompt
          mesh.userData = {
            id: metadata.id,
-           type: metadata.type, 
            name: metadata.name,
-           params: metadata.params,
+           parent_id: metadata.parent_id,
+           type: metadata.type, 
+           function: metadata.function,
            isDetachedFromGLB: true,
            originalMetadata: metadata
          };

@@ -61,12 +61,13 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
   // Extract GLTF metadata if available
   const extractGLTFMetadata = (object: THREE.Object3D) => {
     const userData = object.userData;
-    if (userData?.originalMetadata || userData?.id) {
+    if (userData?.id) {
       return {
-        id: userData.id || userData.originalMetadata?.id,
-        type: userData.type || userData.originalMetadata?.type,
-        function: userData.originalMetadata?.params?.function || 'N/A',
-        parentId: userData.originalMetadata?.parent_id || 'None'
+        id: userData.id,
+        name: userData.name || selectedObject.name,
+        type: userData.type,
+        function: userData.function || 'N/A',
+        parentId: userData.parent_id || 'None'
       };
     }
     return null;
@@ -134,33 +135,29 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
             </div>
           </div>
 
-          {/* GLTF Metadata - only show if available */}
-          {gltfMetadata && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">GLTF Data</Label>
-                
-                <div>
-                  <Label className="text-xs text-slate-500">Function</Label>
-                  <Input
-                    value={gltfMetadata.function}
-                    readOnly
-                    className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                  />
-                </div>
+          {/* Standard Object Properties (as specified in user requirements) */}
+          <Separator />
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Object Properties</Label>
+            
+            <div>
+              <Label className="text-xs text-slate-500">Function</Label>
+              <Input
+                value={gltfMetadata?.function || 'N/A'}
+                readOnly
+                className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+              />
+            </div>
 
-                <div>
-                  <Label className="text-xs text-slate-500">Parent ID</Label>
-                  <Input
-                    value={gltfMetadata.parentId}
-                    readOnly
-                    className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                  />
-                </div>
-              </div>
-            </>
-          )}
+            <div>
+              <Label className="text-xs text-slate-500">Parent ID</Label>
+              <Input
+                value={gltfMetadata?.parentId || 'None'}
+                readOnly
+                className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+              />
+            </div>
+          </div>
 
           {/* Transform Properties */}
           <Separator />
