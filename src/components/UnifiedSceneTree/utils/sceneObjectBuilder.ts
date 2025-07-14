@@ -155,43 +155,31 @@ export const buildSceneObjects = (
     if (loadedModel || child.userData.isLoadedModel) {
       console.log('Processing loaded model container, extracting individual models:', child.name);
       
-      // Instead of adding the container, add each detached mesh as individual objects
-      if (child.userData.detachedMeshes) {
-        child.userData.detachedMeshes.forEach((mesh: THREE.Mesh) => {
-          if (!processedObjects.has(mesh)) {
-            console.log('Adding individual model from GLB:', mesh.userData?.name || mesh.name);
-            const sceneObject = createSceneObject(mesh);
-            sceneObjects.push(sceneObject);
-            processedObjects.add(mesh);
-          }
-        });
-      }
+      // Traverse all meshes in the loaded model and add them as individual objects
+      child.traverse((descendant) => {
+        if (descendant instanceof THREE.Mesh && descendant !== child && !processedObjects.has(descendant)) {
+          console.log('Adding individual mesh from GLB:', descendant.userData?.name || descendant.name || descendant.type);
+          const sceneObject = createSceneObject(descendant);
+          sceneObjects.push(sceneObject);
+          processedObjects.add(descendant);
+        }
+      });
       
       // Mark container as processed to avoid duplication
       processedObjects.add(child);
-      child.traverse(descendant => {
-        processedObjects.add(descendant);
-      });
     } else {
-      // Check if this is a detached GLB mesh that should be shown as individual object
-      const isDetachedGLBMesh = child.userData?.isDetachedFromGLB === true;
-      
-      if (isDetachedGLBMesh) {
-        console.log('Processing detached GLB mesh as individual object:', child.name || child.type);
-        const sceneObject = createSceneObject(child);
-        sceneObjects.push(sceneObject);
-        console.log('Added detached GLB mesh to scene objects:', sceneObject.name);
-        processedObjects.add(child);
-      } else if (!child.userData.isPartOfLoadedModel) {
-        // Only process objects that are not part of a loaded model
-        console.log('Processing as standalone object:', child.name);
-        const sceneObject = createSceneObject(child);
-        sceneObjects.push(sceneObject);
-        console.log('Added standalone object to scene objects:', sceneObject.name);
-        processedObjects.add(child);
-      } else {
-        console.log('Skipping object (part of loaded model):', child.name || child.type);
+      // Skip helpers and already processed objects
+      if (child.userData.isHelper || processedObjects.has(child)) {
+        console.log('Skipping helper or already processed object:', child.name || child.type);
+        return;
       }
+      
+      // Process all other objects (points, measurements, primitives, etc.)
+      console.log('Processing as standalone object:', child.name || child.type);
+      const sceneObject = createSceneObject(child);
+      sceneObjects.push(sceneObject);
+      console.log('Added standalone object to scene objects:', sceneObject.name);
+      processedObjects.add(child);
     }
   });
 

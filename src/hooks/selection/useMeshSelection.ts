@@ -20,25 +20,34 @@ export const useMeshSelection = () => {
         
         if (outline) {
           outlineMap.set(object, outline);
-          if (object.parent) {
-            object.parent.add(outline);
-            console.log('Added outline to parent');
+          // Add to the scene instead of parent to ensure visibility
+          const scene = object.parent?.parent || object.parent;
+          if (scene) {
+            scene.add(outline);
+            console.log('Added outline to scene');
           } else {
-            console.warn('No parent found for outline');
+            console.warn('No scene found for outline');
           }
         }
         
         if (boundingBox) {
           boundingBoxMap.set(object, boundingBox);
-          if (object.parent) {
-            object.parent.add(boundingBox);
-            console.log('Added bounding box to parent');
+          // Add to the scene instead of parent to ensure visibility
+          const scene = object.parent?.parent || object.parent;
+          if (scene) {
+            scene.add(boundingBox);
+            console.log('Added bounding box to scene');
           } else {
-            console.warn('No parent found for bounding box');
+            console.warn('No scene found for bounding box');
           }
         }
       } else {
         console.log('Selection effects already exist for object:', object.name || object.type);
+        // Make sure effects are visible
+        const outline = outlineMap.get(object);
+        const boundingBox = boundingBoxMap.get(object);
+        if (outline) outline.visible = true;
+        if (boundingBox) boundingBox.visible = true;
       }
     } else {
       console.log('Removing selection effects for object:', object.name || object.type);
