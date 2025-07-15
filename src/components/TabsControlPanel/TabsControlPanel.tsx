@@ -80,7 +80,7 @@ const TabsControlPanel = ({
           />
         );
       case 'properties':
-        return <PropertiesTab />;
+        return <PropertiesTab onToggleOrthographic={() => onCameraToggle?.(!isOrthographic)} />;
       case 'lighting':
         return (
           <LightingTab

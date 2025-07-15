@@ -267,19 +267,19 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
          // Store metadata in userData for property panel access
          console.log(`💾 Storing metadata in mesh userData for "${mesh.name}":`, metadata);
          
-         // Keep existing userData and add our metadata
-         mesh.userData = {
-           ...mesh.userData, // Preserve any existing userData including object_params
-           // Store the 5 required Rhino fields directly in userData
-           id: metadata.id,
-           name: metadata.name,
-           parent_id: metadata.parent_id,
-           type: metadata.type, 
-           function: metadata.function,
-           // Additional tracking fields
-           isDetachedFromGLB: true,
-           originalMetadata: metadata,
-           loadedModelId: Date.now().toString()
+          // Keep existing userData and add our metadata
+          mesh.userData = {
+            ...mesh.userData, // Preserve any existing userData including object_params
+            // Store the 5 required fields directly in userData
+            id: metadata.id,
+            name: metadata.name,
+            parent_id: metadata.parent_id,
+            type: metadata.type, 
+            function: metadata.function,
+            // Additional tracking fields
+            isDetachedFromGLB: true,
+            originalMetadata: metadata,
+            loadedModelId: Date.now().toString()
          };
          
          console.log(`✅ Final userData for "${mesh.name}":`, mesh.userData);

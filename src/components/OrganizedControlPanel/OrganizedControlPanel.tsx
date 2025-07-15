@@ -50,7 +50,7 @@ const OrganizedControlPanel = ({
           />
         );
       case 'properties':
-        return <PropertiesTab />;
+        return <PropertiesTab onToggleOrthographic={() => controlsPanelProps.onCameraToggle?.(!controlsPanelProps.isOrthographic)} />;
       case 'lighting':
         return (
           <LightingTab

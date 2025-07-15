@@ -4,35 +4,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Box, Triangle, Sun, TreePine, MapPin, Edit3, Eye, EyeOff } from 'lucide-react';
+import { Settings, Box, Triangle, Sun, TreePine, MapPin, Eye, EyeOff, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useUnits } from '@/contexts/UnitsContext';
 import * as THREE from 'three';
 import type { SceneObject } from '../../types/model';
 
 interface EnhancedPropertyPanelProps {
   selectedObject: SceneObject | null;
   onPropertyChange: (property: string, value: any) => void;
+  onToggleOrthographic?: () => void;
 }
 
-const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPropertyPanelProps) => {
-  const { formatValue, convertValue } = useUnits();
+const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange, onToggleOrthographic }: EnhancedPropertyPanelProps) => {
 
   if (!selectedObject) {
     return (
       <div className="space-y-4 p-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Settings className="h-5 w-5 text-gray-400" />
-              Properties
+        <Card className="bg-card/95 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-muted-foreground" />
+                Properties
+              </div>
+              {onToggleOrthographic && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onToggleOrthographic}
+                  className="h-7 w-7 p-0"
+                  title="Toggle Orthographic Camera"
+                >
+                  <Camera className="h-3 w-3" />
+                </Button>
+              )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-slate-400">
-              <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <CardContent className="pt-0">
+            <div className="text-center py-6 text-muted-foreground">
+              <Settings className="h-6 w-6 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No object selected</p>
-              <p className="text-xs">Select an object to view its properties</p>
+              <p className="text-xs opacity-70">Select an object to view its properties</p>
             </div>
           </CardContent>
         </Card>
@@ -59,24 +71,12 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
     }
   };
 
-  // Extract GLTF metadata - check userData.object_params first, then direct userData
-  const extractGLTFMetadata = (object: THREE.Object3D) => {
+  // Extract object metadata
+  const extractObjectMetadata = (object: THREE.Object3D) => {
     const userData = object.userData;
     
-    console.log('🔍 PropertyPanel: Extracting GLTF metadata from object:', object.name);
-    console.log('🔍 PropertyPanel: userData:', userData);
-    
-    // First check for object_params (Three.js auto-maps extras → userData)
-    let metadataSource = userData?.object_params;
-    console.log('🔍 PropertyPanel: object_params found:', metadataSource);
-    
-    // Fallback to direct userData if no object_params
-    if (!metadataSource) {
-      console.log('🔍 PropertyPanel: No object_params, checking direct userData');
-      metadataSource = userData;
-    }
-    
-    console.log('🔍 PropertyPanel: Final metadata source:', metadataSource);
+    // Check for object_params first, then direct userData
+    let metadataSource = userData?.object_params || userData;
     
     // Check for required fields - allow empty strings as valid values  
     const hasId = metadataSource?.id !== undefined;
@@ -85,23 +85,8 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
     const hasType = metadataSource?.type !== undefined;
     const hasFunction = metadataSource?.function !== undefined;
     
-    console.log('🔍 PropertyPanel: Field availability:', {
-      hasId,
-      hasName,
-      hasParentId,
-      hasType,
-      hasFunction,
-      actualValues: {
-        id: metadataSource?.id,
-        name: metadataSource?.name,
-        parent_id: metadataSource?.parent_id,
-        type: metadataSource?.type,
-        function: metadataSource?.function
-      }
-    });
-    
     if (hasId && hasName && hasParentId && hasType && hasFunction) {
-      const result = {
+      return {
         id: String(metadataSource.id),
         name: metadataSource.name === "" ? "(empty)" : String(metadataSource.name),
         parent_id: metadataSource.parent_id === "" ? "(empty)" : String(metadataSource.parent_id),
@@ -109,239 +94,101 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
         function: metadataSource.function === "" ? "(empty)" : String(metadataSource.function),
         hasValidMetadata: true
       };
-      console.log('✅ PropertyPanel: Successfully extracted metadata:', result);
-      return result;
     }
-    
-    // Provide detailed error information
-    const missingFields = [];
-    if (!hasId) missingFields.push('id');
-    if (!hasName) missingFields.push('name');
-    if (!hasParentId) missingFields.push('parent_id');
-    if (!hasType) missingFields.push('type');
-    if (!hasFunction) missingFields.push('function');
     
     return {
       hasValidMetadata: false,
-      error: `Missing required Rhino metadata fields: ${missingFields.join(', ')}`,
+      error: 'Missing required metadata fields',
       availableFields: Object.keys(metadataSource || {}),
       rawUserData: userData
     };
   };
 
-  const gltfMetadata = extractGLTFMetadata(selectedObject.object);
+  const objectMetadata = extractObjectMetadata(selectedObject.object);
 
   return (
-    <div className="space-y-4 p-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            {getObjectIcon(selectedObject.type)}
-            Properties
+    <div className="space-y-3 p-3">
+      <Card className="bg-card/95 backdrop-blur-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {getObjectIcon(selectedObject.type)}
+              Properties
+            </div>
+            {onToggleOrthographic && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onToggleOrthographic}
+                className="h-7 w-7 p-0"
+                title="Toggle Orthographic Camera"
+              >
+                <Camera className="h-3 w-3" />
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* GLTF Object Properties from Rhino */}
-          {gltfMetadata.hasValidMetadata ? (
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Rhino Object Properties</Label>
-              
-              <div>
-                <Label className="text-xs text-slate-500">ID</Label>
-                <Input
-                  value={'id' in gltfMetadata ? gltfMetadata.id : ''}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Name</Label>
-                <Input
-                  value={'name' in gltfMetadata ? gltfMetadata.name : ''}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Type</Label>
-                <Input
-                  value={'type' in gltfMetadata ? gltfMetadata.type : ''}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Function</Label>
-                <Input
-                  value={'function' in gltfMetadata ? gltfMetadata.function : ''}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Parent ID</Label>
-                <Input
-                  value={'parent_id' in gltfMetadata ? gltfMetadata.parent_id : ''}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
+        <CardContent className="pt-0 space-y-3">
+          {/* Object Metadata */}
+          {objectMetadata.hasValidMetadata ? (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Object Properties</Label>
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">ID:</span>
+                  <span className="font-mono text-right max-w-[120px] truncate">{'id' in objectMetadata ? objectMetadata.id : ''}</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">Name:</span>
+                  <span className="text-right max-w-[120px] truncate">{'name' in objectMetadata ? objectMetadata.name : ''}</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">Type:</span>
+                  <span className="text-right max-w-[120px] truncate">{'type' in objectMetadata ? objectMetadata.type : ''}</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">Function:</span>
+                  <span className="text-right max-w-[120px] truncate">{'function' in objectMetadata ? objectMetadata.function : ''}</span>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Rhino Object Properties</Label>
-              
-              <div>
-                <Label className="text-xs text-slate-500">ID</Label>
-                <Input
-                  value=""
-                  readOnly
-                  placeholder="No metadata available"
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Name</Label>
-                <Input
-                  value=""
-                  readOnly
-                  placeholder="No metadata available"
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Type</Label>
-                <Input
-                  value=""
-                  readOnly
-                  placeholder="No metadata available"
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Function</Label>
-                <Input
-                  value=""
-                  readOnly
-                  placeholder="No metadata available"
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-slate-500">Parent ID</Label>
-                <Input
-                  value=""
-                  readOnly
-                  placeholder="No metadata available"
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Object Properties</Label>
+              <div className="text-xs text-muted-foreground py-2">
+                No metadata available
               </div>
             </div>
           )}
 
-          {/* Basic Object Info */}
+          {/* Visibility Control */}
           <Separator />
-          <div className="space-y-3">
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Visibility</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <Button
-                  size="sm"
-                  variant={selectedObject.visible ? "default" : "outline"}
-                  onClick={() => onPropertyChange('visibility', !selectedObject.visible)}
-                  className="flex items-center gap-2"
-                >
-                  {selectedObject.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                  {selectedObject.visible ? 'Visible' : 'Hidden'}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Transform Properties */}
-          <Separator />
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Transform</Label>
-            
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <Label className="text-xs text-slate-500">Position X</Label>
-                <Input
-                  value={formatValue(convertValue(selectedObject.object.position.x))}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-slate-500">Position Y</Label>
-                <Input
-                  value={formatValue(convertValue(selectedObject.object.position.y))}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-slate-500">Position Z</Label>
-                <Input
-                  value={formatValue(convertValue(selectedObject.object.position.z))}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <Label className="text-xs text-slate-500">Scale X</Label>
-                <Input
-                  value={selectedObject.object.scale.x.toFixed(2)}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-slate-500">Scale Y</Label>
-                <Input
-                  value={selectedObject.object.scale.y.toFixed(2)}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-slate-500">Scale Z</Label>
-                <Input
-                  value={selectedObject.object.scale.z.toFixed(2)}
-                  readOnly
-                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                />
-              </div>
-            </div>
+          <div className="space-y-2">
+            <Button
+              size="sm"
+              variant={selectedObject.visible ? "default" : "outline"}
+              onClick={() => onPropertyChange('visibility', !selectedObject.visible)}
+              className="w-full flex items-center gap-2 h-8"
+            >
+              {selectedObject.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              {selectedObject.visible ? 'Visible' : 'Hidden'}
+            </Button>
           </div>
 
           {/* Material Properties - only for meshes */}
           {selectedObject.type === 'mesh' && selectedObject.object instanceof THREE.Mesh && (
             <>
               <Separator />
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Material</Label>
-                <div>
-                  <Label className="text-xs text-slate-500">Material Type</Label>
-                  <Input
-                    value={Array.isArray(selectedObject.object.material) 
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Material</Label>
+                <div className="flex justify-between items-center py-1 text-xs">
+                  <span className="text-muted-foreground">Type:</span>
+                  <span className="text-right max-w-[120px] truncate">
+                    {Array.isArray(selectedObject.object.material) 
                       ? selectedObject.object.material.map(m => m.type).join(', ')
-                      : selectedObject.object.material?.type || 'No material'
+                      : selectedObject.object.material?.type || 'None'
                     }
-                    readOnly
-                    className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
-                  />
+                  </span>
                 </div>
               </div>
             </>

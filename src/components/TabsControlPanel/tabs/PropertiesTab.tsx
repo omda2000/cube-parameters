@@ -2,14 +2,14 @@
 import EnhancedPropertyPanel from '../../PropertyPanel/EnhancedPropertyPanel';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 
-const PropertiesTab = () => {
+interface PropertiesTabProps {
+  onToggleOrthographic?: () => void;
+}
+
+const PropertiesTab = ({ onToggleOrthographic }: PropertiesTabProps) => {
   const { selectedObjects } = useSelectionContext();
 
   const selectedObject = selectedObjects.length > 0 ? selectedObjects[0] : null;
-  
-  console.log('🏷️ PropertiesTab - Selected object:', selectedObject);
-  console.log('🏷️ PropertiesTab - Object userData:', selectedObject?.object?.userData);
-  console.log('🏷️ PropertiesTab - Object userData.object_params:', selectedObject?.object?.userData?.object_params);
 
   // Handle property changes
   const handlePropertyChange = (property: string, value: any) => {
@@ -28,6 +28,7 @@ const PropertiesTab = () => {
     <EnhancedPropertyPanel 
       selectedObject={selectedObject}
       onPropertyChange={handlePropertyChange}
+      onToggleOrthographic={onToggleOrthographic}
     />
   );
 };
