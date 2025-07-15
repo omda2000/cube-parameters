@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 
@@ -6,6 +5,7 @@ export const useSceneSetup = () => {
   const sceneRef = useRef<THREE.Scene | null>(null);
   const ucsHelperRef = useRef<THREE.AxesHelper | null>(null);
   const gridHelperRef = useRef<THREE.GridHelper | null>(null);
+  const workplaneRef = useRef<THREE.Group | null>(null);
 
   // Function to calculate adaptive grid size based on scene bounding box
   const updateAdaptiveGrid = useCallback(() => {
@@ -70,10 +70,12 @@ export const useSceneSetup = () => {
     ucsHelper.position.set(0, 0, 0);
     scene.add(ucsHelper);
 
-    // Initial grid (minimum 10x10m with 1m units)
+    // Create basic grid helper but hide it in favor of workplane
+    // Keep for compatibility with existing code
     const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
     gridHelperRef.current = gridHelper;
     gridHelper.position.set(0, 0, 0);
+    gridHelper.visible = false; // Hide default grid in favor of workplane
     scene.add(gridHelper);
 
     return () => {
@@ -85,6 +87,7 @@ export const useSceneSetup = () => {
     sceneRef,
     ucsHelperRef,
     gridHelperRef,
+    workplaneRef,
     updateAdaptiveGrid
   };
 };

@@ -46,10 +46,10 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
     const height = mountRef.current.clientHeight;
     const aspect = width / height;
 
-    // Perspective Camera setup
+    // Perspective Camera setup with isometric view (~45°)
     const perspectiveCamera = new THREE.PerspectiveCamera(60, aspect, 0.01, 2000);
     perspectiveCameraRef.current = perspectiveCamera;
-    perspectiveCamera.position.set(5, 5, 5);
+    perspectiveCamera.position.set(7, 7, 7); // ~45° isometric view
     perspectiveCamera.lookAt(0, 0, 0);
 
     // Orthographic Camera setup
@@ -60,7 +60,7 @@ export const useCameraSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
       0.01, 2000
     );
     orthographicCameraRef.current = orthographicCamera;
-    orthographicCamera.position.set(5, 5, 5);
+    orthographicCamera.position.set(7, 7, 7); // Match perspective camera position
     orthographicCamera.lookAt(0, 0, 0);
 
     // Set initial active camera

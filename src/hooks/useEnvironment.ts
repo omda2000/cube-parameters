@@ -23,8 +23,8 @@ export const useEnvironment = (
 
     // Ground plane removed as requested
 
-    // Sky color
-    scene.background = new THREE.Color(environment.skyColor);
+    // Set background to light gray/white for workplane visibility
+    scene.background = new THREE.Color('#F8F8F8');
 
     isInitialized.current = true;
   }, [scene, environment.skyColor]);
@@ -38,12 +38,12 @@ export const useEnvironment = (
   }, [environment.showGrid, gridHelper]);
 
 
-  // Update sky color
+  // Update sky color (override to light background for workplane)
   useEffect(() => {
     if (scene) {
-      scene.background = new THREE.Color(environment.skyColor);
+      scene.background = new THREE.Color('#F8F8F8');
     }
-  }, [scene, environment.skyColor]);
+  }, [scene]);
 
   return { planeRef };
 };
