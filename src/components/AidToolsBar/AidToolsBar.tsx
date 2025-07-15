@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Ruler, Target, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -79,63 +79,37 @@ const AidToolsBar = ({
         <div className="w-px h-6 bg-border mx-1" />
         
         {/* View Controls */}
-        {onViewLeft && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onViewLeft}
-                className="h-8 w-8 p-0 hover:bg-accent"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Left View</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewLeft}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Left View</p>
+          </TooltipContent>
+        </Tooltip>
         
-        {onViewFront && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onViewFront}
-            className="h-8 px-2 text-xs hover:bg-accent"
-          >
-            Front
-          </Button>
-        )}
-        
-        {onViewBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onViewBack}
-            className="h-8 px-2 text-xs hover:bg-accent"
-          >
-            Back
-          </Button>
-        )}
-        
-        {onViewRight && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onViewRight}
-                className="h-8 w-8 p-0 hover:bg-accent"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Right View</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewRight}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Right View</p>
+          </TooltipContent>
+        </Tooltip>
         
         {/* Separator */}
         <div className="w-px h-6 bg-border mx-1" />

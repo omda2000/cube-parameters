@@ -61,10 +61,16 @@ const UIContainer = () => {
 
   const handleGroundPlaneToggle = () => {
     const newGroundPlaneEnabled = !uiState.groundPlaneEnabled;
+    
+    // Log for debugging
+    console.log('Ground plane toggle:', { newState: newGroundPlaneEnabled, currentState: uiState.groundPlaneEnabled });
+    
     const updateGroundPlane = (window as any).__updateGroundPlane;
     if (updateGroundPlane) {
+      console.log('Using window.__updateGroundPlane');
       updateGroundPlane(newGroundPlaneEnabled);
     } else {
+      console.log('Dispatching toggleGroundPlane event');
       // Fallback: dispatch a custom event
       window.dispatchEvent(new CustomEvent('toggleGroundPlane', { 
         detail: { enabled: newGroundPlaneEnabled } 

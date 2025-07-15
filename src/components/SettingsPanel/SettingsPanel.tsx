@@ -41,16 +41,16 @@ const SettingsPanel = () => {
           <Separator />
 
           {/* Units Settings */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Ruler className="h-4 w-4 text-muted-foreground" />
-              <Label className="text-sm font-medium">Measurement Units</Label>
+              <Label className="text-sm font-medium">Units</Label>
             </div>
             
-            <div className="space-y-3 pl-6">
+            <div className="pl-6">
               <Select value={unit} onValueChange={(value) => setUnit(value as any)}>
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Select unit system" />
+                <SelectTrigger className="h-9 bg-background">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="meters">Meters (m)</SelectItem>
@@ -60,9 +60,6 @@ const SettingsPanel = () => {
                   <SelectItem value="millimeters">Millimeters (mm)</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Choose your preferred measurement unit for display. The underlying 3D scene uses meters as the base unit.
-              </p>
             </div>
           </div>
 
