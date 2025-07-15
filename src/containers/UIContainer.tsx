@@ -9,6 +9,7 @@ import { useMeasurements } from '../hooks/useMeasurements';
 import { useToolHandlers } from '../hooks/useToolHandlers';
 import { useFileHandlers } from '../hooks/useFileHandlers';
 import { useZoomHandlers } from '../hooks/useZoomHandlers';
+import { useStandardViewsHandlers } from '../hooks/useStandardViewsHandlers';
 import { useControlHandlers } from '../hooks/useControlHandlers';
 
 const UIContainer = () => {
@@ -40,6 +41,16 @@ const UIContainer = () => {
     handleZoomOut, 
     handleResetView 
   } = useZoomHandlers();
+
+  const {
+    viewTop,
+    viewFront, 
+    viewBack,
+    viewBottom,
+    viewRight,
+    viewLeft,
+    viewIsometric
+  } = useStandardViewsHandlers();
 
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
 
@@ -78,6 +89,13 @@ const UIContainer = () => {
       onZoomIn={handleZoomIn}
       onZoomOut={handleZoomOut}
       onResetView={handleResetView}
+      onViewTop={viewTop}
+      onViewFront={viewFront}
+      onViewBack={viewBack}
+      onViewBottom={viewBottom}
+      onViewRight={viewRight}
+      onViewLeft={viewLeft}
+      onViewIsometric={viewIsometric}
       shadeType={shadeType}
       onShadeTypeChange={setShadeType}
       modelCount={sceneState.loadedModels.length}

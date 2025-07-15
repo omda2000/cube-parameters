@@ -34,6 +34,13 @@ interface UIOverlayProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetView: () => void;
+  onViewTop: () => void;
+  onViewFront: () => void;
+  onViewBack: () => void;
+  onViewBottom: () => void;
+  onViewRight: () => void;
+  onViewLeft: () => void;
+  onViewIsometric: () => void;
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
   modelCount: number;
@@ -57,6 +64,13 @@ const UIOverlay = ({
   onZoomIn,
   onZoomOut,
   onResetView,
+  onViewTop,
+  onViewFront,
+  onViewBack,
+  onViewBottom,
+  onViewRight,
+  onViewLeft,
+  onViewIsometric,
   shadeType,
   onShadeTypeChange,
   modelCount
@@ -115,6 +129,13 @@ const UIOverlay = ({
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
         onResetView={onResetView}
+        onViewTop={onViewTop}
+        onViewFront={onViewFront}
+        onViewBack={onViewBack}
+        onViewBottom={onViewBottom}
+        onViewRight={onViewRight}
+        onViewLeft={onViewLeft}
+        onViewIsometric={onViewIsometric}
       />
     </>
   );

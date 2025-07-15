@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
+import ExpandableStandardViews from '../ExpandableStandardViews/ExpandableStandardViews';
 
 interface EnhancedStatusBarProps {
   objectCount?: number;
@@ -21,6 +22,13 @@ interface EnhancedStatusBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
+  onViewTop?: () => void;
+  onViewFront?: () => void;
+  onViewBack?: () => void;
+  onViewBottom?: () => void;
+  onViewRight?: () => void;
+  onViewLeft?: () => void;
+  onViewIsometric?: () => void;
 }
 
 const EnhancedStatusBar = ({
@@ -36,7 +44,14 @@ const EnhancedStatusBar = ({
   onZoomToSelected = () => {},
   onZoomIn = () => {},
   onZoomOut = () => {},
-  onResetView = () => {}
+  onResetView = () => {},
+  onViewTop = () => {},
+  onViewFront = () => {},
+  onViewBack = () => {},
+  onViewBottom = () => {},
+  onViewRight = () => {},
+  onViewLeft = () => {},
+  onViewIsometric = () => {}
 }: EnhancedStatusBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -108,6 +123,18 @@ const EnhancedStatusBar = ({
               onResetView={onResetView}
               selectedObject={selectedObject}
               zoomLevel={zoomLevel}
+            />
+
+            <Separator orientation="vertical" className="h-4" />
+            
+            <ExpandableStandardViews
+              onViewTop={onViewTop}
+              onViewFront={onViewFront}
+              onViewBack={onViewBack}
+              onViewBottom={onViewBottom}
+              onViewRight={onViewRight}
+              onViewLeft={onViewLeft}
+              onViewIsometric={onViewIsometric}
             />
           </div>
           

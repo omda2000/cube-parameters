@@ -1,5 +1,8 @@
 
+import * as THREE from 'three';
+
 export const useZoomHandlers = () => {
+
   const handleZoomAll = () => {
     console.log('useZoomHandlers: handleZoomAll called');
     const zoomControls = (window as any).__zoomControls;

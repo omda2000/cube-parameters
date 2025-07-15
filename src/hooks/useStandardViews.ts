@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -150,7 +150,7 @@ export const useStandardViews = (
     animateToView(targetPosition, center);
   }, [getBoundingBox, animateToView]);
 
-  return {
+  const standardViews = {
     viewTop,
     viewFront,
     viewBack,
@@ -159,4 +159,15 @@ export const useStandardViews = (
     viewLeft,
     viewIsometric
   };
+
+  // Expose standard views globally for external access
+  useEffect(() => {
+    (window as any).__standardViews = standardViews;
+
+    return () => {
+      delete (window as any).__standardViews;
+    };
+  }, [standardViews]);
+
+  return standardViews;
 };

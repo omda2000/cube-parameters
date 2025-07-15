@@ -105,14 +105,9 @@ export const useSceneTreeState = (
     
     const newVisibility = !sceneObject.object.visible;
     
-    // Toggle visibility for the main object
-    sceneObject.object.visible = newVisibility;
-    
-    // For all objects, traverse and apply visibility to all children
+    // Toggle visibility for the main object and all its children
     sceneObject.object.traverse((child) => {
-      if (child !== sceneObject.object) { // Don't re-set the root object
-        child.visible = newVisibility;
-      }
+      child.visible = newVisibility;
       
       // Force material update for meshes
       if (child instanceof THREE.Mesh && child.material) {
@@ -127,11 +122,24 @@ export const useSceneTreeState = (
     // Update the sceneObject's visibility property
     sceneObject.visible = newVisibility;
     
+    // Force scene re-render by updating all materials
+    if (scene) {
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh && obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(mat => mat.needsUpdate = true);
+          } else {
+            obj.material.needsUpdate = true;
+          }
+        }
+      });
+    }
+    
     // Trigger re-render
     triggerUpdate();
     
-    console.log('Visibility toggled to:', newVisibility);
-  }, [triggerUpdate]);
+    console.log('Visibility toggled to:', newVisibility, 'for object:', sceneObject.name);
+  }, [triggerUpdate, scene]);
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
     console.log('Selecting object:', sceneObject.name, 'multi:', isMultiSelect);
