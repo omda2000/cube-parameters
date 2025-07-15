@@ -84,6 +84,22 @@
   }
 }
 
+/* Material Icons styling for 3D view controls */
+.material-icons {
+  font-size: 28px;
+  color: #80C9D0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.material-icons:hover {
+  color: #ADE8F4;
+}
+
+.view-back {
+  transform: rotateY(180deg);
+}
+
 @layer base {
   * {
     @apply border-border;

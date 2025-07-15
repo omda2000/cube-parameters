@@ -87,6 +87,13 @@ const UIOverlay = ({
         <AidToolsBar
           onToolSelect={onToolSelect}
           activeTool={activeTool}
+          onViewFront={onViewFront}
+          onViewBack={onViewBack}
+          onToggle3DRotate={() => {
+            // Toggle between perspective and orthographic camera for 3D rotation mode
+            // This can be enhanced based on your specific 3D rotation requirements
+            onViewIsometric();
+          }}
         />
       </div>
 
