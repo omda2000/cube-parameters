@@ -63,12 +63,16 @@ export const useZoomControls = (
         if (cameraRef.current instanceof THREE.PerspectiveCamera) {
           distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 1.5;
         } else if (cameraRef.current instanceof THREE.OrthographicCamera) {
-          // For orthographic camera, adjust zoom instead of distance
+          // For orthographic camera, fit the scene properly
           const orthoCamera = cameraRef.current;
+          const maxDim = Math.max(size.x, size.y, size.z);
           const zoom = Math.min(
-            Math.abs(orthoCamera.right - orthoCamera.left) / size.x,
-            Math.abs(orthoCamera.top - orthoCamera.bottom) / size.y
+            Math.abs(orthoCamera.right - orthoCamera.left) / maxDim,
+            Math.abs(orthoCamera.top - orthoCamera.bottom) / maxDim
           ) * 0.8;
+          
+          orthoCamera.zoom = zoom;
+          orthoCamera.updateProjectionMatrix();
           distance = maxDim * 1.5;
         } else {
           distance = maxDim * 1.5;
@@ -123,9 +127,12 @@ export const useZoomControls = (
         } else if (cameraRef.current instanceof THREE.OrthographicCamera) {
           const orthoCamera = cameraRef.current;
           const zoom = Math.min(
-            Math.abs(orthoCamera.right - orthoCamera.left) / size.x,
-            Math.abs(orthoCamera.top - orthoCamera.bottom) / size.y
+            Math.abs(orthoCamera.right - orthoCamera.left) / maxDim,
+            Math.abs(orthoCamera.top - orthoCamera.bottom) / maxDim
           ) * 0.5;
+          
+          orthoCamera.zoom = zoom;
+          orthoCamera.updateProjectionMatrix();
           distance = maxDim * 2;
         } else {
           distance = maxDim * 2;

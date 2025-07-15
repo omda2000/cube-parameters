@@ -109,31 +109,20 @@ export const useSceneTreeState = (
     sceneObject.object.traverse((child) => {
       child.visible = newVisibility;
       
-      // Force material update for meshes
+      // Force material update for meshes with proper transparency handling
       if (child instanceof THREE.Mesh && child.material) {
-        if (Array.isArray(child.material)) {
-          child.material.forEach(mat => mat.needsUpdate = true);
-        } else {
-          child.material.needsUpdate = true;
-        }
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach(mat => {
+          if (mat instanceof THREE.Material) {
+            mat.transparent = !newVisibility || mat.opacity < 1;
+            mat.needsUpdate = true;
+          }
+        });
       }
     });
     
     // Update the sceneObject's visibility property
     sceneObject.visible = newVisibility;
-    
-    // Force scene re-render by updating all materials
-    if (scene) {
-      scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh && obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach(mat => mat.needsUpdate = true);
-          } else {
-            obj.material.needsUpdate = true;
-          }
-        }
-      });
-    }
     
     // Trigger re-render
     triggerUpdate();
