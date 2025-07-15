@@ -1,6 +1,7 @@
 
 import React, { memo } from 'react';
 import ThreeViewer from '../ThreeViewer';
+import { ModelViewerProvider } from '../../contexts/ModelViewerContext';
 import type { 
   LoadedModel, 
   SunlightSettings, 
@@ -39,23 +40,30 @@ const ModelViewerContainer = memo(({
   onPointCreate,
   onMeasureCreate
 }: ModelViewerContainerProps) => {
+  const contextValue = {
+    onFileUpload,
+    onModelsChange,
+  };
+
   return (
-    <div className="w-full h-full">
-      <ThreeViewer 
-        sunlight={sunlight}
-        ambientLight={ambientLight}
-        shadowQuality={shadowQuality}
-        environment={environment}
-        onFileUpload={onFileUpload}
-        onModelsChange={onModelsChange}
-        loadedModels={loadedModels}
-        currentModel={currentModel}
-        onSceneReady={onSceneReady}
-        activeTool={activeTool}
-        onPointCreate={onPointCreate}
-        onMeasureCreate={onMeasureCreate}
-      />
-    </div>
+    <ModelViewerProvider value={contextValue}>
+      <div className="w-full h-full">
+        <ThreeViewer 
+          sunlight={sunlight}
+          ambientLight={ambientLight}
+          shadowQuality={shadowQuality}
+          environment={environment}
+          onFileUpload={onFileUpload}
+          onModelsChange={onModelsChange}
+          loadedModels={loadedModels}
+          currentModel={currentModel}
+          onSceneReady={onSceneReady}
+          activeTool={activeTool}
+          onPointCreate={onPointCreate}
+          onMeasureCreate={onMeasureCreate}
+        />
+      </div>
+    </ModelViewerProvider>
   );
 });
 

@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useSceneState } from '../store/useAppStore';
 import type { LoadedModel } from '../types/model';
+import { logger } from '../lib/logger';
+import { useModelViewerContext } from '../contexts/ModelViewerContext';
 
 export const useFileHandlers = () => {
   const { toast } = useToast();
@@ -14,14 +16,19 @@ export const useFileHandlers = () => {
     setUploading, 
     setUploadError 
   } = useSceneState();
+  const { onFileUpload, onModelSelect, onModelRemove } = useModelViewerContext();
 
   const handleFileUpload = async (file: File) => {
-    console.log('Starting file upload process:', {
+    logger.info('Starting file upload process:', {
       name: file.name,
       type: file.type,
-      size: file.size,
-      userAgent: navigator.userAgent
+      size: file.size
     });
+
+    // Use context-based handler if available
+    if (onFileUpload) {
+      return onFileUpload(file);
+    }
 
     try {
       setUploading(true);
@@ -39,19 +46,19 @@ export const useFileHandlers = () => {
 
       if (fileName.endsWith('.fbx')) {
         uploadHandler = (window as any).__fbxUploadHandler;
-        console.log('Using FBX loader for:', file.name);
+        logger.debug('Using FBX loader for:', file.name);
       } else if (fileName.endsWith('.gltf') || fileName.endsWith('.glb')) {
         uploadHandler = (window as any).__gltfUploadHandler;
-        console.log('Using GLTF loader for:', file.name);
+        logger.debug('Using GLTF loader for:', file.name);
       } else if (fileName.endsWith('.obj')) {
         uploadHandler = (window as any).__objUploadHandler || (window as any).__fbxUploadHandler;
-        console.log('Using OBJ loader (fallback to FBX) for:', file.name);
+        logger.debug('Using OBJ loader (fallback to FBX) for:', file.name);
       } else {
         throw new Error('Unsupported file format. Please select FBX, GLTF, GLB, or OBJ files.');
       }
 
       if (uploadHandler) {
-        console.log('Upload handler found, processing file...');
+        logger.debug('Upload handler found, processing file...');
         await uploadHandler(file);
         
         addMessage({
@@ -60,13 +67,13 @@ export const useFileHandlers = () => {
           description: `${file.name} is now ready`,
         });
         
-        console.log('File upload completed successfully');
+        logger.info('File upload completed successfully');
       } else {
         throw new Error('No suitable loader found for this file type');
       }
       
     } catch (error) {
-      console.error('Upload failed:', error);
+      logger.error('Upload failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       setUploadError(`Failed to load ${file.name}: ${errorMessage}`);
@@ -82,7 +89,7 @@ export const useFileHandlers = () => {
   };
 
   const handleModelsChange = (models: LoadedModel[], current: LoadedModel | null) => {
-    console.log('Models changed:', { modelCount: models.length, currentModel: current?.name });
+    logger.info('Models changed:', { modelCount: models.length, currentModel: current?.name });
     setLoadedModels(models);
     setCurrentModel(current);
   };
@@ -90,15 +97,20 @@ export const useFileHandlers = () => {
   const handleModelSelect = (modelId: string) => {
     const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
-      console.log('Selecting model:', model.name);
-      const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
-      const gltfSwitchHandler = (window as any).__gltfSwitchHandler;
+      logger.info('Selecting model:', model.name);
       
-      // Try both handlers (they're the same unified handler now)
-      if (fbxSwitchHandler) {
-        fbxSwitchHandler(modelId);
-      } else if (gltfSwitchHandler) {
-        gltfSwitchHandler(modelId);
+      // Use context-based handler if available, fallback to global handlers
+      if (onModelSelect) {
+        onModelSelect(modelId);
+      } else {
+        const fbxSwitchHandler = (window as any).__fbxSwitchHandler;
+        const gltfSwitchHandler = (window as any).__gltfSwitchHandler;
+        
+        if (fbxSwitchHandler) {
+          fbxSwitchHandler(modelId);
+        } else if (gltfSwitchHandler) {
+          gltfSwitchHandler(modelId);
+        }
       }
       
       addMessage({
@@ -112,15 +124,20 @@ export const useFileHandlers = () => {
   const handleModelRemove = (modelId: string) => {
     const model = loadedModels.find((m: LoadedModel) => m.id === modelId);
     if (model) {
-      console.log('Removing model:', model.name);
-      const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
-      const gltfRemoveHandler = (window as any).__gltfRemoveHandler;
+      logger.info('Removing model:', model.name);
       
-      // Try both handlers (they're the same unified handler now)
-      if (fbxRemoveHandler) {
-        fbxRemoveHandler(modelId);
-      } else if (gltfRemoveHandler) {
-        gltfRemoveHandler(modelId);
+      // Use context-based handler if available, fallback to global handlers
+      if (onModelRemove) {
+        onModelRemove(modelId);
+      } else {
+        const fbxRemoveHandler = (window as any).__fbxRemoveHandler;
+        const gltfRemoveHandler = (window as any).__gltfRemoveHandler;
+        
+        if (fbxRemoveHandler) {
+          fbxRemoveHandler(modelId);
+        } else if (gltfRemoveHandler) {
+          gltfRemoveHandler(modelId);
+        }
       }
       
       addMessage({
@@ -133,7 +150,7 @@ export const useFileHandlers = () => {
 
   const handlePrimitiveSelect = (type: string) => {
     if (type === 'box') {
-      console.log('Selecting box primitive');
+      logger.info('Selecting box primitive');
       setCurrentModel(null);
       addMessage({
         type: 'info',

@@ -51,7 +51,7 @@ export const useSceneSetup = () => {
 
     // Remove old grid and create new one
     sceneRef.current.remove(gridHelperRef.current);
-    gridHelperRef.current.dispose();
+    // GridHelper doesn't have dispose method, just remove reference
 
     const newGrid = new THREE.GridHelper(gridSize, divisions, 0xADE8F4, 0xB0DAE1);
     gridHelperRef.current = newGrid;

@@ -52,12 +52,12 @@ export const useRendererSetup = (mountRef: React.RefObject<HTMLDivElement>) => {
     renderer.info.autoReset = false;
     renderer.setScissorTest(false);
     
-    // Mobile-specific optimizations
+    // Mobile-specific optimizations (capabilities are read-only, check instead)
     if (mobile) {
-      renderer.capabilities.maxTextures = Math.min(renderer.capabilities.maxTextures, 16);
-      
-      // Reduce precision for mobile
-      renderer.capabilities.precision = 'mediump';
+      // Check capabilities instead of setting them
+      const maxTextures = renderer.capabilities.maxTextures;
+      const precision = renderer.capabilities.precision;
+      console.log('Mobile capabilities:', { maxTextures, precision });
     }
     
     mountRef.current.appendChild(renderer.domElement);

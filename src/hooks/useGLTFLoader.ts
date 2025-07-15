@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import type { LoadedModel } from '../types/model';
+import { logger } from '../lib/logger';
 
 export const useGLTFLoader = (scene: THREE.Scene | null) => {
   const loaderRef = useRef<GLTFLoader | null>(null);
@@ -58,10 +59,11 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
   }, []);
 
   const loadGLTFModel = useCallback(async (file: File) => {
-    console.log('Starting GLTF load process:', file.name);
+    const modelId = Date.now().toString(); // Generate single ID for entire model
+    logger.info('Starting GLTF load process:', file.name);
     
     if (!scene) {
-      console.error('Scene not available for GLTF loading');
+      logger.error('Scene not available for GLTF loading');
       setError('3D scene not ready. Please try again.');
       return;
     }
@@ -279,7 +281,7 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
             // Additional tracking fields
             isDetachedFromGLB: true,
             originalMetadata: metadata,
-            loadedModelId: Date.now().toString()
+            loadedModelId: modelId // Use consistent model ID
          };
          
          console.log(`✅ Final userData for "${mesh.name}":`, mesh.userData);
@@ -303,9 +305,9 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
        // Add each detached mesh directly to the scene so they appear in hierarchy
        detachedMeshes.forEach(mesh => {
          scene.add(mesh);
-         // Mark mesh as belonging to this loaded model
-         mesh.userData.loadedModelId = Date.now().toString();
-         mesh.userData.isDetachedFromGLB = true;
+          // Mark mesh as belonging to this loaded model
+          mesh.userData.loadedModelId = modelId; // Use consistent model ID
+          mesh.userData.isDetachedFromGLB = true;
        });
        
        // 4. Compute bounding box from all meshes
@@ -321,8 +323,8 @@ export const useGLTFLoader = (scene: THREE.Scene | null) => {
        container.userData.detachedMeshes = detachedMeshes;
        container.userData.meshCount = detachedMeshes.length;
 
-       const modelData: LoadedModel = {
-         id: Date.now().toString(),
+        const modelData: LoadedModel = {
+          id: modelId, // Use consistent model ID
          name: file.name.replace(/\.(gltf|glb)$/i, ''),
          object: container,
          boundingBox: box.clone(),
