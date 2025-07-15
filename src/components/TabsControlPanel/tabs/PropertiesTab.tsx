@@ -3,10 +3,10 @@ import EnhancedPropertyPanel from '../../PropertyPanel/EnhancedPropertyPanel';
 import { useSelectionContext } from '../../../contexts/SelectionContext';
 
 interface PropertiesTabProps {
-  onToggleOrthographic?: () => void;
+  // Props removed as orthographic toggle moved to header
 }
 
-const PropertiesTab = ({ onToggleOrthographic }: PropertiesTabProps) => {
+const PropertiesTab = (props: PropertiesTabProps) => {
   const { selectedObjects } = useSelectionContext();
 
   const selectedObject = selectedObjects.length > 0 ? selectedObjects[0] : null;
@@ -28,7 +28,6 @@ const PropertiesTab = ({ onToggleOrthographic }: PropertiesTabProps) => {
     <EnhancedPropertyPanel 
       selectedObject={selectedObject}
       onPropertyChange={handlePropertyChange}
-      onToggleOrthographic={onToggleOrthographic}
     />
   );
 };

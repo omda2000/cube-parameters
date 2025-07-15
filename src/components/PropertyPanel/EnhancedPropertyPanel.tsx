@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Box, Triangle, Sun, TreePine, MapPin, Eye, EyeOff, Camera } from 'lucide-react';
+import { Settings, Box, Triangle, Sun, TreePine, MapPin, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import * as THREE from 'three';
 import type { SceneObject } from '../../types/model';
@@ -12,10 +12,9 @@ import type { SceneObject } from '../../types/model';
 interface EnhancedPropertyPanelProps {
   selectedObject: SceneObject | null;
   onPropertyChange: (property: string, value: any) => void;
-  onToggleOrthographic?: () => void;
 }
 
-const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange, onToggleOrthographic }: EnhancedPropertyPanelProps) => {
+const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPropertyPanelProps) => {
 
   if (!selectedObject) {
     return (
@@ -27,17 +26,6 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange, onToggleOrtho
                 <Settings className="h-4 w-4 text-muted-foreground" />
                 Properties
               </div>
-              {onToggleOrthographic && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onToggleOrthographic}
-                  className="h-7 w-7 p-0"
-                  title="Toggle Orthographic Camera"
-                >
-                  <Camera className="h-3 w-3" />
-                </Button>
-              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
@@ -115,17 +103,6 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange, onToggleOrtho
               {getObjectIcon(selectedObject.type)}
               Properties
             </div>
-            {onToggleOrthographic && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={onToggleOrthographic}
-                className="h-7 w-7 p-0"
-                title="Toggle Orthographic Camera"
-              >
-                <Camera className="h-3 w-3" />
-              </Button>
-            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-3">

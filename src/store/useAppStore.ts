@@ -26,11 +26,13 @@ interface UIStateSlice {
   activeControlTab: string;
   activeTool: 'select' | 'point' | 'measure';
   isOrthographic: boolean;
+  gridEnabled: boolean;
   setShowControlPanel: (show: boolean) => void;
   setShowMeasurePanel: (show: boolean) => void;
   setActiveControlTab: (tab: string) => void;
   setActiveTool: (tool: 'select' | 'point' | 'measure') => void;
   setIsOrthographic: (orthographic: boolean) => void;
+  setGridEnabled: (enabled: boolean) => void;
 }
 
 // Scene State Slice
@@ -71,11 +73,13 @@ export const useAppStore = create<AppStore>()(
       activeControlTab: 'scene',
       activeTool: 'select',
       isOrthographic: false,
+      gridEnabled: true,
       setShowControlPanel: (showControlPanel) => set({ showControlPanel }, false, 'setShowControlPanel'),
       setShowMeasurePanel: (showMeasurePanel) => set({ showMeasurePanel }, false, 'setShowMeasurePanel'),
       setActiveControlTab: (activeControlTab) => set({ activeControlTab }, false, 'setActiveControlTab'),
       setActiveTool: (activeTool) => set({ activeTool }, false, 'setActiveTool'),
       setIsOrthographic: (isOrthographic) => set({ isOrthographic }, false, 'setIsOrthographic'),
+      setGridEnabled: (gridEnabled) => set({ gridEnabled }, false, 'setGridEnabled'),
 
       // Scene State
       loadedModels: [],
@@ -133,11 +137,13 @@ export const useUIState = () => useAppStore(
     activeControlTab: state.activeControlTab,
     activeTool: state.activeTool,
     isOrthographic: state.isOrthographic,
+    gridEnabled: state.gridEnabled,
     setShowControlPanel: state.setShowControlPanel,
     setShowMeasurePanel: state.setShowMeasurePanel,
     setActiveControlTab: state.setActiveControlTab,
     setActiveTool: state.setActiveTool,
     setIsOrthographic: state.setIsOrthographic,
+    setGridEnabled: state.setGridEnabled,
   }))
 );
 

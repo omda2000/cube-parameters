@@ -53,6 +53,8 @@ const UIContainer = () => {
     if (updateSceneGrid) {
       updateSceneGrid();
     }
+    // Update UI state
+    uiState.setGridEnabled(!uiState.gridEnabled);
   };
 
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
@@ -95,7 +97,8 @@ const UIContainer = () => {
       onViewFront={viewFront}
       onViewBack={viewBack}
       onViewIsometric={viewIsometric}
-      onGridToggle={handleGridToggle}
+        onGridToggle={handleGridToggle}
+        gridEnabled={uiState?.gridEnabled}
       isOrthographic={uiState.isOrthographic}
       onCameraToggle={handleCameraToggle}
       shadeType={shadeType}

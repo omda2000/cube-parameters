@@ -37,9 +37,7 @@ const AppHeader = ({
       <div className="absolute top-0 left-0 right-0 z-50 p-4">
         <div className="bg-slate-800/90 backdrop-blur-sm border border-slate-600/50 rounded-lg px-4 py-2">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
-              Architectural Model Viewer
-            </h1>
+            {/* Consolidated header - title removed per user request */}
             
             <div className="flex items-center gap-3">
               <NotificationBell />

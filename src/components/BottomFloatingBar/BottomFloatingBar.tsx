@@ -3,7 +3,7 @@ import React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Grid3X3 } from 'lucide-react';
+import { Grid3X3, Grid } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';

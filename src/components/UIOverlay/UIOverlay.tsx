@@ -38,6 +38,7 @@ interface UIOverlayProps {
   onViewBack: () => void;
   onViewIsometric: () => void;
   onGridToggle?: () => void;
+  gridEnabled?: boolean;
   isOrthographic?: boolean;
   onCameraToggle?: (orthographic: boolean) => void;
   shadeType: ShadeType;
@@ -70,6 +71,7 @@ const UIOverlay = ({
   onShadeTypeChange,
   modelCount,
   onGridToggle,
+  gridEnabled = false,
   isOrthographic = false,
   onCameraToggle
 }: UIOverlayProps) => {
@@ -128,7 +130,7 @@ const UIOverlay = ({
       {/* Enhanced Status Bar - improved layout and information */}
       <EnhancedStatusBar
         objectCount={modelCount}
-        gridEnabled={true}
+        gridEnabled={gridEnabled}
         gridSpacing="1m"
         units="m"
         cursorPosition={{ x: 0, y: 0 }}
