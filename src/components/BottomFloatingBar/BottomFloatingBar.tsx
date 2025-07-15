@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Grid3X3 } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
-import ExpandableStandardViews from '../ExpandableStandardViews/ExpandableStandardViews';
 
 interface BottomFloatingBarProps {
   objectCount?: number;
@@ -21,13 +22,7 @@ interface BottomFloatingBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
-  onViewTop?: () => void;
-  onViewFront?: () => void;
-  onViewBack?: () => void;
-  onViewBottom?: () => void;
-  onViewRight?: () => void;
-  onViewLeft?: () => void;
-  onViewIsometric?: () => void;
+  onGridToggle?: () => void;
 }
 
 const BottomFloatingBar = ({
@@ -44,13 +39,7 @@ const BottomFloatingBar = ({
   onZoomIn = () => {},
   onZoomOut = () => {},
   onResetView = () => {},
-  onViewTop = () => {},
-  onViewFront = () => {},
-  onViewBack = () => {},
-  onViewBottom = () => {},
-  onViewRight = () => {},
-  onViewLeft = () => {},
-  onViewIsometric = () => {}
+  onGridToggle = () => {}
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -67,11 +56,26 @@ const BottomFloatingBar = ({
             
             <Separator orientation="vertical" className="h-4" />
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <span>Grid:</span>
               <span className="text-foreground font-medium">
                 {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
               </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onGridToggle}
+                    className="h-6 w-6 p-0 hover:bg-accent"
+                  >
+                    <Grid3X3 className={`h-3 w-3 ${gridEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle Grid (G)</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             
             <Separator orientation="vertical" className="h-4" />
@@ -93,7 +97,7 @@ const BottomFloatingBar = ({
             </div>
           </div>
           
-          {/* Center section - Zoom and view controls */}
+          {/* Center section - Zoom controls only */}
           <div className="flex items-center gap-2">
             <ExpandableZoomControls
               onZoomAll={onZoomAll}
@@ -103,16 +107,6 @@ const BottomFloatingBar = ({
               onResetView={onResetView}
               selectedObject={selectedObject}
               zoomLevel={zoomLevel}
-            />
-            
-            <ExpandableStandardViews
-              onViewTop={onViewTop}
-              onViewFront={onViewFront}
-              onViewBack={onViewBack}
-              onViewBottom={onViewBottom}
-              onViewRight={onViewRight}
-              onViewLeft={onViewLeft}
-              onViewIsometric={onViewIsometric}
             />
           </div>
           

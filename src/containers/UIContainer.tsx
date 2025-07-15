@@ -43,14 +43,17 @@ const UIContainer = () => {
   } = useZoomHandlers();
 
   const {
-    viewTop,
     viewFront, 
     viewBack,
-    viewBottom,
-    viewRight,
-    viewLeft,
     viewIsometric
   } = useStandardViewsHandlers();
+
+  const handleGridToggle = () => {
+    const updateSceneGrid = (window as any).__updateSceneGrid;
+    if (updateSceneGrid) {
+      updateSceneGrid();
+    }
+  };
 
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
 
@@ -89,13 +92,12 @@ const UIContainer = () => {
       onZoomIn={handleZoomIn}
       onZoomOut={handleZoomOut}
       onResetView={handleResetView}
-      onViewTop={viewTop}
       onViewFront={viewFront}
       onViewBack={viewBack}
-      onViewBottom={viewBottom}
-      onViewRight={viewRight}
-      onViewLeft={viewLeft}
       onViewIsometric={viewIsometric}
+      onGridToggle={handleGridToggle}
+      isOrthographic={uiState.isOrthographic}
+      onCameraToggle={handleCameraToggle}
       shadeType={shadeType}
       onShadeTypeChange={setShadeType}
       modelCount={sceneState.loadedModels.length}

@@ -5,7 +5,7 @@ import LeftSidebar from '../LeftSidebar/LeftSidebar';
 import OrganizedControlPanel from '../OrganizedControlPanel/OrganizedControlPanel';
 import OrganizedMeasurePanel from '../OrganizedMeasurePanel/OrganizedMeasurePanel';
 import EnhancedStatusBar from '../EnhancedStatusBar/EnhancedStatusBar';
-import NotificationBell from '../NotificationBell/NotificationBell';
+import AppHeader from '../AppHeader/AppHeader';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -34,13 +34,12 @@ interface UIOverlayProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetView: () => void;
-  onViewTop: () => void;
   onViewFront: () => void;
   onViewBack: () => void;
-  onViewBottom: () => void;
-  onViewRight: () => void;
-  onViewLeft: () => void;
   onViewIsometric: () => void;
+  onGridToggle?: () => void;
+  isOrthographic?: boolean;
+  onCameraToggle?: (orthographic: boolean) => void;
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
   modelCount: number;
@@ -64,23 +63,28 @@ const UIOverlay = ({
   onZoomIn,
   onZoomOut,
   onResetView,
-  onViewTop,
   onViewFront,
   onViewBack,
-  onViewBottom,
-  onViewRight,
-  onViewLeft,
   onViewIsometric,
   shadeType,
   onShadeTypeChange,
-  modelCount
+  modelCount,
+  onGridToggle,
+  isOrthographic = false,
+  onCameraToggle
 }: UIOverlayProps) => {
   return (
     <>
-      {/* Notification bell - top right corner */}
-      <div className="fixed top-4 right-4 z-50">
-        <NotificationBell />
-      </div>
+      {/* App Header with camera toggle */}
+      <AppHeader
+        isMobile={false}
+        mobileSheetOpen={false}
+        setMobileSheetOpen={() => {}}
+        isOrthographic={isOrthographic}
+        onCameraToggle={onCameraToggle}
+      >
+        <div />
+      </AppHeader>
 
       {/* Aid Tools Bar - centered at top with proper spacing */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
@@ -136,13 +140,7 @@ const UIOverlay = ({
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
         onResetView={onResetView}
-        onViewTop={onViewTop}
-        onViewFront={onViewFront}
-        onViewBack={onViewBack}
-        onViewBottom={onViewBottom}
-        onViewRight={onViewRight}
-        onViewLeft={onViewLeft}
-        onViewIsometric={onViewIsometric}
+        onGridToggle={onGridToggle}
       />
     </>
   );

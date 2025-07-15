@@ -105,8 +105,11 @@ export const useSceneTreeState = (
     
     const newVisibility = !sceneObject.object.visible;
     
+    // Store the original object reference
+    const targetObject = sceneObject.object;
+    
     // Toggle visibility for the main object and all its children
-    sceneObject.object.traverse((child) => {
+    targetObject.traverse((child) => {
       child.visible = newVisibility;
       
       // Force material update for meshes with proper transparency handling
@@ -123,6 +126,15 @@ export const useSceneTreeState = (
     
     // Update the sceneObject's visibility property
     sceneObject.visible = newVisibility;
+    
+    // Force scene update if available
+    if (scene) {
+      scene.traverse((obj) => {
+        if (obj === targetObject) {
+          obj.visible = newVisibility;
+        }
+      });
+    }
     
     // Trigger re-render
     triggerUpdate();

@@ -178,15 +178,32 @@ export const useZoomControls = (
         const target = controlsRef.current.target;
         
         if (cameraRef.current instanceof THREE.OrthographicCamera) {
-          // For orthographic camera, adjust zoom
+          // For orthographic camera, adjust zoom with smooth animation
           const orthoCamera = cameraRef.current;
-          orthoCamera.zoom = Math.min(orthoCamera.zoom * 1.25, 10);
-          orthoCamera.updateProjectionMatrix();
-          controlsRef.current.update();
+          const startZoom = orthoCamera.zoom;
+          const targetZoom = Math.min(orthoCamera.zoom * 1.25, 10);
+          const startTime = Date.now();
+          const duration = 300;
           
-          if (rendererRef?.current) {
-            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
-          }
+          const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            
+            orthoCamera.zoom = startZoom + (targetZoom - startZoom) * easedProgress;
+            orthoCamera.updateProjectionMatrix();
+            controlsRef.current.update();
+            
+            if (rendererRef?.current) {
+              rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+            }
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            }
+          };
+          
+          animate();
           return;
         }
         
@@ -231,15 +248,32 @@ export const useZoomControls = (
         const target = controlsRef.current.target;
         
         if (cameraRef.current instanceof THREE.OrthographicCamera) {
-          // For orthographic camera, adjust zoom
+          // For orthographic camera, adjust zoom with smooth animation
           const orthoCamera = cameraRef.current;
-          orthoCamera.zoom = Math.max(orthoCamera.zoom * 0.8, 0.1);
-          orthoCamera.updateProjectionMatrix();
-          controlsRef.current.update();
+          const startZoom = orthoCamera.zoom;
+          const targetZoom = Math.max(orthoCamera.zoom * 0.8, 0.1);
+          const startTime = Date.now();
+          const duration = 300;
           
-          if (rendererRef?.current) {
-            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
-          }
+          const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            
+            orthoCamera.zoom = startZoom + (targetZoom - startZoom) * easedProgress;
+            orthoCamera.updateProjectionMatrix();
+            controlsRef.current.update();
+            
+            if (rendererRef?.current) {
+              rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+            }
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            }
+          };
+          
+          animate();
           return;
         }
         
@@ -283,6 +317,13 @@ export const useZoomControls = (
         
         const targetPosition = new THREE.Vector3(5, 5, 5);
         const targetLookAt = new THREE.Vector3(0, 0, 0);
+        
+        // Reset orthographic camera zoom
+        if (cameraRef.current instanceof THREE.OrthographicCamera) {
+          const orthoCamera = cameraRef.current;
+          orthoCamera.zoom = 1;
+          orthoCamera.updateProjectionMatrix();
+        }
         
         // Smooth transition
         const startPosition = cameraRef.current.position.clone();

@@ -4,9 +4,10 @@ import * as THREE from 'three';
 export const createBlueOutline = (object: THREE.Object3D): THREE.LineSegments | null => {
   if (object instanceof THREE.Mesh) {
     const edges = new THREE.EdgesGeometry(object.geometry);
+    // 5mm = 0.005 units (assuming 1 unit = 1 meter)
     const outlineMaterial = new THREE.LineBasicMaterial({ 
       color: 0x0088ff, 
-      linewidth: 3,
+      linewidth: 10, // Increased for 5mm equivalent
       transparent: true,
       opacity: 0.8
     });

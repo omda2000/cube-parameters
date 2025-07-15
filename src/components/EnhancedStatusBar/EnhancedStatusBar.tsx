@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Grid3X3 } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
-import ExpandableStandardViews from '../ExpandableStandardViews/ExpandableStandardViews';
 
 interface EnhancedStatusBarProps {
   objectCount?: number;
@@ -22,13 +23,7 @@ interface EnhancedStatusBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
-  onViewTop?: () => void;
-  onViewFront?: () => void;
-  onViewBack?: () => void;
-  onViewBottom?: () => void;
-  onViewRight?: () => void;
-  onViewLeft?: () => void;
-  onViewIsometric?: () => void;
+  onGridToggle?: () => void;
 }
 
 const EnhancedStatusBar = ({
@@ -45,13 +40,7 @@ const EnhancedStatusBar = ({
   onZoomIn = () => {},
   onZoomOut = () => {},
   onResetView = () => {},
-  onViewTop = () => {},
-  onViewFront = () => {},
-  onViewBack = () => {},
-  onViewBottom = () => {},
-  onViewRight = () => {},
-  onViewLeft = () => {},
-  onViewIsometric = () => {}
+  onGridToggle = () => {}
 }: EnhancedStatusBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -84,6 +73,21 @@ const EnhancedStatusBar = ({
               <Badge variant={gridEnabled ? "default" : "secondary"} className="text-xs">
                 {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
               </Badge>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onGridToggle}
+                    className="h-6 w-6 p-0 hover:bg-accent"
+                  >
+                    <Grid3X3 className={`h-3 w-3 ${gridEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle Grid (G)</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             
             <Separator orientation="vertical" className="h-4" />
@@ -125,17 +129,6 @@ const EnhancedStatusBar = ({
               zoomLevel={zoomLevel}
             />
 
-            <Separator orientation="vertical" className="h-4" />
-            
-            <ExpandableStandardViews
-              onViewTop={onViewTop}
-              onViewFront={onViewFront}
-              onViewBack={onViewBack}
-              onViewBottom={onViewBottom}
-              onViewRight={onViewRight}
-              onViewLeft={onViewLeft}
-              onViewIsometric={onViewIsometric}
-            />
           </div>
           
           {/* Right section - Quick actions and settings */}
