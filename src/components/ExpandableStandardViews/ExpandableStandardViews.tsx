@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { View, Grid3X3, ChevronDown, ChevronUp } from 'lucide-react';
+import { Grid3X3, ChevronDown, ChevronUp, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 interface ExpandableStandardViewsProps {
   onViewTop: () => void;
@@ -56,8 +56,7 @@ const ExpandableStandardViews = ({
             onClick={handleToggle}
             className="h-8 px-2 text-xs flex items-center gap-1"
           >
-            <View className="h-3 w-3" />
-            <span>Views</span>
+            <Grid3X3 className="h-3 w-3" />
             {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </Button>
         </TooltipTrigger>
@@ -78,9 +77,9 @@ const ExpandableStandardViews = ({
                     onViewTop();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs"
+                  className="h-8 px-2 flex items-center justify-center"
                 >
-                  Top
+                  <ArrowUp className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -97,9 +96,9 @@ const ExpandableStandardViews = ({
                     onViewFront();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs"
+                  className="h-8 px-2 flex items-center justify-center"
                 >
-                  Front
+                  <Eye className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -116,9 +115,9 @@ const ExpandableStandardViews = ({
                     onViewRight();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs"
+                  className="h-8 px-2 flex items-center justify-center"
                 >
-                  Right
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -135,9 +134,9 @@ const ExpandableStandardViews = ({
                     onViewBottom();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs"
+                  className="h-8 px-2 flex items-center justify-center"
                 >
-                  Bottom
+                  <ArrowDown className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -154,9 +153,9 @@ const ExpandableStandardViews = ({
                     onViewBack();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs"
+                  className="h-8 px-2 flex items-center justify-center"
                 >
-                  Back
+                  <EyeOff className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -173,9 +172,9 @@ const ExpandableStandardViews = ({
                     onViewLeft();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs"
+                  className="h-8 px-2 flex items-center justify-center"
                 >
-                  Left
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -192,10 +191,9 @@ const ExpandableStandardViews = ({
                     onViewIsometric();
                     setIsExpanded(false);
                   }}
-                  className="h-8 px-2 text-xs col-span-3"
+                  className="h-8 px-2 col-span-3 flex items-center justify-center"
                 >
-                  <Grid3X3 className="h-3 w-3 mr-1" />
-                  Isometric
+                  <Grid3X3 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

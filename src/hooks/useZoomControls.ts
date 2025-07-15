@@ -63,16 +63,16 @@ export const useZoomControls = (
         if (cameraRef.current instanceof THREE.PerspectiveCamera) {
           distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 1.5;
         } else if (cameraRef.current instanceof THREE.OrthographicCamera) {
-          // For orthographic camera, fit the scene properly
+          // For orthographic camera, calculate zoom without updating during animation
           const orthoCamera = cameraRef.current;
-          const maxDim = Math.max(size.x, size.y, size.z);
+          const aspect = Math.abs(orthoCamera.right - orthoCamera.left) / Math.abs(orthoCamera.top - orthoCamera.bottom);
           const zoom = Math.min(
-            Math.abs(orthoCamera.right - orthoCamera.left) / maxDim,
-            Math.abs(orthoCamera.top - orthoCamera.bottom) / maxDim
+            Math.abs(orthoCamera.right - orthoCamera.left) / size.x,
+            Math.abs(orthoCamera.top - orthoCamera.bottom) / size.y
           ) * 0.8;
           
-          orthoCamera.zoom = zoom;
-          orthoCamera.updateProjectionMatrix();
+          // Store target zoom for later update
+          (cameraRef.current as any).__targetZoom = zoom;
           distance = maxDim * 1.5;
         } else {
           distance = maxDim * 1.5;
@@ -93,6 +93,20 @@ export const useZoomControls = (
           
           cameraRef.current!.position.lerpVectors(startPosition, targetPosition, easedProgress);
           controlsRef.current!.target.lerpVectors(startTarget, center, easedProgress);
+          
+          // Update orthographic zoom only at the end to prevent flickering
+          if (cameraRef.current instanceof THREE.OrthographicCamera && (cameraRef.current as any).__targetZoom) {
+            const orthoCamera = cameraRef.current;
+            const targetZoom = (cameraRef.current as any).__targetZoom;
+            orthoCamera.zoom = targetZoom * easedProgress + orthoCamera.zoom * (1 - easedProgress);
+            orthoCamera.updateProjectionMatrix();
+            
+            // Clear target zoom when animation completes
+            if (progress === 1) {
+              delete (cameraRef.current as any).__targetZoom;
+            }
+          }
+          
           controlsRef.current!.update();
           
           // Force render update
@@ -131,8 +145,8 @@ export const useZoomControls = (
             Math.abs(orthoCamera.top - orthoCamera.bottom) / maxDim
           ) * 0.5;
           
-          orthoCamera.zoom = zoom;
-          orthoCamera.updateProjectionMatrix();
+          // Store target zoom for later update
+          (cameraRef.current as any).__targetZoom = zoom;
           distance = maxDim * 2;
         } else {
           distance = maxDim * 2;
