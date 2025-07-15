@@ -1,7 +1,10 @@
 
 import React from 'react';
-import { MapPin, Ruler, Target } from 'lucide-react';
+import { MapPin, Ruler, Target, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import NotificationBell from '@/components/NotificationBell/NotificationBell';
 
 interface AidToolsBarProps {
   onToolSelect: (tool: 'select' | 'point' | 'measure') => void;
@@ -9,12 +12,23 @@ interface AidToolsBarProps {
   onViewFront?: () => void;
   onViewBack?: () => void;
   onToggle3DRotate?: () => void;
+  isOrthographic?: boolean;
+  onCameraToggle?: (orthographic: boolean) => void;
 }
 
-const AidToolsBar = ({ onToolSelect, activeTool, onViewFront, onViewBack, onToggle3DRotate }: AidToolsBarProps) => {
+const AidToolsBar = ({ 
+  onToolSelect, 
+  activeTool, 
+  onViewFront, 
+  onViewBack, 
+  onToggle3DRotate,
+  isOrthographic = false,
+  onCameraToggle
+}: AidToolsBarProps) => {
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-40 shadow-lg">
-      <div className="flex gap-1">
+    <TooltipProvider>
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-40 shadow-lg">
+        <div className="flex gap-1">
         <Button
           variant={activeTool === 'select' ? 'default' : 'ghost'}
           size="sm"
@@ -90,8 +104,33 @@ const AidToolsBar = ({ onToolSelect, activeTool, onViewFront, onViewBack, onTogg
             <span className="material-icons view-rotate" style={{ fontSize: '20px' }}>3d_rotation</span>
           </button>
         )}
+        
+        {/* Separator */}
+        <div className="w-px h-6 bg-border mx-1" />
+        
+        {/* Camera Toggle */}
+        {onCameraToggle && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 px-2">
+                <Camera className="h-4 w-4 text-muted-foreground" />
+                <Switch
+                  checked={isOrthographic}
+                  onCheckedChange={onCameraToggle}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isOrthographic ? 'Switch to Perspective' : 'Switch to Orthographic'}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        
+        {/* Notification Bell */}
+        <NotificationBell />
       </div>
     </div>
+    </TooltipProvider>
   );
 };
 

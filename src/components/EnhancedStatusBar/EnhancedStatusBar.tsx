@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Grid3X3 } from 'lucide-react';
+import { Grid3X3, Layers } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
@@ -24,6 +24,8 @@ interface EnhancedStatusBarProps {
   onZoomOut?: () => void;
   onResetView?: () => void;
   onGridToggle?: () => void;
+  groundPlaneEnabled?: boolean;
+  onGroundPlaneToggle?: () => void;
 }
 
 const EnhancedStatusBar = ({
@@ -40,7 +42,9 @@ const EnhancedStatusBar = ({
   onZoomIn = () => {},
   onZoomOut = () => {},
   onResetView = () => {},
-  onGridToggle = () => {}
+  onGridToggle = () => {},
+  groundPlaneEnabled = false,
+  onGroundPlaneToggle = () => {}
 }: EnhancedStatusBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -69,23 +73,35 @@ const EnhancedStatusBar = ({
             <Separator orientation="vertical" className="h-4" />
             
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Grid:</span>
-              <Badge variant={gridEnabled ? "default" : "secondary"} className="text-xs">
-                {gridEnabled ? `ON (${gridSpacing})` : 'OFF'}
-              </Badge>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onGridToggle}
-                    className="h-6 w-6 p-0 hover:bg-accent"
+                    className={`h-6 w-6 p-0 hover:bg-accent ${gridEnabled ? 'bg-accent' : ''}`}
                   >
                     <Grid3X3 className={`h-3 w-3 ${gridEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Toggle Grid (G)</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onGroundPlaneToggle}
+                    className={`h-6 w-6 p-0 hover:bg-accent ${groundPlaneEnabled ? 'bg-accent' : ''}`}
+                  >
+                    <Layers className={`h-3 w-3 ${groundPlaneEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle Ground Plane</p>
                 </TooltipContent>
               </Tooltip>
             </div>

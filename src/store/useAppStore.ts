@@ -27,12 +27,14 @@ interface UIStateSlice {
   activeTool: 'select' | 'point' | 'measure';
   isOrthographic: boolean;
   gridEnabled: boolean;
+  groundPlaneEnabled: boolean;
   setShowControlPanel: (show: boolean) => void;
   setShowMeasurePanel: (show: boolean) => void;
   setActiveControlTab: (tab: string) => void;
   setActiveTool: (tool: 'select' | 'point' | 'measure') => void;
   setIsOrthographic: (orthographic: boolean) => void;
   setGridEnabled: (enabled: boolean) => void;
+  setGroundPlaneEnabled: (enabled: boolean) => void;
 }
 
 // Scene State Slice
@@ -74,12 +76,14 @@ export const useAppStore = create<AppStore>()(
       activeTool: 'select',
       isOrthographic: false,
       gridEnabled: true,
+      groundPlaneEnabled: false,
       setShowControlPanel: (showControlPanel) => set({ showControlPanel }, false, 'setShowControlPanel'),
       setShowMeasurePanel: (showMeasurePanel) => set({ showMeasurePanel }, false, 'setShowMeasurePanel'),
       setActiveControlTab: (activeControlTab) => set({ activeControlTab }, false, 'setActiveControlTab'),
       setActiveTool: (activeTool) => set({ activeTool }, false, 'setActiveTool'),
       setIsOrthographic: (isOrthographic) => set({ isOrthographic }, false, 'setIsOrthographic'),
       setGridEnabled: (gridEnabled) => set({ gridEnabled }, false, 'setGridEnabled'),
+      setGroundPlaneEnabled: (groundPlaneEnabled) => set({ groundPlaneEnabled }, false, 'setGroundPlaneEnabled'),
 
       // Scene State
       loadedModels: [],
@@ -138,12 +142,14 @@ export const useUIState = () => useAppStore(
     activeTool: state.activeTool,
     isOrthographic: state.isOrthographic,
     gridEnabled: state.gridEnabled,
+    groundPlaneEnabled: state.groundPlaneEnabled,
     setShowControlPanel: state.setShowControlPanel,
     setShowMeasurePanel: state.setShowMeasurePanel,
     setActiveControlTab: state.setActiveControlTab,
     setActiveTool: state.setActiveTool,
     setIsOrthographic: state.setIsOrthographic,
     setGridEnabled: state.setGridEnabled,
+    setGroundPlaneEnabled: state.setGroundPlaneEnabled,
   }))
 );
 

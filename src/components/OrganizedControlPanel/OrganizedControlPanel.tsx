@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import SceneTab from '../TabsControlPanel/tabs/SceneTab';
 import PropertiesTab from '../TabsControlPanel/tabs/PropertiesTab';
 import LightingTab from '../TabsControlPanel/tabs/LightingTab';
-import ViewTab from '../TabsControlPanel/tabs/ViewTab';
 import HelpPanel from '../HelpPanel/HelpPanel';
 
 interface OrganizedControlPanelProps {
@@ -65,14 +64,7 @@ const OrganizedControlPanel = ({
           />
         );
       case 'environment':
-        return (
-          <ViewTab
-            environment={controlsPanelProps.environment}
-            setEnvironment={controlsPanelProps.setEnvironment}
-            isOrthographic={controlsPanelProps.isOrthographic}
-            onCameraToggle={controlsPanelProps.onCameraToggle}
-          />
-        );
+        return <div className="p-4 text-center text-muted-foreground">Environment settings have been moved to other panels</div>;
       case 'help':
         return <HelpPanel />;
       default:

@@ -57,6 +57,15 @@ const UIContainer = () => {
     uiState.setGridEnabled(!uiState.gridEnabled);
   };
 
+  const handleGroundPlaneToggle = () => {
+    const updateGroundPlane = (window as any).__updateGroundPlane;
+    if (updateGroundPlane) {
+      updateGroundPlane(!uiState.groundPlaneEnabled);
+    }
+    // Update UI state
+    uiState.setGroundPlaneEnabled(!uiState.groundPlaneEnabled);
+  };
+
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
 
   const controlsPanelProps = {
@@ -97,8 +106,10 @@ const UIContainer = () => {
       onViewFront={viewFront}
       onViewBack={viewBack}
       onViewIsometric={viewIsometric}
-        onGridToggle={handleGridToggle}
-        gridEnabled={uiState?.gridEnabled}
+      onGridToggle={handleGridToggle}
+      gridEnabled={uiState.gridEnabled}
+      groundPlaneEnabled={uiState.groundPlaneEnabled}
+      onGroundPlaneToggle={handleGroundPlaneToggle}
       isOrthographic={uiState.isOrthographic}
       onCameraToggle={handleCameraToggle}
       shadeType={shadeType}

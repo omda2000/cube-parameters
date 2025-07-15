@@ -2,7 +2,6 @@
 import SceneTab from './tabs/SceneTab';
 import PropertiesTab from './tabs/PropertiesTab';
 import LightingTab from './tabs/LightingTab';
-import ViewTab from './tabs/ViewTab';
 import SettingsPanel from '../SettingsPanel/SettingsPanel';
 import HelpPanel from '../HelpPanel/HelpPanel';
 import * as THREE from 'three';
@@ -95,14 +94,7 @@ const TabsControlPanel = ({
           />
         );
       case 'environment':
-        return (
-          <ViewTab
-            environment={environment}
-            setEnvironment={setEnvironment}
-            isOrthographic={isOrthographic}
-            onCameraToggle={onCameraToggle}
-          />
-        );
+        return <div className="p-4 text-center text-muted-foreground">Environment settings have been moved to other panels</div>;
       case 'help':
         return <HelpPanel />;
       case 'settings':

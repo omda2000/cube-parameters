@@ -5,7 +5,6 @@ import LeftSidebar from '../LeftSidebar/LeftSidebar';
 import OrganizedControlPanel from '../OrganizedControlPanel/OrganizedControlPanel';
 import OrganizedMeasurePanel from '../OrganizedMeasurePanel/OrganizedMeasurePanel';
 import EnhancedStatusBar from '../EnhancedStatusBar/EnhancedStatusBar';
-import AppHeader from '../AppHeader/AppHeader';
 import type { ShadeType } from '../ShadeTypeSelector/ShadeTypeSelector';
 
 interface MeasureData {
@@ -39,6 +38,8 @@ interface UIOverlayProps {
   onViewIsometric: () => void;
   onGridToggle?: () => void;
   gridEnabled?: boolean;
+  groundPlaneEnabled?: boolean;
+  onGroundPlaneToggle?: () => void;
   isOrthographic?: boolean;
   onCameraToggle?: (orthographic: boolean) => void;
   shadeType: ShadeType;
@@ -72,36 +73,27 @@ const UIOverlay = ({
   modelCount,
   onGridToggle,
   gridEnabled = false,
+  groundPlaneEnabled = false,
+  onGroundPlaneToggle,
   isOrthographic = false,
   onCameraToggle
 }: UIOverlayProps) => {
   return (
     <>
-      {/* App Header with camera toggle */}
-      <AppHeader
-        isMobile={false}
-        mobileSheetOpen={false}
-        setMobileSheetOpen={() => {}}
+      {/* Aid Tools Bar - centered at top with proper spacing */}
+      <AidToolsBar
+        onToolSelect={onToolSelect}
+        activeTool={activeTool}
+        onViewFront={onViewFront}
+        onViewBack={onViewBack}
+        onToggle3DRotate={() => {
+          // Toggle between perspective and orthographic camera for 3D rotation mode
+          // This can be enhanced based on your specific 3D rotation requirements
+          onViewIsometric();
+        }}
         isOrthographic={isOrthographic}
         onCameraToggle={onCameraToggle}
-      >
-        <div />
-      </AppHeader>
-
-      {/* Aid Tools Bar - centered at top with proper spacing */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
-        <AidToolsBar
-          onToolSelect={onToolSelect}
-          activeTool={activeTool}
-          onViewFront={onViewFront}
-          onViewBack={onViewBack}
-          onToggle3DRotate={() => {
-            // Toggle between perspective and orthographic camera for 3D rotation mode
-            // This can be enhanced based on your specific 3D rotation requirements
-            onViewIsometric();
-          }}
-        />
-      </div>
+      />
 
       {/* Left Sidebar - properly positioned to avoid overlaps */}
       <LeftSidebar
@@ -143,6 +135,8 @@ const UIOverlay = ({
         onZoomOut={onZoomOut}
         onResetView={onResetView}
         onGridToggle={onGridToggle}
+        groundPlaneEnabled={groundPlaneEnabled}
+        onGroundPlaneToggle={onGroundPlaneToggle}
       />
     </>
   );
