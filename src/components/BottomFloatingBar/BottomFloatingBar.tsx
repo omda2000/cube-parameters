@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
+import ExpandableStandardViews from '../ExpandableStandardViews/ExpandableStandardViews';
 
 interface BottomFloatingBarProps {
   objectCount?: number;
@@ -20,6 +21,13 @@ interface BottomFloatingBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
+  onViewTop?: () => void;
+  onViewFront?: () => void;
+  onViewBack?: () => void;
+  onViewBottom?: () => void;
+  onViewRight?: () => void;
+  onViewLeft?: () => void;
+  onViewIsometric?: () => void;
 }
 
 const BottomFloatingBar = ({
@@ -35,7 +43,14 @@ const BottomFloatingBar = ({
   onZoomToSelected = () => {},
   onZoomIn = () => {},
   onZoomOut = () => {},
-  onResetView = () => {}
+  onResetView = () => {},
+  onViewTop = () => {},
+  onViewFront = () => {},
+  onViewBack = () => {},
+  onViewBottom = () => {},
+  onViewRight = () => {},
+  onViewLeft = () => {},
+  onViewIsometric = () => {}
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
 
@@ -78,8 +93,8 @@ const BottomFloatingBar = ({
             </div>
           </div>
           
-          {/* Center section - Zoom controls */}
-          <div className="flex items-center">
+          {/* Center section - Zoom and view controls */}
+          <div className="flex items-center gap-2">
             <ExpandableZoomControls
               onZoomAll={onZoomAll}
               onZoomToSelected={onZoomToSelected}
@@ -88,6 +103,16 @@ const BottomFloatingBar = ({
               onResetView={onResetView}
               selectedObject={selectedObject}
               zoomLevel={zoomLevel}
+            />
+            
+            <ExpandableStandardViews
+              onViewTop={onViewTop}
+              onViewFront={onViewFront}
+              onViewBack={onViewBack}
+              onViewBottom={onViewBottom}
+              onViewRight={onViewRight}
+              onViewLeft={onViewLeft}
+              onViewIsometric={onViewIsometric}
             />
           </div>
           

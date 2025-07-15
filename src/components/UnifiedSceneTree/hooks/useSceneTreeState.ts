@@ -108,10 +108,13 @@ export const useSceneTreeState = (
     // Toggle visibility for the main object
     sceneObject.object.visible = newVisibility;
     
-    // For meshes, also traverse children and apply visibility
+    // For all objects, traverse and apply visibility to all children
     sceneObject.object.traverse((child) => {
-      child.visible = newVisibility;
-      // Force material update
+      if (child !== sceneObject.object) { // Don't re-set the root object
+        child.visible = newVisibility;
+      }
+      
+      // Force material update for meshes
       if (child instanceof THREE.Mesh && child.material) {
         if (Array.isArray(child.material)) {
           child.material.forEach(mat => mat.needsUpdate = true);

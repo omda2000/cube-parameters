@@ -7,6 +7,7 @@ import { useEnvironment } from '../useEnvironment';
 import { useFBXLoader } from '../useFBXLoader';
 import { useGLTFLoader } from '../useGLTFLoader';
 import { useZoomControls } from '../useZoomControls';
+import { useStandardViews } from '../useStandardViews';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import type { 
   SunlightSettings, 
@@ -119,6 +120,14 @@ export const useModelViewerSetup = ({
     rendererRef
   );
 
+  // Standard views integration
+  const standardViews = useStandardViews(
+    sceneRef,
+    perspectiveCameraRef,
+    controlsRef,
+    rendererRef
+  );
+
   // Lighting setup
   useLighting(
     sceneRef.current,
@@ -169,6 +178,7 @@ export const useModelViewerSetup = ({
     performanceMetrics,
     isOrthographic,
     switchCamera,
-    zoomControls
+    zoomControls,
+    standardViews
   };
 };

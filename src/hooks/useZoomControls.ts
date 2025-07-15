@@ -14,7 +14,7 @@ interface ZoomControlsHook {
 
 export const useZoomControls = (
   sceneRef: React.RefObject<THREE.Scene | null>,
-  cameraRef: React.RefObject<THREE.PerspectiveCamera | null>,
+  cameraRef: React.RefObject<THREE.Camera | null>,
   controlsRef: React.RefObject<OrbitControls | null>,
   selectedObject: SceneObject | null,
   rendererRef?: React.RefObject<THREE.WebGLRenderer | null>
@@ -58,7 +58,21 @@ export const useZoomControls = (
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
-        const distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 1.5;
+        
+        let distance: number;
+        if (cameraRef.current instanceof THREE.PerspectiveCamera) {
+          distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 1.5;
+        } else if (cameraRef.current instanceof THREE.OrthographicCamera) {
+          // For orthographic camera, adjust zoom instead of distance
+          const orthoCamera = cameraRef.current;
+          const zoom = Math.min(
+            Math.abs(orthoCamera.right - orthoCamera.left) / size.x,
+            Math.abs(orthoCamera.top - orthoCamera.bottom) / size.y
+          ) * 0.8;
+          distance = maxDim * 1.5;
+        } else {
+          distance = maxDim * 1.5;
+        }
         
         const targetPosition = center.clone().add(new THREE.Vector3(1, 1, 1).normalize().multiplyScalar(distance));
         
@@ -102,7 +116,20 @@ export const useZoomControls = (
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
-        const distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 2;
+        
+        let distance: number;
+        if (cameraRef.current instanceof THREE.PerspectiveCamera) {
+          distance = maxDim / (2 * Math.tan((cameraRef.current.fov * Math.PI) / 360)) * 2;
+        } else if (cameraRef.current instanceof THREE.OrthographicCamera) {
+          const orthoCamera = cameraRef.current;
+          const zoom = Math.min(
+            Math.abs(orthoCamera.right - orthoCamera.left) / size.x,
+            Math.abs(orthoCamera.top - orthoCamera.bottom) / size.y
+          ) * 0.5;
+          distance = maxDim * 2;
+        } else {
+          distance = maxDim * 2;
+        }
         
         const targetPosition = center.clone().add(new THREE.Vector3(1, 1, 1).normalize().multiplyScalar(distance));
         
@@ -142,6 +169,20 @@ export const useZoomControls = (
         }
         
         const target = controlsRef.current.target;
+        
+        if (cameraRef.current instanceof THREE.OrthographicCamera) {
+          // For orthographic camera, adjust zoom
+          const orthoCamera = cameraRef.current;
+          orthoCamera.zoom = Math.min(orthoCamera.zoom * 1.25, 10);
+          orthoCamera.updateProjectionMatrix();
+          controlsRef.current.update();
+          
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          return;
+        }
+        
         const direction = cameraRef.current.position.clone().sub(target).normalize();
         const currentDistance = cameraRef.current.position.distanceTo(target);
         const newDistance = Math.max(currentDistance * 0.8, controlsRef.current.minDistance);
@@ -181,6 +222,20 @@ export const useZoomControls = (
         }
         
         const target = controlsRef.current.target;
+        
+        if (cameraRef.current instanceof THREE.OrthographicCamera) {
+          // For orthographic camera, adjust zoom
+          const orthoCamera = cameraRef.current;
+          orthoCamera.zoom = Math.max(orthoCamera.zoom * 0.8, 0.1);
+          orthoCamera.updateProjectionMatrix();
+          controlsRef.current.update();
+          
+          if (rendererRef?.current) {
+            rendererRef.current.render(sceneRef.current!, cameraRef.current!);
+          }
+          return;
+        }
+        
         const direction = cameraRef.current.position.clone().sub(target).normalize();
         const currentDistance = cameraRef.current.position.distanceTo(target);
         const newDistance = Math.min(currentDistance * 1.25, controlsRef.current.maxDistance);

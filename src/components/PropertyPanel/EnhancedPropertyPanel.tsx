@@ -142,35 +142,7 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
         </CardHeader>
         <CardContent className="space-y-4">
           {/* GLTF Object Properties from Rhino */}
-          {!gltfMetadata.hasValidMetadata ? (
-            <div className="space-y-3">
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <Settings className="h-4 w-4" />
-                  <span className="text-sm font-medium">Rhino Metadata Missing</span>
-                </div>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  {'error' in gltfMetadata ? gltfMetadata.error : 'Missing metadata'}
-                </p>
-                <p className="text-xs text-red-500 dark:text-red-400 mt-1">
-                  Expected: id, name, parent_id, type, function from GLTF extras.object_params
-                </p>
-                {'availableFields' in gltfMetadata && gltfMetadata.availableFields && gltfMetadata.availableFields.length > 0 && (
-                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                    Available fields: {gltfMetadata.availableFields.join(', ')}
-                  </p>
-                )}
-                <details className="mt-2">
-                  <summary className="text-xs cursor-pointer text-slate-600 dark:text-slate-400">
-                    Show raw userData (debug)
-                  </summary>
-                  <pre className="text-xs mt-1 p-2 bg-slate-100 dark:bg-slate-800 rounded overflow-auto max-h-32">
-                    {JSON.stringify('rawUserData' in gltfMetadata ? gltfMetadata.rawUserData : {}, null, 2)}
-                  </pre>
-                </details>
-              </div>
-            </div>
-          ) : (
+          {gltfMetadata.hasValidMetadata ? (
             <div className="space-y-3">
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Rhino Object Properties</Label>
               
@@ -215,6 +187,60 @@ const EnhancedPropertyPanel = ({ selectedObject, onPropertyChange }: EnhancedPro
                 <Input
                   value={'parent_id' in gltfMetadata ? gltfMetadata.parent_id : ''}
                   readOnly
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Rhino Object Properties</Label>
+              
+              <div>
+                <Label className="text-xs text-slate-500">ID</Label>
+                <Input
+                  value=""
+                  readOnly
+                  placeholder="No metadata available"
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Name</Label>
+                <Input
+                  value=""
+                  readOnly
+                  placeholder="No metadata available"
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Type</Label>
+                <Input
+                  value=""
+                  readOnly
+                  placeholder="No metadata available"
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Function</Label>
+                <Input
+                  value=""
+                  readOnly
+                  placeholder="No metadata available"
+                  className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-500">Parent ID</Label>
+                <Input
+                  value=""
+                  readOnly
+                  placeholder="No metadata available"
                   className="mt-1 bg-slate-100 dark:bg-slate-800 text-xs"
                 />
               </div>
