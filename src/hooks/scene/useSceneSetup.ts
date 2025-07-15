@@ -53,7 +53,7 @@ export const useSceneSetup = () => {
     sceneRef.current.remove(gridHelperRef.current);
     gridHelperRef.current.dispose();
 
-    const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x222222);
+    const newGrid = new THREE.GridHelper(gridSize, divisions, 0xADE8F4, 0xB0DAE1);
     gridHelperRef.current = newGrid;
     newGrid.position.set(0, 0, 0);
     sceneRef.current.add(newGrid);
@@ -70,12 +70,11 @@ export const useSceneSetup = () => {
     ucsHelper.position.set(0, 0, 0);
     scene.add(ucsHelper);
 
-    // Create basic grid helper but hide it in favor of workplane
-    // Keep for compatibility with existing code
-    const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
+    // Initial grid with reference image colors
+    const gridHelper = new THREE.GridHelper(10, 10, 0xADE8F4, 0xB0DAE1);
     gridHelperRef.current = gridHelper;
     gridHelper.position.set(0, 0, 0);
-    gridHelper.visible = false; // Hide default grid in favor of workplane
+    gridHelper.visible = true; // Show the updated grid
     scene.add(gridHelper);
 
     return () => {

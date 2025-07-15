@@ -5,7 +5,6 @@ import { useModelViewerEffects } from '../hooks/viewer/useModelViewerEffects';
 import { useOptimizedRenderer } from '../hooks/viewer/useOptimizedRenderer';
 import { useMobileMouseInteraction } from '../hooks/mouse/useMobileMouseInteraction';
 import ModelViewerOverlays from './ModelViewer/ModelViewerOverlays';
-import WorkplaneGrid from './WorkplaneGrid/WorkplaneGrid';
 import * as THREE from 'three';
 import type { 
   SunlightSettings, 
@@ -135,12 +134,6 @@ const ThreeViewer = memo((props: ThreeViewerProps) => {
           WebkitUserSelect: 'none',
           userSelect: 'none'
         }}
-      />
-      <WorkplaneGrid 
-        scene={scene}
-        camera={camera}
-        size={20}
-        visible={props.environment.showGrid}
       />
       <ModelViewerOverlays
         objectData={objectData}
