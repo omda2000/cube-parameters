@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Ruler, Target, Camera } from 'lucide-react';
+import { MapPin, Ruler, Target, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -11,16 +11,20 @@ interface AidToolsBarProps {
   activeTool: 'select' | 'point' | 'measure';
   onViewFront?: () => void;
   onViewBack?: () => void;
+  onViewLeft?: () => void;
+  onViewRight?: () => void;
   onToggle3DRotate?: () => void;
   isOrthographic?: boolean;
-  onCameraToggle?: (orthographic: boolean) => void;
+  onCameraToggle?: () => void;
 }
 
-const AidToolsBar = ({ 
-  onToolSelect, 
-  activeTool, 
-  onViewFront, 
-  onViewBack, 
+const AidToolsBar = ({
+  onToolSelect,
+  activeTool,
+  onViewFront,
+  onViewBack,
+  onViewLeft,
+  onViewRight,
   onToggle3DRotate,
   isOrthographic = false,
   onCameraToggle
@@ -74,35 +78,63 @@ const AidToolsBar = ({
         {/* Separator */}
         <div className="w-px h-6 bg-border mx-1" />
         
-        {/* 3D View Controls */}
+        {/* View Controls */}
+        {onViewLeft && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onViewLeft}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Left View</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        
         {onViewFront && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onViewFront}
-            className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded transition-colors"
-            title="Front View"
+            className="h-8 px-2 text-xs hover:bg-accent"
           >
-            <span className="material-icons view-front" style={{ fontSize: '20px' }}>visibility</span>
-          </button>
+            Front
+          </Button>
         )}
         
         {onViewBack && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onViewBack}
-            className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded transition-colors"
-            title="Back View"
+            className="h-8 px-2 text-xs hover:bg-accent"
           >
-            <span className="material-icons view-back" style={{ fontSize: '20px' }}>visibility_off</span>
-          </button>
+            Back
+          </Button>
         )}
         
-        {onToggle3DRotate && (
-          <button
-            onClick={onToggle3DRotate}
-            className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded transition-colors"
-            title="3D Rotate"
-          >
-            <span className="material-icons view-rotate" style={{ fontSize: '20px' }}>3d_rotation</span>
-          </button>
+        {onViewRight && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onViewRight}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Right View</p>
+            </TooltipContent>
+          </Tooltip>
         )}
         
         {/* Separator */}
@@ -112,16 +144,17 @@ const AidToolsBar = ({
         {onCameraToggle && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 px-2">
-                <Camera className="h-4 w-4 text-muted-foreground" />
-                <Switch
-                  checked={isOrthographic}
-                  onCheckedChange={onCameraToggle}
-                />
-              </div>
+              <Button
+                variant={isOrthographic ? "default" : "ghost"}
+                size="sm"
+                onClick={onCameraToggle}
+                className="h-8 w-8 p-0"
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{isOrthographic ? 'Switch to Perspective' : 'Switch to Orthographic'}</p>
+              <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
             </TooltipContent>
           </Tooltip>
         )}

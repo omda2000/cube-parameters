@@ -22,17 +22,19 @@ export const useControlHandlers = () => {
     }
   }, [activeControlTab, showControlPanel, setActiveControlTab, setShowControlPanel]);
 
-  const handleCameraToggle = useCallback((orthographic: boolean) => {
-    setIsOrthographic(orthographic);
+  const handleCameraToggle = useCallback((orthographic?: boolean) => {
+    const currentState = useUIState();
+    const newOrthographic = orthographic !== undefined ? orthographic : !currentState.isOrthographic;
+    setIsOrthographic(newOrthographic);
     
     // Try to access the camera controls from the window object
     const cameraControls = (window as any).__cameraControls;
     if (cameraControls && typeof cameraControls.toggleCameraType === 'function') {
-      cameraControls.toggleCameraType(orthographic);
+      cameraControls.toggleCameraType(newOrthographic);
     } else {
       // Fallback: dispatch a custom event that the Three.js component can listen to
       window.dispatchEvent(new CustomEvent('toggleCameraType', { 
-        detail: { orthographic } 
+        detail: { orthographic: newOrthographic } 
       }));
     }
   }, [setIsOrthographic]);

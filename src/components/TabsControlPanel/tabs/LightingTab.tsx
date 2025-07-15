@@ -3,8 +3,8 @@ import { Sun, Lightbulb, Globe, Zap } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import type { 
   SunlightSettings, 
   AmbientLightSettings, 
@@ -33,131 +33,107 @@ const LightingTab = ({
   setEnvironment
 }: LightingTabProps) => {
   return (
-    <TooltipProvider>
-      <div className="space-y-2 p-1">
-        {/* Header */}
-        <div className="flex items-center gap-1 mb-2">
-          <Sun className="h-4 w-4 text-slate-400" />
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Lighting</span>
-        </div>
+    <div className="space-y-4 p-3">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Sun className="h-4 w-4 text-amber-500" />
+            Sunlight
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label className="text-sm font-medium">Intensity</Label>
+            <div className="flex items-center gap-3 mt-2">
+              <Slider
+                value={[sunlight.intensity]}
+                onValueChange={([value]) => setSunlight({ ...sunlight, intensity: value })}
+                max={3}
+                step={0.1}
+                className="flex-1"
+              />
+              <Badge variant="outline" className="min-w-[3rem] text-xs">
+                {sunlight.intensity.toFixed(1)}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Sunlight controls */}
-        <div className="space-y-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Sun className="h-3 w-3 text-yellow-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Sun</Label>
-                </div>
-                <Slider
-                  value={[sunlight.intensity]}
-                  onValueChange={([value]) => setSunlight({ ...sunlight, intensity: value })}
-                  max={3}
-                  step={0.1}
-                  className="h-4"
-                />
-                <div className="text-xs text-slate-400 mt-1">{sunlight.intensity.toFixed(1)}</div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Sunlight Intensity</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-blue-500" />
+            Ambient Light
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label className="text-sm font-medium">Intensity</Label>
+            <div className="flex items-center gap-3 mt-2">
+              <Slider
+                value={[ambientLight.intensity]}
+                onValueChange={([value]) => setAmbientLight({ ...ambientLight, intensity: value })}
+                max={2}
+                step={0.1}
+                className="flex-1"
+              />
+              <Badge variant="outline" className="min-w-[3rem] text-xs">
+                {ambientLight.intensity.toFixed(1)}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Separator className="bg-slate-600" />
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Zap className="h-4 w-4 text-purple-500" />
+            Shadows
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={shadowQuality} onValueChange={setShadowQuality}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Low Quality</SelectItem>
+              <SelectItem value="medium">Medium Quality</SelectItem>
+              <SelectItem value="high">High Quality</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
 
-        {/* Ambient light controls */}
-        <div className="space-y-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Lightbulb className="h-3 w-3 text-blue-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Ambient</Label>
-                </div>
-                <Slider
-                  value={[ambientLight.intensity]}
-                  onValueChange={([value]) => setAmbientLight({ ...ambientLight, intensity: value })}
-                  max={2}
-                  step={0.1}
-                  className="h-4"
-                />
-                <div className="text-xs text-slate-400 mt-1">{ambientLight.intensity.toFixed(1)}</div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Ambient Light Intensity</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <Separator className="bg-slate-600" />
-
-        {/* Shadow quality */}
-        <div className="space-y-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Zap className="h-3 w-3 text-purple-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Shadows</Label>
-                </div>
-                <Select value={shadowQuality} onValueChange={setShadowQuality}>
-                  <SelectTrigger className="h-6 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Shadow Quality Level</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <Separator className="bg-slate-600" />
-
-        {/* Environment */}
-        <div className="space-y-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <Globe className="h-3 w-3 text-green-400" />
-                  <Label className="text-xs text-slate-700 dark:text-slate-300">Environment</Label>
-                </div>
-                <Select value={environment.preset} onValueChange={(value) => setEnvironment({ ...environment, preset: value as any })}>
-                  <SelectTrigger className="h-6 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sunset">Sunset</SelectItem>
-                    <SelectItem value="dawn">Dawn</SelectItem>
-                    <SelectItem value="night">Night</SelectItem>
-                    <SelectItem value="forest">Forest</SelectItem>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="studio">Studio</SelectItem>
-                    <SelectItem value="city">City</SelectItem>
-                    <SelectItem value="park">Park</SelectItem>
-                    <SelectItem value="lobby">Lobby</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Environment Preset</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
-    </TooltipProvider>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Globe className="h-4 w-4 text-green-500" />
+            Environment
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={environment.preset} onValueChange={(value) => setEnvironment({ ...environment, preset: value as any })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sunset">🌅 Sunset</SelectItem>
+              <SelectItem value="dawn">🌄 Dawn</SelectItem>
+              <SelectItem value="night">🌃 Night</SelectItem>
+              <SelectItem value="forest">🌲 Forest</SelectItem>
+              <SelectItem value="apartment">🏠 Apartment</SelectItem>
+              <SelectItem value="studio">🎬 Studio</SelectItem>
+              <SelectItem value="city">🏙️ City</SelectItem>
+              <SelectItem value="park">🌳 Park</SelectItem>
+              <SelectItem value="lobby">🏢 Lobby</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

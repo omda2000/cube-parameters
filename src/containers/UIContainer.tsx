@@ -45,6 +45,8 @@ const UIContainer = () => {
   const {
     viewFront, 
     viewBack,
+    viewLeft,
+    viewRight,
     viewIsometric
   } = useStandardViewsHandlers();
 
@@ -58,12 +60,18 @@ const UIContainer = () => {
   };
 
   const handleGroundPlaneToggle = () => {
+    const newGroundPlaneEnabled = !uiState.groundPlaneEnabled;
     const updateGroundPlane = (window as any).__updateGroundPlane;
     if (updateGroundPlane) {
-      updateGroundPlane(!uiState.groundPlaneEnabled);
+      updateGroundPlane(newGroundPlaneEnabled);
+    } else {
+      // Fallback: dispatch a custom event
+      window.dispatchEvent(new CustomEvent('toggleGroundPlane', { 
+        detail: { enabled: newGroundPlaneEnabled } 
+      }));
     }
     // Update UI state
-    uiState.setGroundPlaneEnabled(!uiState.groundPlaneEnabled);
+    uiState.setGroundPlaneEnabled(newGroundPlaneEnabled);
   };
 
   const { handleTabChange, handleCameraToggle } = useControlHandlers();
@@ -105,6 +113,8 @@ const UIContainer = () => {
       onResetView={handleResetView}
       onViewFront={viewFront}
       onViewBack={viewBack}
+      onViewLeft={viewLeft}
+      onViewRight={viewRight}
       onViewIsometric={viewIsometric}
       onGridToggle={handleGridToggle}
       gridEnabled={uiState.gridEnabled}

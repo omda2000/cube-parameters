@@ -35,13 +35,15 @@ interface UIOverlayProps {
   onResetView: () => void;
   onViewFront: () => void;
   onViewBack: () => void;
+  onViewLeft: () => void;
+  onViewRight: () => void;
   onViewIsometric: () => void;
   onGridToggle?: () => void;
   gridEnabled?: boolean;
   groundPlaneEnabled?: boolean;
   onGroundPlaneToggle?: () => void;
   isOrthographic?: boolean;
-  onCameraToggle?: (orthographic: boolean) => void;
+  onCameraToggle?: () => void;
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
   modelCount: number;
@@ -67,6 +69,8 @@ const UIOverlay = ({
   onResetView,
   onViewFront,
   onViewBack,
+  onViewLeft,
+  onViewRight,
   onViewIsometric,
   shadeType,
   onShadeTypeChange,
@@ -86,6 +90,8 @@ const UIOverlay = ({
         activeTool={activeTool}
         onViewFront={onViewFront}
         onViewBack={onViewBack}
+        onViewLeft={onViewLeft}
+        onViewRight={onViewRight}
         onToggle3DRotate={() => {
           // Toggle between perspective and orthographic camera for 3D rotation mode
           // This can be enhanced based on your specific 3D rotation requirements

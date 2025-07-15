@@ -155,7 +155,7 @@ export const buildSceneObjects = (
       return;
     }
 
-    // Handle detached GLB meshes (individual model objects)
+    // Handle all detached GLB meshes (individual model objects from different files)
     if (child.userData?.isDetachedFromGLB && child instanceof THREE.Mesh) {
       console.log('Processing detached GLB mesh:', child.userData?.name || child.name || child.type);
       const sceneObject = createSceneObject(child);
@@ -163,9 +163,12 @@ export const buildSceneObjects = (
       console.log('Added detached GLB mesh to scene objects:', sceneObject.name);
       processedObjects.add(child);
     } 
-    // Handle loaded model containers (should be empty now since meshes are detached)
+    // Handle loaded model containers - include them even if empty to maintain model structure
     else if (loadedModelMap.has(child) || child.userData.isLoadedModel) {
-      console.log('Skipping empty loaded model container:', child.name);
+      console.log('Processing loaded model container:', child.name);
+      const sceneObject = createSceneObject(child);
+      sceneObjects.push(sceneObject);
+      console.log('Added loaded model to scene objects:', sceneObject.name);
       processedObjects.add(child);
     }
     // Handle all other objects (points, measurements, primitives, etc.)
