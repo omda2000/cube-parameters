@@ -1,5 +1,5 @@
 {
-  "name": "@yourcompany/model-viewer-3d",
+  "name": "@omda2000/model-viewer-3d",
   "version": "1.0.1",
   "description": "A powerful 3D model viewer component for React applications with built-in tools, measurements, and advanced controls",
   "type": "module",
@@ -31,15 +31,15 @@
     "visualization",
     "typescript"
   ],
-  "author": "Your Company",
+  "author": "omda2000",
   "license": "MIT",
-  "homepage": "https://github.com/yourcompany/model-viewer-3d#readme",
+  "homepage": "https://github.com/omda2000/cube-parameters#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourcompany/model-viewer-3d.git"
+    "url": "https://github.com/omda2000/cube-parameters.git"
   },
   "bugs": {
-    "url": "https://github.com/yourcompany/model-viewer-3d/issues"
+    "url": "https://github.com/omda2000/cube-parameters/issues"
   },
   "scripts": {
     "dev": "vite",
