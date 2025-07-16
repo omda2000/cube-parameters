@@ -3,9 +3,9 @@
   "version": "1.0.1",
   "description": "A powerful 3D model viewer component for React applications with built-in tools, measurements, and advanced controls",
   "type": "module",
-  "main": "dist/model-viewer-3d.umd.js",
-  "module": "dist/model-viewer-3d.es.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/model-viewer-3d.umd.js",
+  "module": "./dist/model-viewer-3d.es.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
@@ -17,7 +17,7 @@
       "require": "./dist/model-viewer-3d.umd.js",
       "types": "./dist/index.d.ts"
     },
-    "./dist/style.css": "./dist/model-viewer-3d.css"
+    "./style.css": "./dist/model-viewer-3d.css"
   },
   "keywords": [
     "react",
@@ -83,6 +83,7 @@
     "sonner": "^1.5.0",
     "next-themes": "^0.3.0"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
