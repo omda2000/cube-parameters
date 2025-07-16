@@ -11,7 +11,7 @@ import ModelViewerContainerWrapper from '@/containers/ModelViewerContainer';
 import UIContainer from '@/containers/UIContainer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import type { ModelViewer3DProps } from './types/package';
-import '@/index.css';
+import './package.css';
 
 // Create a single query client instance for the package
 const queryClient = new QueryClient({
@@ -82,7 +82,7 @@ const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
     ...style,
   };
 
-  const containerClasses = `model-viewer-3d ${className}`;
+  const containerClasses = `model-viewer-3d ${theme === 'dark' ? 'dark' : ''} ${className}`.trim();
 
   return (
     <div 

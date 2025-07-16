@@ -1,0 +1,142 @@
+/* Model Viewer 3D Package Styles */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Package-scoped CSS variables */
+.model-viewer-3d {
+  /* Light theme variables */
+  --mv-background: 0 0% 100%;
+  --mv-foreground: 222.2 84% 4.9%;
+  --mv-card: 0 0% 100%;
+  --mv-card-foreground: 222.2 84% 4.9%;
+  --mv-popover: 0 0% 100%;
+  --mv-popover-foreground: 222.2 84% 4.9%;
+  --mv-primary: 222.2 47.4% 11.2%;
+  --mv-primary-foreground: 210 40% 98%;
+  --mv-secondary: 210 40% 96.1%;
+  --mv-secondary-foreground: 222.2 47.4% 11.2%;
+  --mv-muted: 210 40% 96.1%;
+  --mv-muted-foreground: 215.4 16.3% 46.9%;
+  --mv-accent: 210 40% 96.1%;
+  --mv-accent-foreground: 222.2 47.4% 11.2%;
+  --mv-destructive: 0 84.2% 60.2%;
+  --mv-destructive-foreground: 210 40% 98%;
+  --mv-border: 214.3 31.8% 91.4%;
+  --mv-input: 214.3 31.8% 91.4%;
+  --mv-ring: 222.2 84% 4.9%;
+  --mv-radius: 0.5rem;
+  --mv-sidebar-background: 0 0% 98%;
+  --mv-sidebar-foreground: 240 5.3% 26.1%;
+  --mv-sidebar-primary: 240 5.9% 10%;
+  --mv-sidebar-primary-foreground: 0 0% 98%;
+  --mv-sidebar-accent: 240 4.8% 95.9%;
+  --mv-sidebar-accent-foreground: 240 5.9% 10%;
+  --mv-sidebar-border: 220 13% 91%;
+  --mv-sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+.model-viewer-3d.dark {
+  /* Dark theme variables */
+  --mv-background: 222.2 84% 4.9%;
+  --mv-foreground: 210 40% 98%;
+  --mv-card: 222.2 84% 4.9%;
+  --mv-card-foreground: 210 40% 98%;
+  --mv-popover: 222.2 84% 4.9%;
+  --mv-popover-foreground: 210 40% 98%;
+  --mv-primary: 210 40% 98%;
+  --mv-primary-foreground: 222.2 47.4% 11.2%;
+  --mv-secondary: 217.2 32.6% 17.5%;
+  --mv-secondary-foreground: 210 40% 98%;
+  --mv-muted: 217.2 32.6% 17.5%;
+  --mv-muted-foreground: 215 20.2% 65.1%;
+  --mv-accent: 217.2 32.6% 17.5%;
+  --mv-accent-foreground: 210 40% 98%;
+  --mv-destructive: 0 62.8% 30.6%;
+  --mv-destructive-foreground: 210 40% 98%;
+  --mv-border: 217.2 32.6% 17.5%;
+  --mv-input: 217.2 32.6% 17.5%;
+  --mv-ring: 212.7 26.8% 83.9%;
+  --mv-sidebar-background: 240 5.9% 10%;
+  --mv-sidebar-foreground: 240 4.8% 95.9%;
+  --mv-sidebar-primary: 224.3 76.3% 48%;
+  --mv-sidebar-primary-foreground: 0 0% 100%;
+  --mv-sidebar-accent: 240 3.7% 15.9%;
+  --mv-sidebar-accent-foreground: 240 4.8% 95.9%;
+  --mv-sidebar-border: 240 3.7% 15.9%;
+  --mv-sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+/* Override CSS variables to use package-scoped ones */
+.model-viewer-3d {
+  --background: var(--mv-background);
+  --foreground: var(--mv-foreground);
+  --card: var(--mv-card);
+  --card-foreground: var(--mv-card-foreground);
+  --popover: var(--mv-popover);
+  --popover-foreground: var(--mv-popover-foreground);
+  --primary: var(--mv-primary);
+  --primary-foreground: var(--mv-primary-foreground);
+  --secondary: var(--mv-secondary);
+  --secondary-foreground: var(--mv-secondary-foreground);
+  --muted: var(--mv-muted);
+  --muted-foreground: var(--mv-muted-foreground);
+  --accent: var(--mv-accent);
+  --accent-foreground: var(--mv-accent-foreground);
+  --destructive: var(--mv-destructive);
+  --destructive-foreground: var(--mv-destructive-foreground);
+  --border: var(--mv-border);
+  --input: var(--mv-input);
+  --ring: var(--mv-ring);
+  --radius: var(--mv-radius);
+  --sidebar-background: var(--mv-sidebar-background);
+  --sidebar-foreground: var(--mv-sidebar-foreground);
+  --sidebar-primary: var(--mv-sidebar-primary);
+  --sidebar-primary-foreground: var(--mv-sidebar-primary-foreground);
+  --sidebar-accent: var(--mv-sidebar-accent);
+  --sidebar-accent-foreground: var(--mv-sidebar-accent-foreground);
+  --sidebar-border: var(--mv-sidebar-border);
+  --sidebar-ring: var(--mv-sidebar-ring);
+}
+
+/* Base styles scoped to model viewer */
+.model-viewer-3d * {
+  border-color: hsl(var(--border));
+}
+
+.model-viewer-3d {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: color 0.3s, background-color 0.3s;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+}
+
+/* Material Icons styling for 3D view controls */
+.model-viewer-3d .material-icons {
+  font-size: 28px;
+  color: #80C9D0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.model-viewer-3d .material-icons:hover {
+  color: #ADE8F4;
+}
+
+.model-viewer-3d .view-back {
+  transform: rotateY(180deg);
+}
+
+/* Ensure component positioning */
+.model-viewer-3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}

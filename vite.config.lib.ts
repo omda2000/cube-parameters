@@ -51,6 +51,11 @@ export default defineConfig({
   },
   // Ensure CSS is processed correctly
   css: {
-    postcss: './postcss.config.js',
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
+      ],
+    },
   },
 });

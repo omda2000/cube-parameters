@@ -15,6 +15,11 @@ npx vite build --config vite.config.lib.ts
 echo "📝 Generating TypeScript declarations..."
 npx tsc --project tsconfig.lib.json
 
+# Ensure CSS file is properly named
+if [ -f "dist/style.css" ]; then
+  mv dist/style.css dist/model-viewer-3d.css
+fi
+
 # Copy package files
 echo "📄 Copying package files..."
 cp README.md dist/
