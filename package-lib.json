@@ -1,11 +1,11 @@
 {
-  "name": "@omda2000/vc3d",
+  "name": "@yourcompany/model-viewer-3d",
   "version": "1.0.1",
   "description": "A powerful 3D model viewer component for React applications with built-in tools, measurements, and advanced controls",
   "type": "module",
-  "main": "./dist/model-viewer-3d.umd.js",
-  "module": "./dist/model-viewer-3d.es.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/model-viewer-3d.umd.js",
+  "module": "dist/model-viewer-3d.es.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
@@ -17,7 +17,7 @@
       "require": "./dist/model-viewer-3d.umd.js",
       "types": "./dist/index.d.ts"
     },
-    "./style.css": "./dist/model-viewer-3d.css"
+    "./dist/style.css": "./dist/model-viewer-3d.css"
   },
   "keywords": [
     "react",
@@ -31,15 +31,15 @@
     "visualization",
     "typescript"
   ],
-  "author": "omda2000",
+  "author": "Your Company",
   "license": "MIT",
-  "homepage": "https://github.com/omda2000/cube-parameters#readme",
+  "homepage": "https://github.com/yourcompany/model-viewer-3d#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/omda2000/cube-parameters.git"
+    "url": "https://github.com/yourcompany/model-viewer-3d.git"
   },
   "bugs": {
-    "url": "https://github.com/omda2000/cube-parameters/issues"
+    "url": "https://github.com/yourcompany/model-viewer-3d/issues"
   },
   "scripts": {
     "dev": "vite",
@@ -83,7 +83,6 @@
     "sonner": "^1.5.0",
     "next-themes": "^0.3.0"
   },
-  "sideEffects": false,
   "devDependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
