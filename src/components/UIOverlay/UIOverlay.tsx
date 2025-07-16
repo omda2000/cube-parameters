@@ -90,8 +90,16 @@ const UIOverlay = ({
         activeTool={activeTool}
         onViewLeft={onViewLeft}
         onViewRight={onViewRight}
+        onViewIsometric={onViewIsometric}
         isOrthographic={isOrthographic}
         onCameraToggle={onCameraToggle}
+        onZoomAll={onZoomAll}
+        onZoomToSelected={onZoomToSelected}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        onResetView={onResetView}
+        selectedObject={null}
+        zoomLevel={100}
       />
 
       {/* Left Sidebar - properly positioned to avoid overlaps */}
@@ -128,11 +136,6 @@ const UIOverlay = ({
         zoomLevel={100}
         shadeType={shadeType}
         onShadeTypeChange={onShadeTypeChange}
-        onZoomAll={onZoomAll}
-        onZoomToSelected={onZoomToSelected}
-        onZoomIn={onZoomIn}
-        onZoomOut={onZoomOut}
-        onResetView={onResetView}
         onGridToggle={onGridToggle}
         groundPlaneEnabled={groundPlaneEnabled}
         onGroundPlaneToggle={onGroundPlaneToggle}

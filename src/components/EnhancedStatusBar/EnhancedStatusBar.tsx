@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Grid3X3, Layers } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
-import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
+
 
 interface EnhancedStatusBarProps {
   objectCount?: number;
@@ -18,11 +18,6 @@ interface EnhancedStatusBarProps {
   zoomLevel?: number;
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
-  onZoomAll?: () => void;
-  onZoomToSelected?: () => void;
-  onZoomIn?: () => void;
-  onZoomOut?: () => void;
-  onResetView?: () => void;
   onGridToggle?: () => void;
   groundPlaneEnabled?: boolean;
   onGroundPlaneToggle?: () => void;
@@ -37,11 +32,6 @@ const EnhancedStatusBar = ({
   zoomLevel = 100,
   shadeType,
   onShadeTypeChange,
-  onZoomAll = () => {},
-  onZoomToSelected = () => {},
-  onZoomIn = () => {},
-  onZoomOut = () => {},
-  onResetView = () => {},
   onGridToggle = () => {},
   groundPlaneEnabled = false,
   onGroundPlaneToggle = () => {}
@@ -133,17 +123,6 @@ const EnhancedStatusBar = ({
               </div>
             </div>
 
-            <Separator orientation="vertical" className="h-4" />
-            
-            <ExpandableZoomControls
-              onZoomAll={onZoomAll}
-              onZoomToSelected={onZoomToSelected}
-              onZoomIn={onZoomIn}
-              onZoomOut={onZoomOut}
-              onResetView={onResetView}
-              selectedObject={selectedObject}
-              zoomLevel={zoomLevel}
-            />
 
           </div>
           

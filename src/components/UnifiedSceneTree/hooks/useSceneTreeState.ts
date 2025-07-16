@@ -104,32 +104,11 @@ export const useSceneTreeState = (
     console.log('Toggling visibility for:', sceneObject.name, 'current:', sceneObject.object.visible);
     
     const newVisibility = !sceneObject.object.visible;
-    
-    // Store the original object reference
     const targetObject = sceneObject.object;
     
-    // Set visibility for the target object and all its children
+    // Simple visibility toggle without material manipulation
     const updateObjectVisibility = (object: THREE.Object3D, visible: boolean) => {
       object.visible = visible;
-      
-      // Handle material updates for proper rendering
-      if (object instanceof THREE.Mesh && object.material) {
-        const materials = Array.isArray(object.material) ? object.material : [object.material];
-        materials.forEach(mat => {
-          if (mat instanceof THREE.Material) {
-            // Update transparency and force material update
-            if (!visible) {
-              mat.transparent = true;
-              mat.opacity = 0;
-            } else {
-              mat.opacity = mat.userData.originalOpacity || 1;
-              mat.transparent = mat.opacity < 1;
-            }
-            mat.needsUpdate = true;
-          }
-        });
-      }
-      
       // Recursively update children
       object.children.forEach(child => updateObjectVisibility(child, visible));
     };
@@ -140,14 +119,11 @@ export const useSceneTreeState = (
     // Update the sceneObject's visibility property
     sceneObject.visible = newVisibility;
     
-    // Force scene update and trigger re-render
-    if (scene) {
-      scene.userData.needsUpdate = true;
-    }
+    // Force re-render
     triggerUpdate();
     
     console.log('Visibility toggled to:', newVisibility, 'for object:', sceneObject.name);
-  }, [triggerUpdate, scene]);
+  }, [triggerUpdate]);
 
   const handleObjectSelect = (sceneObject: SceneObject, isMultiSelect?: boolean) => {
     console.log('Selecting object:', sceneObject.name, 'multi:', isMultiSelect);

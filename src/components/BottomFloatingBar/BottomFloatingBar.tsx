@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Grid3X3, Grid } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
 import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
-import ExpandableZoomControls from '../ExpandableZoomControls/ExpandableZoomControls';
+
 
 interface BottomFloatingBarProps {
   objectCount?: number;
@@ -17,11 +17,6 @@ interface BottomFloatingBarProps {
   zoomLevel?: number;
   shadeType: ShadeType;
   onShadeTypeChange: (type: ShadeType) => void;
-  onZoomAll?: () => void;
-  onZoomToSelected?: () => void;
-  onZoomIn?: () => void;
-  onZoomOut?: () => void;
-  onResetView?: () => void;
   onGridToggle?: () => void;
 }
 
@@ -34,11 +29,6 @@ const BottomFloatingBar = ({
   zoomLevel = 100,
   shadeType,
   onShadeTypeChange,
-  onZoomAll = () => {},
-  onZoomToSelected = () => {},
-  onZoomIn = () => {},
-  onZoomOut = () => {},
-  onResetView = () => {},
   onGridToggle = () => {}
 }: BottomFloatingBarProps) => {
   const { selectedObject } = useSelectionContext();
@@ -97,18 +87,8 @@ const BottomFloatingBar = ({
             </div>
           </div>
           
-          {/* Center section - Zoom controls only */}
-          <div className="flex items-center gap-2">
-            <ExpandableZoomControls
-              onZoomAll={onZoomAll}
-              onZoomToSelected={onZoomToSelected}
-              onZoomIn={onZoomIn}
-              onZoomOut={onZoomOut}
-              onResetView={onResetView}
-              selectedObject={selectedObject}
-              zoomLevel={zoomLevel}
-            />
-          </div>
+          {/* Spacer for center alignment */}
+          <div className="flex-1" />
           
           {/* Right section - Shade selector */}
           <div className="flex items-center gap-2">
