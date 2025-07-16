@@ -34,6 +34,14 @@ export interface EnvironmentSettings {
 
 export type ShadowQuality = 'low' | 'medium' | 'high';
 
+export interface MeasureData {
+  id: string;
+  startPoint: { x: number; y: number; z: number };
+  endPoint: { x: number; y: number; z: number };
+  distance: number;
+  label: string;
+}
+
 export interface SceneObject {
   id: string;
   name: string;

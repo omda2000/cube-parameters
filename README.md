@@ -1,313 +1,244 @@
-# 3D Model Viewer Application
+# Model Viewer 3D
 
-A sophisticated 3D model viewer built with React, TypeScript, and Three.js, featuring advanced visualization tools, measurement capabilities, and comprehensive lighting controls.
+A powerful, feature-rich 3D model viewer component for React applications. Built with Three.js and designed for easy integration into any React project.
 
-## 🏗️ Architecture Overview
+## Features
 
-### Component Hierarchy
+🎯 **Easy Integration** - Drop into any React app with minimal setup
+🎨 **Themeable** - Light/dark themes with customizable styling
+📐 **Measurement Tools** - Built-in measurement and annotation capabilities
+🔧 **Advanced Tools** - Selection, point placement, and interactive controls
+📱 **Responsive** - Mobile and desktop optimized
+⚡ **Performance** - Optimized Three.js rendering with efficient memory management
+🔌 **Extensible** - Hook-based architecture for customization
+📁 **Multi-Format** - Support for GLTF, GLB, and FBX files
 
-```
-App
-├── Index (Main Page)
-│   ├── ModelViewerContainer
-│   │   └── BoxViewer
-│   │       └── ThreeViewer (Core 3D Component)
-│   ├── AidToolsBar (Tool Selection)
-│   ├── FloatingZoomControls
-│   ├── FloatingPanel
-│   │   └── TabsControlPanel
-│   │       ├── SceneTab
-│   │       ├── PropertiesTab
-│   │       ├── MaterialsTab
-│   │       ├── ViewTab
-│   │       └── LightingTab (Environment)
-│   ├── MeasureToolsPanel
-│   └── SettingsPanel
-```
+## Installation
 
-### Data Flow Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   User Input    │───▶│   State Hooks    │───▶│  Three.js Scene │
-│  (UI Controls)  │    │  (Custom Hooks)  │    │   (3D Objects)  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │  Context Layers  │
-                       │ (SelectionContext)│
-                       └──────────────────┘
-```
-
-## 🔧 Core Components
-
-### ThreeViewer
-The central 3D rendering component that orchestrates:
-- Scene setup and management
-- Camera controls and positioning
-- Object loading (FBX models, primitives)
-- Lighting and environment
-- Mouse interactions and tool handling
-
-### State Management Hooks
-
-#### `useModelState`
-Manages 3D model state including:
-- Loaded models collection
-- Current active model
-- Primitive objects (box, sphere, etc.)
-- Upload status and error handling
-
-#### `useLightingState`
-Controls lighting configuration:
-- Sunlight settings (intensity, azimuth, elevation)
-- Ambient light configuration
-- Shadow quality settings
-
-#### `useEnvironmentState`
-Manages scene environment:
-- Grid visibility and styling
-- Ground plane configuration
-- Sky/background settings
-
-#### `useMouseInteraction`
-Handles all 3D viewport interactions:
-- Object selection and hover effects
-- Tool-specific cursors and behaviors
-- Point placement and measurement tools
-- Visual feedback systems
-
-### Context Providers
-
-#### `SelectionContext`
-Provides centralized selection state management:
-```typescript
-interface SelectionContext {
-  selectedObject: SceneObject | null;
-  selectObject: (object: SceneObject) => void;
-  clearSelection: () => void;
-}
-```
-
-## 🛠️ Tool System
-
-### Available Tools
-1. **Select Tool** - Object selection and inspection
-2. **Point Tool** - Place 3D point markers
-3. **Measure Tool** - Distance measurement between points
-4. **Move Tool** - Object transformation (planned)
-
-### Tool Implementation
-Each tool modifies the behavior of `useMouseInteraction`:
-- Changes cursor appearance
-- Modifies click handlers
-- Provides tool-specific visual feedback
-
-## 📊 Measurement System
-
-### Features
-- Click-to-place point markers
-- Real-time distance calculation
-- Visual line connections between points
-- Measurement history and management
-- Preview lines during measurement
-
-### Data Structure
-```typescript
-interface MeasureData {
-  id: string;
-  startPoint: { x: number; y: number; z: number };
-  endPoint: { x: number; y: number; z: number };
-  distance: number;
-  label: string;
-}
-```
-
-## 🎨 UI Component System
-
-### Floating Panels
-Draggable, collapsible panels with consistent styling:
-- **FloatingPanel**: Base panel component
-- **TabsControlPanel**: Main controls with tabbed interface
-- **MeasureToolsPanel**: Measurement management
-- **SettingsPanel**: Application configuration
-
-### Panel Features
-- Drag-to-reposition functionality
-- Click-to-collapse/expand
-- Consistent backdrop blur styling
-- Responsive sizing and positioning
-
-## 🔌 Integration Guide
-
-### Adding to Existing Applications
-
-1. **Install Dependencies**
 ```bash
-npm install three @types/three react react-dom
+npm install @yourcompany/model-viewer-3d
 ```
 
-2. **Import Core Components**
-```typescript
-import { ModelViewerContainer } from './components/ModelViewerContainer/ModelViewerContainer';
-import { SelectionProvider } from './contexts/SelectionContext';
-```
+## Quick Start
 
-3. **Basic Integration**
-```typescript
-function MyApp() {
+```tsx
+import React from 'react';
+import { ModelViewer3D } from '@yourcompany/model-viewer-3d';
+import '@yourcompany/model-viewer-3d/dist/style.css';
+
+function App() {
   return (
-    <SelectionProvider>
-      <ModelViewerContainer
-        dimensions={{ length: 10, width: 10, height: 10 }}
-        boxColor="#00ff00"
-        objectName="MyObject"
-        // ... other props
+    <div style={{ width: '100%', height: '600px' }}>
+      <ModelViewer3D 
+        onModelLoad={(model) => console.log('Model loaded:', model.name)}
+        onMeasurement={(data) => console.log('Measurement:', data)}
       />
-    </SelectionProvider>
+    </div>
   );
 }
+
+export default App;
 ```
 
-### Customization Options
+## Advanced Usage
 
-#### Theme Customization
-The app uses Tailwind CSS with a dark theme. Key color variables:
-- Background: `slate-900`, `purple-900`
-- Panels: `slate-800/90` with backdrop blur
-- Text: `white`, `slate-300`, `slate-400`
-- Accent: `green-500`, `blue-500`
+```tsx
+import React from 'react';
+import { ModelViewer3D } from '@yourcompany/model-viewer-3d';
+import '@yourcompany/model-viewer-3d/dist/style.css';
 
-#### Adding New Tools
-1. Extend the tool type definition:
+function AdvancedViewer() {
+  const handleModelLoad = (model) => {
+    console.log('Loaded model:', model);
+  };
+
+  const handleMeasurement = (measurement) => {
+    // Save measurement to database
+    saveMeasurement(measurement);
+  };
+
+  return (
+    <ModelViewer3D
+      width="100%"
+      height="800px"
+      theme="dark"
+      showToolbar={true}
+      showControlPanel={true}
+      
+      // Lighting configuration
+      lightingConfig={{
+        sunlight: { 
+          intensity: 1.2, 
+          azimuth: 45, 
+          elevation: 30 
+        },
+        ambientLight: { 
+          intensity: 0.4 
+        },
+        environment: {
+          backgroundType: 'color',
+          backgroundColor: '#1a1a1a'
+        }
+      }}
+      
+      // Camera settings
+      cameraConfig={{
+        defaultDistance: 10,
+        enableOrthographic: true,
+        fov: 75
+      }}
+      
+      // Tools configuration
+      toolsConfig={{
+        enableMeasurement: true,
+        enablePointTool: true,
+        showGrid: true,
+        showGroundPlane: false
+      }}
+      
+      // Event callbacks
+      onModelLoad={handleModelLoad}
+      onMeasurement={handleMeasurement}
+      onPointCreate={(point) => console.log('Point created:', point)}
+      onToolChange={(tool) => console.log('Tool changed:', tool)}
+      onViewChange={(view) => console.log('View changed:', view)}
+    />
+  );
+}
+
+export default AdvancedViewer;
+```
+
+## API Reference
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `width` | `string \| number` | `'100%'` | Container width |
+| `height` | `string \| number` | `'600px'` | Container height |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'dark'` | UI theme |
+| `showToolbar` | `boolean` | `true` | Show main toolbar |
+| `showControlPanel` | `boolean` | `true` | Show control panel |
+| `initialModel` | `File \| string` | - | Initial model to load (File or URL) |
+| `lightingConfig` | `LightingConfiguration` | - | Lighting settings |
+| `cameraConfig` | `CameraConfiguration` | - | Camera settings |
+| `toolsConfig` | `ToolsConfiguration` | - | Tools configuration |
+
+### Events
+
+| Event | Type | Description |
+|-------|------|-------------|
+| `onModelLoad` | `(model: LoadedModel) => void` | Called when a model loads |
+| `onModelError` | `(error: Error) => void` | Called on model load error |
+| `onMeasurement` | `(data: MeasureData) => void` | Called when measurement is created |
+| `onPointCreate` | `(point: {x,y,z}) => void` | Called when point is placed |
+| `onSceneReady` | `(scene: THREE.Scene) => void` | Called when 3D scene is ready |
+| `onToolChange` | `(tool: string) => void` | Called when active tool changes |
+
+### Configuration Objects
+
+#### LightingConfiguration
 ```typescript
-type Tool = 'select' | 'point' | 'measure' | 'move' | 'your-tool';
+interface LightingConfiguration {
+  sunlight?: {
+    intensity?: number;
+    azimuth?: number;
+    elevation?: number;
+  };
+  ambientLight?: {
+    intensity?: number;
+    color?: string;
+  };
+  environment?: {
+    backgroundType?: 'color' | 'environment' | 'skybox';
+    backgroundColor?: string;
+  };
+}
 ```
 
-2. Add tool logic to `useMouseInteraction`
-3. Update `AidToolsBar` with new tool button
-
-#### Custom 3D Objects
-Add new primitive types by extending the model system:
+#### CameraConfiguration
 ```typescript
-// In useModelState or similar
-const createCustomPrimitive = (type: string) => {
-  // Custom Three.js geometry creation
-};
+interface CameraConfiguration {
+  defaultDistance?: number;
+  enableOrthographic?: boolean;
+  fov?: number;
+  near?: number;
+  far?: number;
+}
 ```
 
-## 🏃‍♂️ Performance Considerations
-
-### Optimization Strategies
-- **React.memo** for expensive components
-- Proper cleanup of Three.js objects and event listeners
-- Efficient re-rendering with dependency arrays
-- Selective updates for frequently changing data
-
-### Memory Management
-- Dispose of geometries and materials when removing objects
-- Clean up event listeners on component unmount
-- Use object pooling for frequently created/destroyed objects
-
-## 📁 File Structure
-
-```
-src/
-├── components/
-│   ├── BoxViewer.tsx
-│   ├── ThreeViewer.tsx
-│   ├── ModelViewerContainer/
-│   ├── FloatingPanel/
-│   ├── TabsControlPanel/
-│   └── ...
-├── hooks/
-│   ├── useMouseInteraction.ts
-│   ├── useModelState.ts
-│   ├── useLightingState.ts
-│   └── ...
-├── contexts/
-│   └── SelectionContext.tsx
-├── types/
-│   └── model.ts
-└── pages/
-    └── Index.tsx
+#### ToolsConfiguration
+```typescript
+interface ToolsConfiguration {
+  enableMeasurement?: boolean;
+  enablePointTool?: boolean;
+  enableSelection?: boolean;
+  showGrid?: boolean;
+  showGroundPlane?: boolean;
+}
 ```
 
-## 🚀 Development Commands
+## Styling
+
+The component includes default styling that can be customized:
+
+```css
+/* Override default styles */
+.model-viewer-3d {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Customize toolbar */
+.model-viewer-3d .toolbar {
+  background: rgba(0, 0, 0, 0.8);
+}
+```
+
+## Browser Support
+
+- Chrome 88+
+- Firefox 85+
+- Safari 14+
+- Edge 88+
+
+Requires WebGL 2.0 support for optimal performance.
+
+## Development
 
 ```bash
-# Development server
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 
-# Build for production
-npm run build
+# Build library
+npm run build:package
 
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
+# Run tests
+npm test
 ```
 
-## 🔮 Extension Points
+## Contributing
 
-### Planned Features
-- Advanced material editing
-- Animation timeline
-- Model comparison tools
-- Export capabilities
-- Collaborative features
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### API Integration
-The architecture supports easy integration with external APIs:
-- Model loading from URLs
-- Cloud storage for scenes
-- Real-time collaboration
-- Analytics and usage tracking
+## License
 
-## 📖 Usage Examples
+MIT License - see LICENSE file for details.
 
-### Basic Model Loading
-```typescript
-const handleFileUpload = async (file: File) => {
-  // File processing logic
-  const model = await loadModel(file);
-  setCurrentModel(model);
-};
-```
+## Support
 
-### Custom Lighting Presets
-```typescript
-const daylightPreset = {
-  sunlight: { intensity: 1.0, azimuth: 45, elevation: 60 },
-  ambientLight: { intensity: 0.4, color: "#ffffff" }
-};
-```
+- 📧 Email: support@yourcompany.com
+- 🐛 Issues: [GitHub Issues](https://github.com/yourcompany/model-viewer-3d/issues)
+- 📖 Docs: [Documentation](https://docs.yourcompany.com/model-viewer-3d)
 
-### Measurement Tool Usage
-```typescript
-const handleMeasureCreate = (start: Vector3, end: Vector3) => {
-  const distance = start.distanceTo(end);
-  addMeasurement({ start, end, distance });
-};
-```
+---
 
-## 🤝 Contributing
-
-### Code Style
-- TypeScript strict mode enabled
-- ESLint configuration for consistency
-- Prettier for code formatting
-- Component-first architecture
-
-### Adding Features
-1. Create focused, single-responsibility components
-2. Use custom hooks for complex logic
-3. Maintain consistent naming conventions
-4. Add proper TypeScript types
-5. Include cleanup logic for resources
-
-## 📄 License
-
-This project is built with modern web technologies and is designed for integration into larger applications. The modular architecture allows for easy customization and extension while maintaining performance and code quality.
+Made with ❤️ by [Your Company](https://yourcompany.com)

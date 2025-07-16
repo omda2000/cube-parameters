@@ -1,0 +1,37 @@
+# Development files
+src/
+examples/
+.vscode/
+.env*
+*.log
+
+# Build tools
+vite.config.ts
+vite.config.lib.ts
+tsconfig.json
+tsconfig.*.json
+tailwind.config.ts
+postcss.config.js
+eslint.config.js
+
+# Development dependencies
+node_modules/
+.git/
+.gitignore
+
+# Documentation (keep README.md)
+docs/
+*.md
+!README.md
+
+# Test files
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Cache and temporary files
+.cache/
+.tmp/
+dist-dev/
