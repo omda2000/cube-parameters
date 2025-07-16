@@ -1,5 +1,5 @@
 {
-  "name": "@omda2000/model-viewer-3d",
+  "name": "@omda2000/vc3d",
   "version": "1.0.1",
   "description": "A powerful 3D model viewer component for React applications with built-in tools, measurements, and advanced controls",
   "type": "module",
