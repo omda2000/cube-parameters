@@ -57,5 +57,7 @@ export default defineConfig({
         require('autoprefixer'),
       ],
     },
+    // Extract CSS to separate file
+    extract: true,
   },
 });
