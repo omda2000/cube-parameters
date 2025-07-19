@@ -6,6 +6,7 @@ export const useControlHandlers = () => {
   const { 
     activeControlTab, 
     showControlPanel, 
+    isOrthographic,
     setActiveControlTab, 
     setShowControlPanel, 
     setIsOrthographic 
@@ -23,12 +24,11 @@ export const useControlHandlers = () => {
   }, [activeControlTab, showControlPanel, setActiveControlTab, setShowControlPanel]);
 
   const handleCameraToggle = useCallback((orthographic?: boolean) => {
-    const currentState = useUIState();
-    const newOrthographic = orthographic !== undefined ? orthographic : !currentState.isOrthographic;
+    const newOrthographic = orthographic !== undefined ? orthographic : !isOrthographic;
     setIsOrthographic(newOrthographic);
     
     // Log for debugging
-    console.log('Camera toggle:', { newOrthographic, currentState: currentState.isOrthographic });
+    console.log('Camera toggle:', { newOrthographic, currentOrthographic: isOrthographic });
     
     // Use the exposed camera switch function
     const switchCameraMode = (window as any).__switchCameraMode;
@@ -42,7 +42,7 @@ export const useControlHandlers = () => {
         detail: { orthographic: newOrthographic } 
       }));
     }
-  }, [setIsOrthographic]);
+  }, [isOrthographic, setIsOrthographic]);
 
   return {
     handleTabChange,
