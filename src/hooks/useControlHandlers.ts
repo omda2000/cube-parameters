@@ -30,11 +30,11 @@ export const useControlHandlers = () => {
     // Log for debugging
     console.log('Camera toggle:', { newOrthographic, currentState: currentState.isOrthographic });
     
-    // Try to access the camera controls from the window object
-    const cameraControls = (window as any).__cameraControls;
-    if (cameraControls && typeof cameraControls.toggleCameraType === 'function') {
-      console.log('Using window.__cameraControls');
-      cameraControls.toggleCameraType(newOrthographic);
+    // Use the exposed camera switch function
+    const switchCameraMode = (window as any).__switchCameraMode;
+    if (switchCameraMode && typeof switchCameraMode === 'function') {
+      console.log('Using window.__switchCameraMode');
+      switchCameraMode(newOrthographic);
     } else {
       console.log('Dispatching toggleCameraType event');
       // Fallback: dispatch a custom event that the Three.js component can listen to

@@ -45,25 +45,9 @@ const AidToolsBar = ({
   selectedObject,
   zoomLevel = 100
 }: AidToolsBarProps) => {
-  const [isZoomExpanded, setIsZoomExpanded] = useState(false);
+  // Always show zoom controls expanded
+  const isZoomExpanded = true;
   const zoomContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleZoomToggle = () => {
-    setIsZoomExpanded(!isZoomExpanded);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (zoomContainerRef.current && !zoomContainerRef.current.contains(event.target as Node)) {
-        setIsZoomExpanded(false);
-      }
-    };
-
-    if (isZoomExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isZoomExpanded]);
   return (
     <TooltipProvider>
       <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-40 shadow-lg">
@@ -165,113 +149,93 @@ const AidToolsBar = ({
         {/* Separator */}
         <div className="w-px h-6 bg-border mx-1" />
         
-        {/* Zoom Controls */}
-        <div ref={zoomContainerRef} className="relative">
+        {/* Zoom Controls - Always Visible */}
+        <div ref={zoomContainerRef} className="flex gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-1"
-                onClick={handleZoomToggle}
+                onClick={onZoomAll}
+                className="h-8 w-8 p-0 hover:bg-accent"
               >
-                <ZoomIn className="h-4 w-4" />
-                <span className="text-xs">{zoomLevel}%</span>
-                <ChevronUp className={`h-3 w-3 transition-transform ${isZoomExpanded ? 'rotate-180' : ''}`} />
+                <Maximize className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Zoom Controls</p>
+              <p>Zoom All (A)</p>
             </TooltipContent>
           </Tooltip>
 
-          {/* Expandable zoom options */}
-          {isZoomExpanded && (
-            <div className="absolute top-full left-0 mt-2 bg-card/95 backdrop-blur-sm border border-border rounded-md p-1 z-50 shadow-lg">
-              <div className="flex gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onZoomAll}
-                      className="h-8 w-8 p-0 hover:bg-accent"
-                    >
-                      <Maximize className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Zoom All (A)</p>
-                  </TooltipContent>
-                </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomToSelected}
+                disabled={!selectedObject}
+                className="h-8 w-8 p-0 hover:bg-accent disabled:opacity-30"
+              >
+                <Focus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Focus Selected (F)</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onZoomToSelected}
-                      disabled={!selectedObject}
-                      className="h-8 w-8 p-0 hover:bg-accent disabled:opacity-30"
-                    >
-                      <Focus className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Focus Selected (F)</p>
-                  </TooltipContent>
-                </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomIn}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom In</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onZoomIn}
-                      className="h-8 w-8 p-0 hover:bg-accent"
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Zoom In</p>
-                  </TooltipContent>
-                </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomOut}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom Out</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onZoomOut}
-                      className="h-8 w-8 p-0 hover:bg-accent"
-                    >
-                      <ZoomOut className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Zoom Out</p>
-                  </TooltipContent>
-                </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onResetView}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Reset View (R)</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onResetView}
-                      className="h-8 w-8 p-0 hover:bg-accent"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Reset View (R)</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-          )}
+          {/* Zoom level indicator */}
+          <div className="flex items-center px-2 text-xs text-muted-foreground">
+            {zoomLevel}%
+          </div>
         </div>
 
         {/* Separator */}
