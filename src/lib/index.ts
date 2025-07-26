@@ -2,6 +2,40 @@
 export { default as ModelViewer3D } from './ModelViewer3D';
 export type { ModelViewer3DProps } from './ModelViewer3D';
 
+// Plugin System exports
+export { PluginProvider, usePluginSystem, withPluginSystem } from './plugin/PluginProvider';
+export { PluginManager, PluginEventBus } from './plugin/PluginManager';
+export { createPluginAPI } from './plugin/createPluginAPI';
+export type { 
+  PluginConfig,
+  PluginAPI,
+  PluginInstance,
+  PluginManager as IPluginManager,
+  PluginEventBus as IPluginEventBus,
+  PluginEvents,
+  PluginState,
+  PluginExtension,
+  PluginAnalytics,
+  PluginLogger
+} from './plugin/types';
+
+// Component Variants
+export { 
+  MinimalViewer,
+  CompactViewer, 
+  HeadlessViewer,
+  ProfessionalViewer,
+  EmbeddedViewer
+} from './plugin/variants';
+export type {
+  MinimalViewerProps,
+  CompactViewerProps,
+  HeadlessViewerProps,
+  HeadlessViewerAPI,
+  ProfessionalViewerProps,
+  EmbeddedViewerProps
+} from './plugin/variants';
+
 // Type exports
 export type { 
   LoadedModel,

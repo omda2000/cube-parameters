@@ -12,7 +12,32 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./styles": "./dist/style.css"
+    "./styles": "./dist/style.css",
+    "./minimal": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./compact": {
+      "import": "./dist/index.js", 
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./headless": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs", 
+      "types": "./dist/index.d.ts"
+    },
+    "./professional": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./embedded": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
   },
   "files": [
     "dist",

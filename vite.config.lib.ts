@@ -8,20 +8,34 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/lib/index.ts'),
       name: 'ModelViewer3D',
-      formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => {
+        switch (format) {
+          case 'es': return 'index.js';
+          case 'cjs': return 'index.cjs';
+          case 'umd': return 'index.umd.js';
+          default: return 'index.js';
+        }
+      }
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', 'three'],
       output: {
         globals: {
           react: 'React',
-          'react-dom': 'ReactDOM'
+          'react-dom': 'ReactDOM',
+          three: 'THREE'
+        },
+        // Ensure CSS is extracted
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'style.css') return 'style.css';
+          return assetInfo.name || 'assets/[name][extname]';
         }
       }
     },
     sourcemap: true,
-    minify: 'terser'
+    minify: 'terser',
+    target: 'es2020'
   },
   resolve: {
     alias: {
