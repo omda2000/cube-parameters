@@ -74,7 +74,7 @@ const AidToolsBar = ({
             {/* Tab Headers */}
             <div className="flex border-b bg-gray-50 rounded-t-xl">
               <div 
-                className={`px-4 py-2 border-r text-sm font-medium cursor-pointer transition-colors ${
+                className={`px-4 py-1 border-r text-sm font-medium cursor-pointer transition-colors ${
                   activeTab === 'home' ? 'bg-white text-gray-900 border-b-2 border-blue-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('home')}
@@ -82,7 +82,7 @@ const AidToolsBar = ({
                 Home
               </div>
               <div 
-                className={`px-4 py-2 border-r text-sm font-medium cursor-pointer transition-colors ${
+                className={`px-4 py-1 border-r text-sm font-medium cursor-pointer transition-colors ${
                   activeTab === 'view' ? 'bg-white text-gray-900 border-b-2 border-blue-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('view')}
@@ -90,7 +90,7 @@ const AidToolsBar = ({
                 View
               </div>
               <div 
-                className={`px-4 py-2 border-r text-sm font-medium cursor-pointer transition-colors ${
+                className={`px-4 py-1 border-r text-sm font-medium cursor-pointer transition-colors ${
                   activeTab === 'tools' ? 'bg-white text-gray-900 border-b-2 border-blue-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('tools')}
@@ -98,7 +98,7 @@ const AidToolsBar = ({
                 Tools
               </div>
               <div 
-                className={`px-4 py-2 text-sm font-medium cursor-pointer transition-colors ${
+                className={`px-4 py-1 text-sm font-medium cursor-pointer transition-colors ${
                   activeTab === 'panels' ? 'bg-white text-gray-900 border-b-2 border-blue-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('panels')}
