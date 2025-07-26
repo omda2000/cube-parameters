@@ -323,22 +323,71 @@ const AidToolsBar = ({
 
               {activeTab === 'view' && (
                 <div className="flex gap-4 p-3 h-[80px] items-start">
-                  {/* Display Controls */}
+                  {/* Shade Types */}
                   <div className="flex flex-col items-center">
-                    <div className="text-xs text-gray-500 mb-2 font-medium">Display</div>
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Shade Types</div>
                     <div className="flex gap-2">
                       <div className="flex flex-col items-center">
-                        <div className="h-8 w-8 flex items-center justify-center">
-                          {onShadeTypeChange && (
-                            <ExpandableShadeSelector
-                              currentShadeType={shadeType}
-                              onShadeTypeChange={onShadeTypeChange}
-                            />
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-600 mt-1">Shade</span>
+                        <Button
+                          variant={shadeType === 'shaded' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            shadeType === 'shaded' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onShadeTypeChange?.('shaded')}
+                        >
+                          <Box className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Shaded</span>
                       </div>
 
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={shadeType === 'wireframe' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            shadeType === 'wireframe' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onShadeTypeChange?.('wireframe')}
+                        >
+                          <Grid3X3 className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Wire</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={shadeType === 'hidden' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            shadeType === 'hidden' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onShadeTypeChange?.('hidden')}
+                        >
+                          <EyeOff className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Hidden</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={shadeType === 'shaded-with-edges' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            shadeType === 'shaded-with-edges' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onShadeTypeChange?.('shaded-with-edges')}
+                        >
+                          <Layers className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Edges</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Camera Controls */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
+                    <div className="flex gap-2">
                       <div className="flex flex-col items-center">
                         <Button
                           variant={isOrthographic ? 'default' : 'ghost'}
