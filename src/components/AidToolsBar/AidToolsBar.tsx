@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell/NotificationBell';
-import { RibbonMenu, RibbonTab, RibbonGroup, RibbonButton } from '@metroui/ribbon-menu';
-import '@metroui/ribbon-menu/lib/ribbon-menu.css';
 
 interface AidToolsBarProps {
   onToolSelect: (tool: 'select' | 'point' | 'measure') => void;
@@ -49,22 +48,31 @@ const AidToolsBar = ({
     <div className="fixed top-0 left-0 right-0 z-50">
       <div className="bg-background/95 backdrop-blur-sm border-b shadow-sm">
         <TooltipProvider>
-          <RibbonMenu className="w-full min-h-[120px]" style={{ '--ribbon-height': '120px' }}>
-            {/* Home Tab - Primary Tools */}
-            <RibbonTab label="Home">
-              <RibbonGroup label="Selection">
-                <div className="flex flex-col gap-1">
+          {/* Ribbon-style interface using custom components */}
+          <div className="w-full min-h-[120px]">
+            {/* Tab Headers */}
+            <div className="flex border-b bg-muted/30">
+              <div className="px-4 py-2 bg-background border-r text-sm font-medium">Home</div>
+              <div className="px-4 py-2 border-r text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer">View</div>
+              <div className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer">Tools</div>
+            </div>
+            
+            {/* Home Tab Content */}
+            <div className="flex gap-6 p-4">
+              {/* Selection Group */}
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground mb-2 text-center">Selection</div>
+                <div className="flex gap-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <RibbonButton
-                        className={`flex flex-col items-center p-2 h-16 min-w-[60px] ${
-                          activeTool === 'select' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                        }`}
+                      <Button
+                        variant={activeTool === 'select' ? 'default' : 'outline'}
+                        className="flex flex-col items-center p-2 h-16 min-w-[60px]"
                         onClick={() => onToolSelect('select')}
                       >
                         <Target className="h-6 w-6 mb-1" />
                         <span className="text-xs">Select</span>
-                      </RibbonButton>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Select Tool</p>
@@ -73,75 +81,85 @@ const AidToolsBar = ({
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <RibbonButton
-                        className={`flex flex-col items-center p-2 h-16 min-w-[60px] ${
-                          activeTool === 'point' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                        }`}
+                      <Button
+                        variant={activeTool === 'point' ? 'default' : 'outline'}
+                        className="flex flex-col items-center p-2 h-16 min-w-[60px]"
                         onClick={() => onToolSelect('point')}
                       >
                         <MapPin className="h-6 w-6 mb-1" />
                         <span className="text-xs">Point</span>
-                      </RibbonButton>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Point Tool - Click to add points</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
-              </RibbonGroup>
+              </div>
 
-              <RibbonGroup label="Measure">
+              {/* Separator */}
+              <div className="w-px bg-border" />
+
+              {/* Measure Group */}
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground mb-2 text-center">Measure</div>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <RibbonButton
-                      className={`flex flex-col items-center p-2 h-16 min-w-[60px] ${
-                        activeTool === 'measure' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                      }`}
+                    <Button
+                      variant={activeTool === 'measure' ? 'default' : 'outline'}
+                      className="flex flex-col items-center p-2 h-16 min-w-[60px]"
                       onClick={() => onToolSelect('measure')}
                     >
                       <Ruler className="h-6 w-6 mb-1" />
                       <span className="text-xs">Measure</span>
-                    </RibbonButton>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Measure Tool</p>
                   </TooltipContent>
                 </Tooltip>
-              </RibbonGroup>
-            </RibbonTab>
+              </div>
 
-            {/* View Tab - All View Controls */}
-            <RibbonTab label="View">
-              <RibbonGroup label="Camera">
+              {/* Separator */}
+              <div className="w-px bg-border" />
+
+              {/* Camera Group */}
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground mb-2 text-center">Camera</div>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <RibbonButton
-                      className={`flex flex-col items-center p-2 h-16 min-w-[60px] ${
-                        isOrthographic ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                      }`}
+                    <Button
+                      variant={isOrthographic ? 'default' : 'outline'}
+                      className="flex flex-col items-center p-2 h-16 min-w-[60px]"
                       onClick={onCameraToggle}
                     >
                       <Camera className="h-6 w-6 mb-1" />
                       <span className="text-xs">{isOrthographic ? 'Ortho' : 'Persp'}</span>
-                    </RibbonButton>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
                   </TooltipContent>
                 </Tooltip>
-              </RibbonGroup>
+              </div>
 
-              <RibbonGroup label="Standard Views">
+              {/* Separator */}
+              <div className="w-px bg-border" />
+
+              {/* Standard Views */}
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground mb-2 text-center">Standard Views</div>
                 <div className="flex gap-1">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <RibbonButton
-                        className="flex flex-col items-center p-1 h-12 min-w-[50px] hover:bg-accent"
+                      <Button
+                        variant="outline"
+                        className="flex flex-col items-center p-1 h-12 min-w-[40px]"
                         onClick={onViewLeft}
                       >
                         <ArrowLeft className="h-4 w-4 mb-1" />
                         <span className="text-xs">Left</span>
-                      </RibbonButton>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Left View</p>
@@ -150,13 +168,14 @@ const AidToolsBar = ({
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <RibbonButton
-                        className="flex flex-col items-center p-1 h-12 min-w-[50px] hover:bg-accent"
+                      <Button
+                        variant="outline"
+                        className="flex flex-col items-center p-1 h-12 min-w-[40px]"
                         onClick={onViewRight}
                       >
                         <ArrowRight className="h-4 w-4 mb-1" />
                         <span className="text-xs">Right</span>
-                      </RibbonButton>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Right View</p>
@@ -165,33 +184,40 @@ const AidToolsBar = ({
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <RibbonButton
-                        className="flex flex-col items-center p-1 h-12 min-w-[50px] hover:bg-accent"
+                      <Button
+                        variant="outline"
+                        className="flex flex-col items-center p-1 h-12 min-w-[40px]"
                         onClick={onViewIsometric}
                       >
                         <Box className="h-4 w-4 mb-1" />
                         <span className="text-xs">Iso</span>
-                      </RibbonButton>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Isometric View (I)</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
-              </RibbonGroup>
+              </div>
 
-              <RibbonGroup label="Zoom">
+              {/* Separator */}
+              <div className="w-px bg-border" />
+
+              {/* Zoom Controls */}
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground mb-2 text-center">Zoom</div>
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <RibbonButton
-                          className="flex flex-col items-center p-1 h-12 min-w-[45px] hover:bg-accent"
+                        <Button
+                          variant="outline"
+                          className="flex flex-col items-center p-1 h-12 min-w-[40px]"
                           onClick={onZoomAll}
                         >
                           <Maximize className="h-4 w-4 mb-1" />
                           <span className="text-xs">Fit</span>
-                        </RibbonButton>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Zoom All (A)</p>
@@ -200,14 +226,15 @@ const AidToolsBar = ({
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <RibbonButton
-                          className="flex flex-col items-center p-1 h-12 min-w-[45px] hover:bg-accent disabled:opacity-30"
+                        <Button
+                          variant="outline"
+                          className="flex flex-col items-center p-1 h-12 min-w-[40px] disabled:opacity-30"
                           onClick={onZoomToSelected}
                           disabled={!selectedObject}
                         >
                           <Focus className="h-4 w-4 mb-1" />
                           <span className="text-xs">Focus</span>
-                        </RibbonButton>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Focus Selected (F)</p>
@@ -215,33 +242,37 @@ const AidToolsBar = ({
                     </Tooltip>
                   </div>
 
-                  <div className="flex gap-1 items-center">
+                  <div className="flex gap-1 items-center justify-center">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <RibbonButton
-                          className="flex items-center justify-center p-1 h-6 w-6 hover:bg-accent"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-6 p-0"
                           onClick={onZoomIn}
                         >
                           <ZoomIn className="h-3 w-3" />
-                        </RibbonButton>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Zoom In</p>
                       </TooltipContent>
                     </Tooltip>
 
-                    <div className="text-xs text-muted-foreground min-w-[3rem] text-center px-1">
+                    <div className="text-xs text-muted-foreground px-1 min-w-[2.5rem] text-center">
                       {Math.round(zoomLevel)}%
                     </div>
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <RibbonButton
-                          className="flex items-center justify-center p-1 h-6 w-6 hover:bg-accent"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-6 p-0"
                           onClick={onZoomOut}
                         >
                           <ZoomOut className="h-3 w-3" />
-                        </RibbonButton>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Zoom Out</p>
@@ -250,12 +281,14 @@ const AidToolsBar = ({
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <RibbonButton
-                          className="flex items-center justify-center p-1 h-6 w-6 hover:bg-accent"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-6 p-0"
                           onClick={onResetView}
                         >
                           <RotateCcw className="h-3 w-3" />
-                        </RibbonButton>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Reset View (R)</p>
@@ -263,18 +296,20 @@ const AidToolsBar = ({
                     </Tooltip>
                   </div>
                 </div>
-              </RibbonGroup>
-            </RibbonTab>
+              </div>
 
-            {/* Tools Tab - Additional Utilities */}
-            <RibbonTab label="Tools">
-              <RibbonGroup label="Utilities">
-                <div className="flex items-center justify-center p-2">
+              {/* Separator */}
+              <div className="w-px bg-border" />
+
+              {/* Utilities */}
+              <div className="flex flex-col">
+                <div className="text-xs text-muted-foreground mb-2 text-center">Utilities</div>
+                <div className="flex items-center justify-center h-16">
                   <NotificationBell />
                 </div>
-              </RibbonGroup>
-            </RibbonTab>
-          </RibbonMenu>
+              </div>
+            </div>
+          </div>
         </TooltipProvider>
       </div>
     </div>
