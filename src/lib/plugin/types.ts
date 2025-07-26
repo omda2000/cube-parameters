@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { LoadedModel } from '@/types/model';
 
+// Re-export types used in plugin interfaces
+export type { LoadedModel };
+
 // Plugin Configuration System
 export interface PluginConfig {
   /** Plugin identification */
