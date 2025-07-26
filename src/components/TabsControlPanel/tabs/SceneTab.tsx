@@ -92,14 +92,14 @@ const SceneTab = ({
         {/* Compact Upload Dialog */}
         {showUploadDialog && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-slate-800 p-4 rounded-lg border border-slate-600 max-w-sm w-full mx-4">
+            <div className="bg-white p-4 rounded-lg border border-gray-200 max-w-sm w-full mx-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-slate-200">Import 3D Model</h3>
+                <h3 className="text-sm font-medium text-gray-900">Import 3D Model</h3>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowUploadDialog(false)}
-                  className="h-6 w-6 p-0 text-slate-400"
+                  className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
                 >
                   ×
                 </Button>
@@ -113,7 +113,7 @@ const SceneTab = ({
                   }} 
                   isLoading={isUploading}
                 />
-                <p className="text-xs text-slate-400 text-center">
+                <p className="text-xs text-gray-500 text-center">
                   Supports FBX, OBJ, and GLTF formats
                 </p>
               </div>

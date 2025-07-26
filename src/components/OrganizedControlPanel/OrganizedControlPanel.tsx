@@ -78,7 +78,7 @@ const OrganizedControlPanel = ({
 
   return (
     <div
-      className="fixed left-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-40"
+      className="fixed left-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-2xl z-40"
       style={{
         top: 'calc(120px + 1rem)', // Ribbon height + margin
         width: 340,
@@ -87,15 +87,15 @@ const OrganizedControlPanel = ({
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-border">
-        <h3 className="text-sm font-medium text-card-foreground">
+      <div className="flex items-center justify-between p-3 border-b border-gray-200">
+        <h3 className="text-sm font-medium text-gray-900">
           {getTabTitle(activeTab)}
         </h3>
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
         >
           <X className="h-3 w-3" />
         </Button>
