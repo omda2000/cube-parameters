@@ -86,23 +86,20 @@ const UIOverlay = ({
     <>
       {/* Aid Tools Bar - centered at top with proper spacing */}
       <AidToolsBar
-        activeTool={activeTool as 'select' | 'point' | 'measure' | 'move'}
-        onToolSelect={onToolSelect as (tool: 'select' | 'point' | 'measure' | 'move') => void}
-        onViewChange={(view: string) => {
-          switch(view) {
-            case 'left': onViewLeft(); break;
-            case 'right': onViewRight(); break;
-            case 'isometric': onViewIsometric(); break;
-          }
-        }}
+        onToolSelect={onToolSelect}
+        activeTool={activeTool}
+        onViewLeft={onViewLeft}
+        onViewRight={onViewRight}
+        onViewIsometric={onViewIsometric}
         isOrthographic={isOrthographic}
-        onCameraToggle={onCameraToggle!}
+        onCameraToggle={onCameraToggle}
         onZoomAll={onZoomAll}
         onZoomToSelected={onZoomToSelected}
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
         onResetView={onResetView}
         selectedObject={null}
+        zoomLevel={100}
       />
 
       {/* Left Sidebar - properly positioned to avoid overlaps */}
