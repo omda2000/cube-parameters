@@ -112,11 +112,7 @@ const SceneObjectGroups = ({
   };
 
   return (
-    <div className="space-y-1">
-      <div className="text-xs text-slate-400 mb-2 px-2">
-        Hold Ctrl+Click to select multiple objects
-      </div>
-      
+    <div className="space-y-1">      
       {renderGroup("Models", groupedObjects.models)}
       {renderGroup("Meshes", groupedObjects.meshes)}
       {renderGroup("Groups", groupedObjects.groups)}

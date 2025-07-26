@@ -125,6 +125,10 @@ const HelpPanel = () => {
                     <span>Toggle Panel</span>
                     <Badge variant="outline" className="text-xs h-5">Tab</Badge>
                   </div>
+                  <div className="flex justify-between">
+                    <span>Multi-select Objects</span>
+                    <Badge variant="outline" className="text-xs h-5">Ctrl+Click</Badge>
+                  </div>
                 </div>
               </CardContent>
             </Card>
