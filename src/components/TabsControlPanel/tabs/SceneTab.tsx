@@ -35,33 +35,26 @@ const SceneTab = ({
   return (
     <TooltipProvider>
       <div className="h-full flex flex-col">
-        {/* Enhanced Header */}
-        <div className="flex items-center justify-between p-3 border-b border-slate-600/50">
-          <div className="flex items-center gap-2">
-            <FolderTree className="h-4 w-4 text-indigo-400" />
-            <span className="text-sm font-medium text-slate-200">Scene Objects</span>
-          </div>
-          
-          {/* Compact Import Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowUploadDialog(true)}
-                className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-400"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Import 3D Model</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
         {/* Search and Filter Controls */}
-        <div className="p-3 space-y-2 border-b border-slate-600/50">
+        <div className="p-3 space-y-2 border-b border-slate-600/50 flex flex-col">
+          {/* Import Button moved to top */}
+          <div className="flex justify-end mb-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowUploadDialog(true)}
+                  className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-400"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Import 3D Model</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
             <Input
