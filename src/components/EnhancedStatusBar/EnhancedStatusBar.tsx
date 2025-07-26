@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Grid3X3, Layers } from 'lucide-react';
 import { useSelectionContext } from '../../contexts/SelectionContext';
-import ExpandableShadeSelector, { type ShadeType } from '../ExpandableShadeSelector/ExpandableShadeSelector';
 
 
 interface EnhancedStatusBarProps {
@@ -16,8 +15,6 @@ interface EnhancedStatusBarProps {
   units?: string;
   cursorPosition?: { x: number; y: number };
   zoomLevel?: number;
-  shadeType: ShadeType;
-  onShadeTypeChange: (type: ShadeType) => void;
   onGridToggle?: () => void;
   groundPlaneEnabled?: boolean;
   onGroundPlaneToggle?: () => void;
@@ -30,8 +27,6 @@ const EnhancedStatusBar = ({
   units = "m",
   cursorPosition = { x: 0, y: 0 },
   zoomLevel = 100,
-  shadeType,
-  onShadeTypeChange,
   onGridToggle = () => {},
   groundPlaneEnabled = false,
   onGroundPlaneToggle = () => {}
@@ -128,10 +123,7 @@ const EnhancedStatusBar = ({
           
           {/* Right section - Quick actions and settings */}
           <div className="flex items-center gap-3">
-            <ExpandableShadeSelector
-              currentShadeType={shadeType}
-              onShadeTypeChange={onShadeTypeChange}
-            />
+            {/* Shade selector moved to ribbon */}
           </div>
         </div>
       </div>
