@@ -50,219 +50,220 @@ const AidToolsBar = ({
   const zoomContainerRef = useRef<HTMLDivElement>(null);
   return (
     <TooltipProvider>
-      <div className="fixed top-0 left-0 right-0 bg-card/98 backdrop-blur-sm border-b border-border z-40 shadow-sm">
-        <div className="flex items-center justify-center px-6 py-3">
-          <div className="flex items-stretch gap-8">
-            
-            {/* Tools Group */}
-            <div className="flex flex-col items-center">
-              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Tools</div>
-              <div className="flex gap-1">
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant={activeTool === 'select' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => onToolSelect('select')}
-                    className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
-                      activeTool === 'select' 
-                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
-                        : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
-                    }`}
-                  >
-                    <Target className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Select</span>
-                  </Button>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant={activeTool === 'point' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => onToolSelect('point')}
-                    className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
-                      activeTool === 'point' 
-                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
-                        : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
-                    }`}
-                  >
-                    <MapPin className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Point</span>
-                  </Button>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant={activeTool === 'measure' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => onToolSelect('measure')}
-                    className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
-                      activeTool === 'measure' 
-                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
-                        : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
-                    }`}
-                  >
-                    <Ruler className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Measure</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Separator */}
-            <div className="w-px h-20 bg-border/60" />
-            
-            {/* Views Group */}
-            <div className="flex flex-col items-center">
-              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Views</div>
-              <div className="flex gap-1">
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onViewLeft}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <ArrowLeft className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Left</span>
-                  </Button>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onViewRight}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <ArrowRight className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Right</span>
-                  </Button>
-                </div>
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-2 z-40 shadow-lg">
+        <div className="flex gap-1">
+        <Button
+          variant={activeTool === 'select' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onToolSelect('select')}
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'select' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
+          title="Select Tool"
+        >
+          <Target className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant={activeTool === 'point' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onToolSelect('point')}
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'point' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
+          title="Point Tool - Click to add points"
+        >
+          <MapPin className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant={activeTool === 'measure' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onToolSelect('measure')}
+          className={`h-8 w-8 p-0 transition-all ${
+            activeTool === 'measure' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
+          title="Measure Tool"
+        >
+          <Ruler className="h-4 w-4" />
+        </Button>
+        
+        {/* Separator */}
+        <div className="w-px h-6 bg-border mx-1" />
+        
+        {/* View Controls */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewLeft}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Left View</p>
+          </TooltipContent>
+        </Tooltip>
+        
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewRight}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Right View</p>
+          </TooltipContent>
+        </Tooltip>
 
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onViewIsometric}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <Box className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">ISO</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Separator */}
-            <div className="w-px h-20 bg-border/60" />
-            
-            {/* Zoom Group */}
-            <div className="flex flex-col items-center">
-              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Zoom</div>
-              <div className="flex gap-1">
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onZoomAll}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <Maximize className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">All</span>
-                  </Button>
-                </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewIsometric}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <Box className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Isometric View (I)</p>
+          </TooltipContent>
+        </Tooltip>
+        
+        {/* Separator */}
+        <div className="w-px h-6 bg-border mx-1" />
+        
+        {/* Zoom Controls - Always Visible */}
+        <div ref={zoomContainerRef} className="flex gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomAll}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <Maximize className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom All (A)</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onZoomToSelected}
-                    disabled={!selectedObject}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 disabled:opacity-40 disabled:hover:bg-transparent transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <Focus className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Focus</span>
-                  </Button>
-                </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomToSelected}
+                disabled={!selectedObject}
+                className="h-8 w-8 p-0 hover:bg-accent disabled:opacity-30"
+              >
+                <Focus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Focus Selected (F)</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onZoomIn}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <ZoomIn className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">In</span>
-                  </Button>
-                </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomIn}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom In</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onZoomOut}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <ZoomOut className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Out</span>
-                  </Button>
-                </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onZoomOut}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom Out</p>
+            </TooltipContent>
+          </Tooltip>
 
-                <div className="flex flex-col items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onResetView}
-                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
-                  >
-                    <RotateCcw className="h-6 w-6" />
-                    <span className="text-xs font-medium leading-tight">Reset</span>
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Zoom level indicator */}
-              <div className="text-xs font-medium text-foreground/60 mt-2 bg-muted/30 px-2 py-0.5 rounded">
-                {zoomLevel}%
-              </div>
-            </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onResetView}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Reset View (R)</p>
+            </TooltipContent>
+          </Tooltip>
 
-            {/* Separator */}
-            <div className="w-px h-20 bg-border/60" />
-
-            {/* Camera Group */}
-            <div className="flex flex-col items-center">
-              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Camera</div>
-              <div className="flex gap-1">
-                {onCameraToggle && (
-                  <div className="flex flex-col items-center">
-                    <Button
-                      variant={isOrthographic ? "default" : "ghost"}
-                      size="sm"
-                      onClick={onCameraToggle}
-                      className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
-                        isOrthographic
-                          ? 'bg-primary text-primary-foreground shadow-sm border-primary/20'
-                          : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
-                      }`}
-                    >
-                      <Camera className="h-6 w-6" />
-                      <span className="text-xs font-medium leading-tight">{isOrthographic ? 'Ortho' : 'Persp'}</span>
-                    </Button>
-                  </div>
-                )}
-                
-                {/* Notification Bell */}
-                <div className="flex flex-col items-center">
-                  <NotificationBell />
-                </div>
-              </div>
-            </div>
-            
+          {/* Zoom level indicator */}
+          <div className="flex items-center px-2 text-xs text-muted-foreground">
+            {zoomLevel}%
           </div>
         </div>
+
+        {/* Separator */}
+        <div className="w-px h-6 bg-border mx-1" />
+
+        {/* Camera Toggle */}
+        {onCameraToggle && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isOrthographic ? "default" : "ghost"}
+                size="sm"
+                onClick={onCameraToggle}
+                className="h-8 w-8 p-0"
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        
+        {/* Notification Bell */}
+        <NotificationBell />
       </div>
+    </div>
     </TooltipProvider>
   );
 };
