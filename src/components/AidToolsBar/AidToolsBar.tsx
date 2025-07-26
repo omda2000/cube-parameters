@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog } from 'lucide-react';
-import { Ribbon, RibbonGroup, RibbonGroupItem, RibbonButton } from "react-bootstrap-ribbon";
-import "react-bootstrap-ribbon/dist/react-bootstrap-ribbon.css";
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell/NotificationBell';
 
 interface AidToolsBarProps {
@@ -50,6 +50,8 @@ const AidToolsBar = ({
   onPanelChange,
   isPanelOpen = false
 }: AidToolsBarProps) => {
+  const [activeTab, setActiveTab] = useState<'home' | 'view' | 'tools' | 'panels'>('home');
+
   const handlePanelClick = (panelId: string) => {
     if (onPanelChange) {
       onPanelChange(panelId);
@@ -65,133 +67,444 @@ const AidToolsBar = ({
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 p-2">
-      <Ribbon breakpoint="lg" height="6rem">
-        <RibbonGroup title="Selection" colClass="col-2">
-          <RibbonGroupItem colClass="col-4" onClick={() => onToolSelect('select')}>
-            <RibbonButton>
-              <Target className={`h-5 w-5 ${activeTool === 'select' ? 'text-red-600' : 'text-gray-700'}`} />
-              <div>Select</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-4" onClick={() => onToolSelect('point')}>
-            <RibbonButton>
-              <MapPin className={`h-5 w-5 ${activeTool === 'point' ? 'text-red-600' : 'text-gray-700'}`} />
-              <div>Point</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-4" onClick={() => onToolSelect('measure')}>
-            <RibbonButton>
-              <Ruler className={`h-5 w-5 ${activeTool === 'measure' ? 'text-red-600' : 'text-gray-700'}`} />
-              <div>Measure</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-        </RibbonGroup>
-
-        <RibbonGroup title="Camera" colClass="col-1">
-          <RibbonGroupItem colClass="col-12" onClick={onCameraToggle}>
-            <RibbonButton>
-              <Camera className={`h-5 w-5 ${isOrthographic ? 'text-red-600' : 'text-gray-700'}`} />
-              <div>{isOrthographic ? 'Ortho' : 'Persp'}</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-        </RibbonGroup>
-
-        <RibbonGroup title="Views" colClass="col-3">
-          <RibbonGroupItem colClass="col-3" onClick={onViewLeft}>
-            <RibbonButton>
-              <ArrowLeft className="h-5 w-5 text-gray-700" />
-              <div>Left</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-3" onClick={onViewRight}>
-            <RibbonButton>
-              <ArrowRight className="h-5 w-5 text-gray-700" />
-              <div>Right</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-3" onClick={onViewFront}>
-            <RibbonButton>
-              <ArrowLeft className="h-5 w-5 text-gray-700 rotate-90" />
-              <div>Front</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-3" onClick={onViewBack}>
-            <RibbonButton>
-              <ArrowRight className="h-5 w-5 text-gray-700 rotate-90" />
-              <div>Back</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-6" onClick={onViewIsometric}>
-            <RibbonButton>
-              <Box className="h-5 w-5 text-gray-700" />
-              <div>Isometric</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-6">
-            <RibbonButton>
-              <div className="text-sm font-medium">{Math.round(zoomLevel)}%</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-        </RibbonGroup>
-
-        <RibbonGroup title="Zoom" colClass="col-3">
-          <RibbonGroupItem colClass="col-4" onClick={onZoomAll}>
-            <RibbonButton>
-              <Maximize className="h-5 w-5 text-gray-700" />
-              <div>Fit All</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-4" onClick={onZoomToSelected}>
-            <RibbonButton>
-              <Focus className={`h-5 w-5 ${!selectedObject ? 'text-gray-400' : 'text-gray-700'}`} />
-              <div>Focus</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-4" onClick={onZoomIn}>
-            <RibbonButton>
-              <ZoomIn className="h-5 w-5 text-gray-700" />
-              <div>Zoom In</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-6" onClick={onZoomOut}>
-            <RibbonButton>
-              <ZoomOut className="h-5 w-5 text-gray-700" />
-              <div>Zoom Out</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-          <RibbonGroupItem colClass="col-6" onClick={onResetView}>
-            <RibbonButton>
-              <RotateCcw className="h-5 w-5 text-gray-700" />
-              <div>Reset</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-        </RibbonGroup>
-
-        <RibbonGroup title="Panels" colClass="col-3">
-          {panelButtons.map((panel) => {
-            const IconComponent = panel.icon;
-            return (
-              <RibbonGroupItem 
-                key={panel.id} 
-                colClass="col-6" 
-                onClick={() => handlePanelClick(panel.id)}
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <div className="bg-white border-b border-gray-200 shadow-sm rounded-xl m-2">
+        <TooltipProvider>
+          <div className="w-full min-h-[120px]">
+            {/* Tab Headers */}
+            <div className="flex border-b border-gray-200 bg-gray-50 rounded-t-xl">
+              <div 
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                  activeTab === 'home' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('home')}
               >
-                <RibbonButton>
-                  <IconComponent className={`h-5 w-5 ${activePanel === panel.id ? 'text-red-600' : 'text-gray-700'}`} />
-                  <div>{panel.label}</div>
-                </RibbonButton>
-              </RibbonGroupItem>
-            );
-          })}
-          <RibbonGroupItem colClass="col-6">
-            <RibbonButton>
-              <NotificationBell />
-              <div>Alerts</div>
-            </RibbonButton>
-          </RibbonGroupItem>
-        </RibbonGroup>
-      </Ribbon>
+                Home
+              </div>
+              <div 
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                  activeTab === 'view' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('view')}
+              >
+                View
+              </div>
+              <div 
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                  activeTab === 'tools' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('tools')}
+              >
+                Tools
+              </div>
+              <div 
+                className={`px-6 py-1 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                  activeTab === 'panels' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('panels')}
+              >
+                Panels
+              </div>
+            </div>
+            
+            {/* Tab Content */}
+            <div className="bg-white rounded-b-xl">
+              {activeTab === 'home' && (
+                <div className="flex gap-6 p-3 h-[80px] bg-white rounded-b-xl items-start">
+                  {/* Selection Group */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Selection</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={activeTool === 'select' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            activeTool === 'select' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onToolSelect('select')}
+                        >
+                          <Target className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Select</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={activeTool === 'point' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            activeTool === 'point' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onToolSelect('point')}
+                        >
+                          <MapPin className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Point</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={activeTool === 'measure' ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            activeTool === 'measure' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={() => onToolSelect('measure')}
+                        >
+                          <Ruler className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Measure</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Camera Group */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        variant={isOrthographic ? 'default' : 'ghost'}
+                        className={`p-2 h-8 w-8 transition-all duration-200 ${
+                          isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                        onClick={onCameraToggle}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Standard Views */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Views</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
+                          onClick={onViewLeft}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Left</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
+                          onClick={onViewRight}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Right</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
+                          onClick={onViewIsometric}
+                        >
+                          <Box className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">ISO</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Zoom Controls */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Zoom</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomAll}
+                        >
+                          <Maximize className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">All</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 disabled:opacity-30 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomToSelected}
+                          disabled={!selectedObject}
+                        >
+                          <Focus className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Focus</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomIn}
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">In</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomOut}
+                        >
+                          <ZoomOut className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Out</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onResetView}
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Reset</span>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="text-xs text-gray-600 font-medium">{Math.round(zoomLevel)}%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Utilities */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
+                    <div className="flex flex-col items-center">
+                      <NotificationBell />
+                      <span className="text-xs text-gray-600 mt-1">Alerts</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'view' && (
+                <div className="flex gap-4 p-3 h-[80px] items-start">
+                  {/* Standard Views */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Standard Views</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onViewLeft}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Left</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onViewRight}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Right</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onViewIsometric}
+                        >
+                          <Box className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">ISO</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onViewFront}
+                        >
+                          <ArrowLeft className="h-4 w-4 rotate-90" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Front</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onViewBack}
+                        >
+                          <ArrowRight className="h-4 w-4 rotate-90" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Back</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Camera Group */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        variant={isOrthographic ? 'default' : 'ghost'}
+                        className={`p-2 h-8 w-8 transition-all duration-200 ${
+                          isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                        onClick={onCameraToggle}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'tools' && (
+                <div className="flex gap-4 p-3 h-[80px] items-start">
+                  {/* Zoom Controls */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Zoom Tools</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomAll}
+                        >
+                          <Maximize className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">All</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 disabled:opacity-30 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomToSelected}
+                          disabled={!selectedObject}
+                        >
+                          <Focus className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Focus</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomIn}
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">In</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onZoomOut}
+                        >
+                          <ZoomOut className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Out</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                          onClick={onResetView}
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Reset</span>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="text-xs text-gray-600 font-medium">{Math.round(zoomLevel)}%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
+                  {/* Utilities */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
+                    <div className="flex flex-col items-center">
+                      <NotificationBell />
+                      <span className="text-xs text-gray-600 mt-1">Alerts</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'panels' && (
+                <div className="flex gap-4 p-3 h-[80px] items-start">
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Control Panels</div>
+                    <div className="flex gap-2">
+                      {panelButtons.map((panel) => {
+                        const IconComponent = panel.icon;
+                        const isActive = activePanel === panel.id && isPanelOpen;
+                        
+                        return (
+                          <div key={panel.id} className="flex flex-col items-center">
+                            <Button
+                              variant={isActive ? 'default' : 'ghost'}
+                              className={`p-2 h-8 w-8 transition-all duration-200 ${
+                                isActive ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                              }`}
+                              onClick={() => handlePanelClick(panel.id)}
+                            >
+                              <IconComponent className="h-4 w-4" />
+                            </Button>
+                            <span className="text-xs text-gray-600 mt-1">
+                              {panel.id === 'scene' ? 'Scene' : 
+                               panel.id === 'properties' ? 'Props' : 
+                               panel.id === 'lighting' ? 'Light' : 
+                               panel.id === 'settings' ? 'Config' : 'Help'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </TooltipProvider>
+      </div>
     </div>
   );
 };
