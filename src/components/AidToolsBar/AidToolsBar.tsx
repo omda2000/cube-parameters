@@ -74,7 +74,7 @@ const AidToolsBar = ({
             {/* Tab Headers */}
             <div className="flex border-b border-gray-200 bg-gray-50 rounded-t-xl">
               <div 
-                className={`px-6 py-2 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
                   activeTab === 'home' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('home')}
@@ -82,7 +82,7 @@ const AidToolsBar = ({
                 Home
               </div>
               <div 
-                className={`px-6 py-2 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
                   activeTab === 'view' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('view')}
@@ -90,7 +90,7 @@ const AidToolsBar = ({
                 View
               </div>
               <div 
-                className={`px-6 py-2 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
                   activeTab === 'tools' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('tools')}
@@ -98,7 +98,7 @@ const AidToolsBar = ({
                 Tools
               </div>
               <div 
-                className={`px-6 py-2 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                className={`px-6 py-1 text-sm font-medium cursor-pointer transition-all duration-200 ${
                   activeTab === 'panels' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('panels')}
