@@ -51,26 +51,26 @@ const AidToolsBar = ({
   return (
     <TooltipProvider>
       <div className="fixed top-0 left-0 right-0 bg-card/98 backdrop-blur-sm border-b border-border z-40 shadow-sm">
-        <div className="flex items-center justify-center px-4 py-2">
-          <div className="flex items-center gap-6">
+        <div className="flex items-center justify-center px-6 py-3">
+          <div className="flex items-stretch gap-8">
             
             {/* Tools Group */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Tools</div>
-              <div className="flex gap-2">
+            <div className="flex flex-col items-center">
+              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Tools</div>
+              <div className="flex gap-1">
                 <div className="flex flex-col items-center">
                   <Button
                     variant={activeTool === 'select' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onToolSelect('select')}
-                    className={`h-12 w-16 flex-col gap-1 transition-all ${
+                    className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
                       activeTool === 'select' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
+                        : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
                     }`}
                   >
-                    <Target className="h-5 w-5" />
-                    <span className="text-xs">Select</span>
+                    <Target className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Select</span>
                   </Button>
                 </div>
                 
@@ -79,14 +79,14 @@ const AidToolsBar = ({
                     variant={activeTool === 'point' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onToolSelect('point')}
-                    className={`h-12 w-16 flex-col gap-1 transition-all ${
+                    className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
                       activeTool === 'point' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
+                        : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
                     }`}
                   >
-                    <MapPin className="h-5 w-5" />
-                    <span className="text-xs">Point</span>
+                    <MapPin className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Point</span>
                   </Button>
                 </div>
                 
@@ -95,35 +95,35 @@ const AidToolsBar = ({
                     variant={activeTool === 'measure' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onToolSelect('measure')}
-                    className={`h-12 w-16 flex-col gap-1 transition-all ${
+                    className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
                       activeTool === 'measure' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
+                        : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
                     }`}
                   >
-                    <Ruler className="h-5 w-5" />
-                    <span className="text-xs">Measure</span>
+                    <Ruler className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Measure</span>
                   </Button>
                 </div>
               </div>
             </div>
             
             {/* Separator */}
-            <div className="w-px h-16 bg-border" />
+            <div className="w-px h-20 bg-border/60" />
             
             {/* Views Group */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Views</div>
-              <div className="flex gap-2">
+            <div className="flex flex-col items-center">
+              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Views</div>
+              <div className="flex gap-1">
                 <div className="flex flex-col items-center">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onViewLeft}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <ArrowLeft className="h-5 w-5" />
-                    <span className="text-xs">Left</span>
+                    <ArrowLeft className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Left</span>
                   </Button>
                 </div>
                 
@@ -132,10 +132,10 @@ const AidToolsBar = ({
                     variant="ghost"
                     size="sm"
                     onClick={onViewRight}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <ArrowRight className="h-5 w-5" />
-                    <span className="text-xs">Right</span>
+                    <ArrowRight className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Right</span>
                   </Button>
                 </div>
 
@@ -144,31 +144,31 @@ const AidToolsBar = ({
                     variant="ghost"
                     size="sm"
                     onClick={onViewIsometric}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <Box className="h-5 w-5" />
-                    <span className="text-xs">ISO</span>
+                    <Box className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">ISO</span>
                   </Button>
                 </div>
               </div>
             </div>
             
             {/* Separator */}
-            <div className="w-px h-16 bg-border" />
+            <div className="w-px h-20 bg-border/60" />
             
             {/* Zoom Group */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Zoom</div>
-              <div className="flex gap-2">
+            <div className="flex flex-col items-center">
+              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Zoom</div>
+              <div className="flex gap-1">
                 <div className="flex flex-col items-center">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onZoomAll}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <Maximize className="h-5 w-5" />
-                    <span className="text-xs">All</span>
+                    <Maximize className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">All</span>
                   </Button>
                 </div>
 
@@ -178,10 +178,10 @@ const AidToolsBar = ({
                     size="sm"
                     onClick={onZoomToSelected}
                     disabled={!selectedObject}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent disabled:opacity-30"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 disabled:opacity-40 disabled:hover:bg-transparent transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <Focus className="h-5 w-5" />
-                    <span className="text-xs">Focus</span>
+                    <Focus className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Focus</span>
                   </Button>
                 </div>
 
@@ -190,10 +190,10 @@ const AidToolsBar = ({
                     variant="ghost"
                     size="sm"
                     onClick={onZoomIn}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <ZoomIn className="h-5 w-5" />
-                    <span className="text-xs">In</span>
+                    <ZoomIn className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">In</span>
                   </Button>
                 </div>
 
@@ -202,10 +202,10 @@ const AidToolsBar = ({
                     variant="ghost"
                     size="sm"
                     onClick={onZoomOut}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <ZoomOut className="h-5 w-5" />
-                    <span className="text-xs">Out</span>
+                    <ZoomOut className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Out</span>
                   </Button>
                 </div>
 
@@ -214,37 +214,41 @@ const AidToolsBar = ({
                     variant="ghost"
                     size="sm"
                     onClick={onResetView}
-                    className="h-12 w-16 flex-col gap-1 hover:bg-accent"
+                    className="h-14 w-16 flex-col gap-2 text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all rounded-md border border-transparent hover:border-border/50"
                   >
-                    <RotateCcw className="h-5 w-5" />
-                    <span className="text-xs">Reset</span>
+                    <RotateCcw className="h-6 w-6" />
+                    <span className="text-xs font-medium leading-tight">Reset</span>
                   </Button>
                 </div>
               </div>
               
               {/* Zoom level indicator */}
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs font-medium text-foreground/60 mt-2 bg-muted/30 px-2 py-0.5 rounded">
                 {zoomLevel}%
               </div>
             </div>
 
             {/* Separator */}
-            <div className="w-px h-16 bg-border" />
+            <div className="w-px h-20 bg-border/60" />
 
             {/* Camera Group */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Camera</div>
-              <div className="flex gap-2">
+            <div className="flex flex-col items-center">
+              <div className="text-xs font-semibold text-foreground/80 mb-2 tracking-wide uppercase">Camera</div>
+              <div className="flex gap-1">
                 {onCameraToggle && (
                   <div className="flex flex-col items-center">
                     <Button
                       variant={isOrthographic ? "default" : "ghost"}
                       size="sm"
                       onClick={onCameraToggle}
-                      className="h-12 w-16 flex-col gap-1"
+                      className={`h-14 w-18 flex-col gap-2 transition-all rounded-md border ${
+                        isOrthographic
+                          ? 'bg-primary text-primary-foreground shadow-sm border-primary/20'
+                          : 'text-foreground/70 hover:text-foreground hover:bg-accent/50 border-transparent hover:border-border/50'
+                      }`}
                     >
-                      <Camera className="h-5 w-5" />
-                      <span className="text-xs">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                      <Camera className="h-6 w-6" />
+                      <span className="text-xs font-medium leading-tight">{isOrthographic ? 'Ortho' : 'Persp'}</span>
                     </Button>
                   </div>
                 )}
