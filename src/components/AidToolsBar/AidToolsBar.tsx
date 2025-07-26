@@ -68,11 +68,11 @@ const AidToolsBar = ({
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
-      <div className="bg-white border-b shadow-sm">
+      <div className="bg-white border-b shadow-sm rounded-xl m-2">
         <TooltipProvider>
           <div className="w-full min-h-[120px]">
             {/* Tab Headers */}
-            <div className="flex border-b bg-gray-50">
+            <div className="flex border-b bg-gray-50 rounded-t-xl">
               <div 
                 className={`px-4 py-2 border-r text-sm font-medium cursor-pointer transition-colors ${
                   activeTab === 'home' ? 'bg-white text-gray-900 border-b-2 border-blue-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -108,7 +108,7 @@ const AidToolsBar = ({
             </div>
             
             {/* Tab Content */}
-            <div className="bg-white">
+            <div className="bg-white rounded-b-xl">
               {activeTab === 'home' && (
                 <div className="flex gap-6 p-4">
                   {/* Selection Group */}
@@ -117,11 +117,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant={activeTool === 'select' ? 'default' : 'outline'}
-                            className="flex flex-col items-center p-2 h-16 min-w-[60px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant={activeTool === 'select' ? 'default' : 'ghost'}
+                            className="flex flex-col items-center justify-between p-2 h-16 min-w-[60px] hover:bg-gray-50 text-gray-700"
                             onClick={() => onToolSelect('select')}
                           >
-                            <Target className="h-6 w-6 mb-1" />
+                            <Target className="h-6 w-6" />
                             <span className="text-xs">Select</span>
                           </Button>
                         </TooltipTrigger>
@@ -133,11 +133,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant={activeTool === 'point' ? 'default' : 'outline'}
-                            className="flex flex-col items-center p-2 h-16 min-w-[60px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant={activeTool === 'point' ? 'default' : 'ghost'}
+                            className="flex flex-col items-center justify-between p-2 h-16 min-w-[60px] hover:bg-gray-50 text-gray-700"
                             onClick={() => onToolSelect('point')}
                           >
-                            <MapPin className="h-6 w-6 mb-1" />
+                            <MapPin className="h-6 w-6" />
                             <span className="text-xs">Point</span>
                           </Button>
                         </TooltipTrigger>
@@ -157,11 +157,11 @@ const AidToolsBar = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          variant={activeTool === 'measure' ? 'default' : 'outline'}
-                          className="flex flex-col items-center p-2 h-16 min-w-[60px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                          variant={activeTool === 'measure' ? 'default' : 'ghost'}
+                          className="flex flex-col items-center justify-between p-2 h-16 min-w-[60px] hover:bg-gray-50 text-gray-700"
                           onClick={() => onToolSelect('measure')}
                         >
-                          <Ruler className="h-6 w-6 mb-1" />
+                          <Ruler className="h-6 w-6" />
                           <span className="text-xs">Measure</span>
                         </Button>
                       </TooltipTrigger>
@@ -180,11 +180,11 @@ const AidToolsBar = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          variant={isOrthographic ? 'default' : 'outline'}
-                          className="flex flex-col items-center p-2 h-16 min-w-[60px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                          variant={isOrthographic ? 'default' : 'ghost'}
+                          className="flex flex-col items-center justify-between p-2 h-16 min-w-[60px] hover:bg-gray-50 text-gray-700"
                           onClick={onCameraToggle}
                         >
-                          <Camera className="h-6 w-6 mb-1" />
+                          <Camera className="h-6 w-6" />
                           <span className="text-xs">{isOrthographic ? 'Ortho' : 'Persp'}</span>
                         </Button>
                       </TooltipTrigger>
@@ -203,14 +203,14 @@ const AidToolsBar = ({
                     <div className="flex gap-1">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
-                            onClick={onViewLeft}
-                          >
-                            <ArrowLeft className="h-4 w-4 mb-1" />
-                            <span className="text-xs">Left</span>
-                          </Button>
+                        <Button
+                          variant="ghost"
+                          className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
+                          onClick={onViewLeft}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          <span className="text-xs">Left</span>
+                        </Button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Left View</p>
@@ -219,14 +219,14 @@ const AidToolsBar = ({
 
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
-                            onClick={onViewRight}
-                          >
-                            <ArrowRight className="h-4 w-4 mb-1" />
-                            <span className="text-xs">Right</span>
-                          </Button>
+                        <Button
+                          variant="ghost"
+                          className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
+                          onClick={onViewRight}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                          <span className="text-xs">Right</span>
+                        </Button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Right View</p>
@@ -235,14 +235,14 @@ const AidToolsBar = ({
 
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
-                            onClick={onViewIsometric}
-                          >
-                            <Box className="h-4 w-4 mb-1" />
-                            <span className="text-xs">Iso</span>
-                          </Button>
+                        <Button
+                          variant="ghost"
+                          className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
+                          onClick={onViewIsometric}
+                        >
+                          <Box className="h-4 w-4" />
+                          <span className="text-xs">Iso</span>
+                        </Button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Isometric View (I)</p>
@@ -262,11 +262,11 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
-                              className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              variant="ghost"
+                              className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                               onClick={onZoomAll}
                             >
-                              <Maximize className="h-4 w-4 mb-1" />
+                              <Maximize className="h-4 w-4" />
                               <span className="text-xs">Fit</span>
                             </Button>
                           </TooltipTrigger>
@@ -278,12 +278,12 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
-                              className="flex flex-col items-center p-1 h-12 min-w-[40px] disabled:opacity-30 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              variant="ghost"
+                              className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] disabled:opacity-30 hover:bg-gray-50 text-gray-700"
                               onClick={onZoomToSelected}
                               disabled={!selectedObject}
                             >
-                              <Focus className="h-4 w-4 mb-1" />
+                              <Focus className="h-4 w-4" />
                               <span className="text-xs">Focus</span>
                             </Button>
                           </TooltipTrigger>
@@ -297,9 +297,9 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              className="h-6 w-6 p-0 hover:bg-gray-50 text-gray-700"
                               onClick={onZoomIn}
                             >
                               <ZoomIn className="h-3 w-3" />
@@ -317,9 +317,9 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              className="h-6 w-6 p-0 hover:bg-gray-50 text-gray-700"
                               onClick={onZoomOut}
                             >
                               <ZoomOut className="h-3 w-3" />
@@ -333,9 +333,9 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              className="h-6 w-6 p-0 hover:bg-gray-50 text-gray-700"
                               onClick={onResetView}
                             >
                               <RotateCcw className="h-3 w-3" />
@@ -371,11 +371,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant="ghost"
+                            className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                             onClick={onViewLeft}
                           >
-                            <ArrowLeft className="h-4 w-4 mb-1" />
+                            <ArrowLeft className="h-4 w-4" />
                             <span className="text-xs">Left</span>
                           </Button>
                         </TooltipTrigger>
@@ -387,11 +387,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant="ghost"
+                            className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                             onClick={onViewRight}
                           >
-                            <ArrowRight className="h-4 w-4 mb-1" />
+                            <ArrowRight className="h-4 w-4" />
                             <span className="text-xs">Right</span>
                           </Button>
                         </TooltipTrigger>
@@ -403,11 +403,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant="ghost"
+                            className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                             onClick={onViewIsometric}
                           >
-                            <Box className="h-4 w-4 mb-1" />
+                            <Box className="h-4 w-4" />
                             <span className="text-xs">Iso</span>
                           </Button>
                         </TooltipTrigger>
@@ -419,11 +419,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant="ghost"
+                            className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                             onClick={onViewFront}
                           >
-                            <ArrowLeft className="h-4 w-4 mb-1 rotate-90" />
+                            <ArrowLeft className="h-4 w-4 rotate-90" />
                             <span className="text-xs">Front</span>
                           </Button>
                         </TooltipTrigger>
@@ -435,11 +435,11 @@ const AidToolsBar = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                            variant="ghost"
+                            className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                             onClick={onViewBack}
                           >
-                            <ArrowRight className="h-4 w-4 mb-1 rotate-90" />
+                            <ArrowRight className="h-4 w-4 rotate-90" />
                             <span className="text-xs">Back</span>
                           </Button>
                         </TooltipTrigger>
@@ -459,11 +459,11 @@ const AidToolsBar = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          variant={isOrthographic ? 'default' : 'outline'}
-                          className="flex flex-col items-center p-2 h-16 min-w-[60px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                          variant={isOrthographic ? 'default' : 'ghost'}
+                          className="flex flex-col items-center justify-between p-2 h-16 min-w-[60px] hover:bg-gray-50 text-gray-700"
                           onClick={onCameraToggle}
                         >
-                          <Camera className="h-6 w-6 mb-1" />
+                          <Camera className="h-6 w-6" />
                           <span className="text-xs">{isOrthographic ? 'Ortho' : 'Persp'}</span>
                         </Button>
                       </TooltipTrigger>
@@ -485,11 +485,11 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
-                              className="flex flex-col items-center p-1 h-12 min-w-[40px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              variant="ghost"
+                              className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] hover:bg-gray-50 text-gray-700"
                               onClick={onZoomAll}
                             >
-                              <Maximize className="h-4 w-4 mb-1" />
+                              <Maximize className="h-4 w-4" />
                               <span className="text-xs">Fit</span>
                             </Button>
                           </TooltipTrigger>
@@ -501,12 +501,12 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
-                              className="flex flex-col items-center p-1 h-12 min-w-[40px] disabled:opacity-30 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              variant="ghost"
+                              className="flex flex-col items-center justify-between p-1 h-12 min-w-[40px] disabled:opacity-30 hover:bg-gray-50 text-gray-700"
                               onClick={onZoomToSelected}
                               disabled={!selectedObject}
                             >
-                              <Focus className="h-4 w-4 mb-1" />
+                              <Focus className="h-4 w-4" />
                               <span className="text-xs">Focus</span>
                             </Button>
                           </TooltipTrigger>
@@ -520,9 +520,9 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              className="h-6 w-6 p-0 hover:bg-gray-50 text-gray-700"
                               onClick={onZoomIn}
                             >
                               <ZoomIn className="h-3 w-3" />
@@ -540,9 +540,9 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              className="h-6 w-6 p-0 hover:bg-gray-50 text-gray-700"
                               onClick={onZoomOut}
                             >
                               <ZoomOut className="h-3 w-3" />
@@ -556,9 +556,9 @@ const AidToolsBar = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                              className="h-6 w-6 p-0 hover:bg-gray-50 text-gray-700"
                               onClick={onResetView}
                             >
                               <RotateCcw className="h-3 w-3" />
@@ -598,11 +598,11 @@ const AidToolsBar = ({
                           <Tooltip key={panel.id}>
                             <TooltipTrigger asChild>
                               <Button
-                                variant={isActive ? 'default' : 'outline'}
-                                className="flex flex-col items-center p-2 h-16 min-w-[60px] bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                                variant={isActive ? 'default' : 'ghost'}
+                                className="flex flex-col items-center justify-between p-2 h-16 min-w-[60px] hover:bg-gray-50 text-gray-700"
                                 onClick={() => handlePanelClick(panel.id)}
                               >
-                                <IconComponent className="h-6 w-6 mb-1" />
+                                <IconComponent className="h-6 w-6" />
                                 <span className="text-xs">{panel.label.split(' ')[0]}</span>
                               </Button>
                             </TooltipTrigger>
