@@ -113,7 +113,6 @@ const AidToolsBar = ({
                 <div className="flex gap-6 p-4">
                   {/* Selection Group */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Selection</div>
                     <div className="flex gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -147,6 +146,7 @@ const AidToolsBar = ({
                         </TooltipContent>
                       </Tooltip>
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Selection</div>
                   </div>
 
                   {/* Separator */}
@@ -154,7 +154,6 @@ const AidToolsBar = ({
 
                   {/* Measure Group */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Measure</div>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -170,6 +169,7 @@ const AidToolsBar = ({
                         <p>Measure Tool</p>
                       </TooltipContent>
                     </Tooltip>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Measure</div>
                   </div>
 
                   {/* Camera Group */}
@@ -177,7 +177,6 @@ const AidToolsBar = ({
 
                   {/* Camera Group */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Camera</div>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -193,6 +192,7 @@ const AidToolsBar = ({
                         <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
                       </TooltipContent>
                     </Tooltip>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Camera</div>
                   </div>
 
                   {/* Separator */}
@@ -200,7 +200,6 @@ const AidToolsBar = ({
 
                   {/* Standard Views */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Standard Views</div>
                     <div className="flex gap-1">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -250,6 +249,7 @@ const AidToolsBar = ({
                         </TooltipContent>
                       </Tooltip>
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Standard Views</div>
                   </div>
 
                   {/* Separator */}
@@ -257,7 +257,6 @@ const AidToolsBar = ({
 
                   {/* Zoom Controls */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Zoom</div>
                     <div className="flex flex-col gap-1">
                       <div className="flex gap-1">
                         <Tooltip>
@@ -348,6 +347,7 @@ const AidToolsBar = ({
                         </Tooltip>
                       </div>
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Zoom</div>
                   </div>
 
                   {/* Separator */}
@@ -355,10 +355,10 @@ const AidToolsBar = ({
 
                   {/* Utilities */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Utilities</div>
                     <div className="flex items-center justify-center h-16">
                       <NotificationBell />
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Utilities</div>
                   </div>
                 </div>
               )}
@@ -367,7 +367,6 @@ const AidToolsBar = ({
                 <div className="flex gap-6 p-4">
                   {/* Standard Views */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Standard Views</div>
                     <div className="flex gap-1">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -449,6 +448,7 @@ const AidToolsBar = ({
                         </TooltipContent>
                       </Tooltip>
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Standard Views</div>
                   </div>
 
                   {/* Separator */}
@@ -456,7 +456,6 @@ const AidToolsBar = ({
 
                   {/* Camera Group */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Camera</div>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -472,6 +471,7 @@ const AidToolsBar = ({
                         <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
                       </TooltipContent>
                     </Tooltip>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Camera</div>
                   </div>
                 </div>
               )}
@@ -480,7 +480,6 @@ const AidToolsBar = ({
                 <div className="flex gap-6 p-4">
                   {/* Zoom Controls */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Zoom</div>
                     <div className="flex flex-col gap-1">
                       <div className="flex gap-1">
                         <Tooltip>
@@ -571,6 +570,7 @@ const AidToolsBar = ({
                         </Tooltip>
                       </div>
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Zoom</div>
                   </div>
 
                   {/* Separator */}
@@ -578,10 +578,10 @@ const AidToolsBar = ({
 
                   {/* Utilities */}
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Utilities</div>
                     <div className="flex items-center justify-center h-16">
                       <NotificationBell />
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Utilities</div>
                   </div>
                 </div>
               )}
@@ -589,7 +589,6 @@ const AidToolsBar = ({
               {activeTab === 'panels' && (
                 <div className="flex gap-6 p-4">
                   <div className="flex flex-col">
-                    <div className="text-xs text-gray-600 mb-2 text-center">Control Panels</div>
                     <div className="flex gap-2">
                       {panelButtons.map((panel) => {
                         const IconComponent = panel.icon;
@@ -617,6 +616,7 @@ const AidToolsBar = ({
                         );
                       })}
                     </div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">Control Panels</div>
                   </div>
                 </div>
               )}
