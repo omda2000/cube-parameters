@@ -110,7 +110,7 @@ const AidToolsBar = ({
             {/* Tab Content */}
             <div className="bg-white rounded-b-xl">
               {activeTab === 'home' && (
-                <div className="flex gap-6 p-4">
+                <div className="flex gap-6 p-4 min-h-[80px]">
                   {/* Selection Group */}
                   <div className="flex flex-col">
                     <div className="flex gap-2">
@@ -364,7 +364,7 @@ const AidToolsBar = ({
               )}
 
               {activeTab === 'view' && (
-                <div className="flex gap-6 p-4">
+                <div className="flex gap-6 p-4 min-h-[80px]">
                   {/* Standard Views */}
                   <div className="flex flex-col">
                     <div className="flex gap-1">
@@ -477,7 +477,7 @@ const AidToolsBar = ({
               )}
 
               {activeTab === 'tools' && (
-                <div className="flex gap-6 p-4">
+                <div className="flex gap-6 p-4 min-h-[80px]">
                   {/* Zoom Controls */}
                   <div className="flex flex-col">
                     <div className="flex flex-col gap-1">
@@ -587,7 +587,7 @@ const AidToolsBar = ({
               )}
 
               {activeTab === 'panels' && (
-                <div className="flex gap-6 p-4">
+                <div className="flex gap-6 p-4 min-h-[80px]">
                   <div className="flex flex-col">
                     <div className="flex gap-2">
                       {panelButtons.map((panel) => {
