@@ -70,7 +70,7 @@ const AidToolsBar = ({
     <div className="fixed top-0 left-0 right-0 z-50">
       <div className="bg-white border-b border-gray-200 shadow-sm rounded-xl m-2">
         <TooltipProvider>
-          <div className="w-full min-h-[80px]">
+          <div className="w-full min-h-[120px]">
             {/* Tab Headers */}
             <div className="flex border-b border-gray-200 bg-gray-50 rounded-t-xl">
               <div 
@@ -110,11 +110,12 @@ const AidToolsBar = ({
             {/* Tab Content */}
             <div className="bg-white rounded-b-xl">
               {activeTab === 'home' && (
-                <div className="flex gap-6 p-3 h-[48px] bg-white rounded-b-xl items-center">
+                <div className="flex gap-6 p-3 h-[80px] bg-white rounded-b-xl items-start">
                   {/* Selection Group */}
-                  <div className="flex gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Selection</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
                         <Button
                           variant={activeTool === 'select' ? 'default' : 'ghost'}
                           className={`p-2 h-8 w-8 transition-all duration-200 ${
@@ -124,14 +125,10 @@ const AidToolsBar = ({
                         >
                           <Target className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Select Tool</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Select</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant={activeTool === 'point' ? 'default' : 'ghost'}
                           className={`p-2 h-8 w-8 transition-all duration-200 ${
@@ -141,14 +138,10 @@ const AidToolsBar = ({
                         >
                           <MapPin className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Point Tool - Click to add points</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Point</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant={activeTool === 'measure' ? 'default' : 'ghost'}
                           className={`p-2 h-8 w-8 transition-all duration-200 ${
@@ -158,94 +151,81 @@ const AidToolsBar = ({
                         >
                           <Ruler className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Measure Tool</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Measure</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="w-px bg-gray-300 h-6" />
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
 
                   {/* Camera Group */}
-                  <div>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={isOrthographic ? 'default' : 'ghost'}
-                          className={`p-2 h-8 w-8 transition-all duration-200 ${
-                            isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
-                          }`}
-                          onClick={onCameraToggle}
-                        >
-                          <Camera className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
-                      </TooltipContent>
-                    </Tooltip>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        variant={isOrthographic ? 'default' : 'ghost'}
+                        className={`p-2 h-8 w-8 transition-all duration-200 ${
+                          isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                        onClick={onCameraToggle}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                    </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="w-px bg-gray-300 h-6" />
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
 
                   {/* Standard Views */}
-                  <div className="flex gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
-                        onClick={onViewLeft}
-                      >
-                        <ArrowLeft className="h-4 w-4" />
-                      </Button>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                       <p>Left View</p>
-                     </TooltipContent>
-                   </Tooltip>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Views</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
+                          onClick={onViewLeft}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Left</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
-                        onClick={onViewRight}
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                       <p>Right View</p>
-                     </TooltipContent>
-                   </Tooltip>
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
+                          onClick={onViewRight}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Right</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
-                        onClick={onViewIsometric}
-                      >
-                        <Box className="h-4 w-4" />
-                      </Button>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                       <p>Isometric View (I)</p>
-                     </TooltipContent>
-                   </Tooltip>
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700 transition-all duration-200"
+                          onClick={onViewIsometric}
+                        >
+                          <Box className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">ISO</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="w-px bg-gray-300 h-6" />
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
 
                   {/* Zoom Controls */}
-                  <div className="flex gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Zoom</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -253,14 +233,10 @@ const AidToolsBar = ({
                         >
                           <Maximize className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Zoom All (A)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">All</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 disabled:opacity-30 hover:bg-gray-100 text-gray-700"
@@ -269,14 +245,10 @@ const AidToolsBar = ({
                         >
                           <Focus className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Focus Selected (F)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Focus</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -284,14 +256,10 @@ const AidToolsBar = ({
                         >
                           <ZoomIn className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Zoom In</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">In</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -299,14 +267,10 @@ const AidToolsBar = ({
                         >
                           <ZoomOut className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Zoom Out</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Out</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -314,33 +278,36 @@ const AidToolsBar = ({
                         >
                           <RotateCcw className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Reset View (R)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Reset</span>
+                      </div>
 
-                    <div className="flex items-center px-2 text-xs text-gray-600">
-                      {Math.round(zoomLevel)}%
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="text-xs text-gray-600 font-medium">{Math.round(zoomLevel)}%</div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="w-px bg-gray-300 h-6" />
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
 
                   {/* Utilities */}
-                  <div>
-                    <NotificationBell />
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
+                    <div className="flex flex-col items-center">
+                      <NotificationBell />
+                      <span className="text-xs text-gray-600 mt-1">Alerts</span>
+                    </div>
                   </div>
                 </div>
               )}
 
               {activeTab === 'view' && (
-                <div className="flex gap-4 p-3 h-[48px]">
+                <div className="flex gap-4 p-3 h-[80px] items-start">
                   {/* Standard Views */}
-                  <div className="flex gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Standard Views</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -348,14 +315,10 @@ const AidToolsBar = ({
                         >
                           <ArrowLeft className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Left View</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Left</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -363,14 +326,10 @@ const AidToolsBar = ({
                         >
                           <ArrowRight className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Right View</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Right</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -378,14 +337,10 @@ const AidToolsBar = ({
                         >
                           <Box className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Isometric View (I)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">ISO</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -393,14 +348,10 @@ const AidToolsBar = ({
                         >
                           <ArrowLeft className="h-4 w-4 rotate-90" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Front View</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Front</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -408,42 +359,40 @@ const AidToolsBar = ({
                         >
                           <ArrowRight className="h-4 w-4 rotate-90" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Back View</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Back</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="w-px bg-gray-300 h-6" />
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
 
                   {/* Camera Group */}
-                  <div>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={isOrthographic ? 'default' : 'ghost'}
-                          className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
-                          onClick={onCameraToggle}
-                        >
-                          <Camera className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
-                      </TooltipContent>
-                    </Tooltip>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        variant={isOrthographic ? 'default' : 'ghost'}
+                        className={`p-2 h-8 w-8 transition-all duration-200 ${
+                          isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                        onClick={onCameraToggle}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                    </div>
                   </div>
                 </div>
               )}
 
               {activeTab === 'tools' && (
-                <div className="flex gap-4 p-3 h-[48px]">
+                <div className="flex gap-4 p-3 h-[80px] items-start">
                   {/* Zoom Controls */}
-                  <div className="flex gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Zoom Tools</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -451,14 +400,10 @@ const AidToolsBar = ({
                         >
                           <Maximize className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Zoom All (A)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">All</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 disabled:opacity-30 hover:bg-gray-100 text-gray-700"
@@ -467,14 +412,10 @@ const AidToolsBar = ({
                         >
                           <Focus className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Focus Selected (F)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Focus</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -482,14 +423,10 @@ const AidToolsBar = ({
                         >
                           <ZoomIn className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Zoom In</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">In</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -497,14 +434,10 @@ const AidToolsBar = ({
                         >
                           <ZoomOut className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Zoom Out</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Out</span>
+                      </div>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center">
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
@@ -512,54 +445,59 @@ const AidToolsBar = ({
                         >
                           <RotateCcw className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Reset View (R)</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        <span className="text-xs text-gray-600 mt-1">Reset</span>
+                      </div>
 
-                    <div className="flex items-center px-2 text-xs text-gray-600">
-                      {Math.round(zoomLevel)}%
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="text-xs text-gray-600 font-medium">{Math.round(zoomLevel)}%</div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="w-px bg-gray-300 h-6" />
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
 
                   {/* Utilities */}
-                  <div>
-                    <NotificationBell />
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
+                    <div className="flex flex-col items-center">
+                      <NotificationBell />
+                      <span className="text-xs text-gray-600 mt-1">Alerts</span>
+                    </div>
                   </div>
                 </div>
               )}
 
               {activeTab === 'panels' && (
-                <div className="flex gap-4 p-3 h-[48px]">
-                  <div className="flex gap-2">
-                    {panelButtons.map((panel) => {
-                      const IconComponent = panel.icon;
-                      const isActive = activePanel === panel.id && isPanelOpen;
-                      
-                      return (
-                        <Tooltip key={panel.id}>
-                          <TooltipTrigger asChild>
+                <div className="flex gap-4 p-3 h-[80px] items-start">
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Control Panels</div>
+                    <div className="flex gap-2">
+                      {panelButtons.map((panel) => {
+                        const IconComponent = panel.icon;
+                        const isActive = activePanel === panel.id && isPanelOpen;
+                        
+                        return (
+                          <div key={panel.id} className="flex flex-col items-center">
                             <Button
                               variant={isActive ? 'default' : 'ghost'}
-                              className="p-2 h-8 w-8 hover:bg-gray-100 text-gray-700"
+                              className={`p-2 h-8 w-8 transition-all duration-200 ${
+                                isActive ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                              }`}
                               onClick={() => handlePanelClick(panel.id)}
                             >
                               <IconComponent className="h-4 w-4" />
                             </Button>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-48">
-                            <div className="text-xs">
-                              <p className="font-medium">{panel.label}</p>
-                              <p className="text-muted-foreground mt-1">{panel.description}</p>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })}
+                            <span className="text-xs text-gray-600 mt-1">
+                              {panel.id === 'scene' ? 'Scene' : 
+                               panel.id === 'properties' ? 'Props' : 
+                               panel.id === 'lighting' ? 'Light' : 
+                               panel.id === 'settings' ? 'Config' : 'Help'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
