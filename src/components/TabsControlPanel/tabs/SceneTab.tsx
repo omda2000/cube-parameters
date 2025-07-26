@@ -36,14 +36,14 @@ const SceneTab = ({
     <TooltipProvider>
       <div className="h-full flex flex-col">
         {/* Search and Filter Controls */}
-        <div className="p-3 space-y-2 border-b border-slate-600/50">
+        <div className="p-3 space-y-2 border-b border-gray-200">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-500" />
             <Input
               placeholder="Search objects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-7 pl-7 bg-slate-700/50 border-slate-600/50 text-slate-200 text-xs placeholder:text-slate-400"
+              className="h-7 pl-7 bg-gray-50 border-gray-200 text-gray-900 text-xs placeholder:text-gray-500"
             />
           </div>
 
@@ -56,12 +56,12 @@ const SceneTab = ({
                 onCheckedChange={setShowSelectedOnly}
                 className="scale-75"
               />
-              <Label htmlFor="selected-only" className="text-xs text-slate-400">
+              <Label htmlFor="selected-only" className="text-xs text-gray-600">
                 Selected only
               </Label>
             </div>
             
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-gray-500">
               {loadedModels.length} model{loadedModels.length !== 1 ? 's' : ''}
             </div>
           </div>
@@ -69,9 +69,9 @@ const SceneTab = ({
 
         {/* Upload Error Display */}
         {uploadError && (
-          <div className="mx-3 mt-2 p-2 bg-red-900/30 border border-red-800/50 rounded text-red-200 text-xs">
+          <div className="mx-3 mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-800 text-xs">
             <div className="flex items-start gap-2">
-              <span className="text-red-400">⚠</span>
+              <span className="text-red-500">⚠</span>
               <span>{uploadError}</span>
             </div>
           </div>

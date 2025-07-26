@@ -41,11 +41,11 @@ const SettingsTab = () => {
         </div>
       </div>
 
-      <div className="border-t border-slate-700/50 pt-3">
-        <h3 className="text-sm font-medium text-white mb-3">Grid Settings</h3>
+      <div className="border-t border-gray-200 pt-3">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">Grid Settings</h3>
         
         {/* Grid Size would go here - keeping simple for now */}
-        <div className="text-xs text-slate-400">
+        <div className="text-xs text-gray-500">
           Grid settings will be expanded in future updates
         </div>
       </div>

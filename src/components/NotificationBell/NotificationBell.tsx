@@ -16,7 +16,7 @@ const NotificationBell = ({ onPanelOpen }: NotificationBellProps) => {
       variant="ghost"
       size="sm"
       onClick={onPanelOpen}
-      className="relative text-white hover:text-slate-200 hover:bg-slate-700/50 border-slate-500 h-8 w-8 p-0"
+      className="relative text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-8 w-8 p-0"
     >
       <Bell className="h-4 w-4" />
       {unreadCount > 0 && (

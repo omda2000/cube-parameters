@@ -41,8 +41,8 @@ const SceneObjectNode = ({
   return (
     <div>
       <div 
-        className={`flex items-center py-1 px-2 hover:bg-slate-700/30 rounded text-sm cursor-pointer ${
-          isObjectSelected ? 'bg-blue-600/30 border border-blue-500/50' : ''
+        className={`flex items-center py-1 px-2 hover:bg-gray-100 rounded text-sm cursor-pointer ${
+          isObjectSelected ? 'bg-blue-50 border border-blue-200' : ''
         }`}
         style={{ paddingLeft }}
         onClick={handleClick}
@@ -52,7 +52,7 @@ const SceneObjectNode = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-400"
+              className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleExpanded(sceneObject.id);
@@ -70,7 +70,7 @@ const SceneObjectNode = ({
           
           <NodeIcon type={sceneObject.type} objectType={sceneObject.object?.userData?.type} />
           
-          <span className={`truncate flex-1 ${isObjectSelected ? 'text-blue-300 font-medium' : 'text-slate-200'}`}>
+          <span className={`truncate flex-1 ${isObjectSelected ? 'text-blue-700 font-medium' : 'text-gray-900'}`}>
             {sceneObject.name}
           </span>
           
@@ -78,7 +78,7 @@ const SceneObjectNode = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-200"
+              className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleVisibility(sceneObject);
@@ -95,7 +95,7 @@ const SceneObjectNode = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
+                className="h-6 w-6 p-0 text-gray-500 hover:text-red-500"
                 onClick={(e) => onDelete(sceneObject, e)}
                 title="Delete"
               >
