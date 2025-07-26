@@ -63,7 +63,7 @@ const SceneObjectGroups = ({
     return (
       <div key={title} className="mb-1">
         <div 
-          className="flex items-center gap-1 px-1 py-0.5 hover:bg-gray-100 rounded text-gray-700"
+          className="group flex items-center gap-1 px-1 py-0.5 hover:bg-gray-100 rounded text-gray-700"
         >
           <Button
             variant="ghost"
@@ -83,14 +83,14 @@ const SceneObjectGroups = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-3 w-3 p-0 text-gray-500 hover:text-gray-700"
+            className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             onClick={() => toggleCategoryVisibility(title, objects)}
             title={`${isCategoryHidden ? 'Show' : 'Hide'} all ${title.toLowerCase()}`}
           >
             {isCategoryHidden ? (
-              <EyeOff className="h-2.5 w-2.5" />
+              <EyeOff className="h-3 w-3" />
             ) : (
-              <Eye className="h-2.5 w-2.5" />
+              <Eye className="h-3 w-3" />
             )}
           </Button>
         </div>

@@ -41,7 +41,7 @@ const SceneObjectNode = ({
   return (
     <div>
       <div 
-        className={`flex items-center py-1 px-2 hover:bg-gray-100 rounded text-sm cursor-pointer ${
+        className={`group flex items-center py-1 px-2 hover:bg-gray-100 rounded text-sm cursor-pointer ${
           isObjectSelected ? 'bg-blue-50 border border-blue-200' : ''
         }`}
         style={{ paddingLeft }}
@@ -74,7 +74,9 @@ const SceneObjectNode = ({
             {sceneObject.name}
           </span>
           
-          <div className="flex gap-1">
+          <div className={`flex gap-1 transition-opacity duration-200 ${
+            isObjectSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}>
             <Button
               variant="ghost"
               size="sm"
