@@ -40,8 +40,8 @@ const UnifiedSceneTree = ({
         selectedObjects={selectedObjects}
         onClearSelection={clearSelection}
       />
-      <div className="flex-1 overflow-y-auto bg-slate-800/30 border border-slate-600 rounded">
-        <div className="p-2">
+      <div className="flex-1 overflow-y-auto bg-gray-50 border border-gray-200 rounded">
+        <div className="p-1">
           {sceneObjects.length === 0 ? (
             <EmptySceneState />
           ) : (

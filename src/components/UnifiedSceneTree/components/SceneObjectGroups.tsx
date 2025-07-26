@@ -61,36 +61,36 @@ const SceneObjectGroups = ({
     const isCategoryHidden = hiddenCategories.has(title);
     
     return (
-      <div key={title} className="mb-2">
+      <div key={title} className="mb-1">
         <div 
-          className="flex items-center gap-1 px-2 py-1 hover:bg-slate-700/30 rounded"
+          className="flex items-center gap-1 px-1 py-0.5 hover:bg-gray-100 rounded text-gray-700"
         >
           <Button
             variant="ghost"
             size="sm"
-            className="h-4 w-4 p-0 text-slate-400"
+            className="h-3 w-3 p-0 text-gray-500 hover:text-gray-700"
             onClick={() => toggleGroupCollapse(title)}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-2.5 w-2.5" />
             ) : (
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-2.5 w-2.5" />
             )}
           </Button>
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wide flex-1">
+          <span className="text-xs font-medium text-gray-600 uppercase tracking-wide flex-1">
             {title} ({objects.length})
           </span>
           <Button
             variant="ghost"
             size="sm"
-            className="h-4 w-4 p-0 text-slate-400 hover:text-slate-200"
+            className="h-3 w-3 p-0 text-gray-500 hover:text-gray-700"
             onClick={() => toggleCategoryVisibility(title, objects)}
             title={`${isCategoryHidden ? 'Show' : 'Hide'} all ${title.toLowerCase()}`}
           >
             {isCategoryHidden ? (
-              <EyeOff className="h-3 w-3" />
+              <EyeOff className="h-2.5 w-2.5" />
             ) : (
-              <Eye className="h-3 w-3" />
+              <Eye className="h-2.5 w-2.5" />
             )}
           </Button>
         </div>
