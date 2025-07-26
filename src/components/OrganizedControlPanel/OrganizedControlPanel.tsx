@@ -74,8 +74,9 @@ const OrganizedControlPanel = ({
 
   return (
     <div
-      className="fixed left-20 top-20 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-40"
+      className="fixed left-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl z-40"
       style={{
+        top: 'calc(120px + 1rem)', // Ribbon height + margin
         width: 340,
         height: 520,
         maxHeight: '85vh'
