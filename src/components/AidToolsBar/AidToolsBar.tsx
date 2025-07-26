@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog, Grid3X3, EyeOff, Layers, ChevronUp, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell/NotificationBell';
 import ExpandableShadeSelector, { type ShadeType } from '@/components/ExpandableShadeSelector/ExpandableShadeSelector';
+import { useFileHandlers } from '@/hooks/useFileHandlers';
 
 interface AidToolsBarProps {
   onToolSelect: (tool: 'select' | 'point' | 'measure') => void;
@@ -57,10 +58,27 @@ const AidToolsBar = ({
   onShadeTypeChange
 }: AidToolsBarProps) => {
   const [activeTab, setActiveTab] = useState<'home' | 'view' | 'tools' | 'panels' | 'admin'>('home');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { handleFileUpload } = useFileHandlers();
 
   const handlePanelClick = (panelId: string) => {
     if (onPanelChange) {
       onPanelChange(panelId);
+    }
+  };
+
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+      // Reset the input value to allow re-selecting the same file
+      event.target.value = '';
     }
   };
 
@@ -605,7 +623,7 @@ const AidToolsBar = ({
                         <Button
                           variant="ghost"
                           className="p-2 h-8 w-8 transition-all duration-200 hover:bg-gray-100 text-gray-700"
-                          onClick={() => handlePanelClick('scene')}
+                          onClick={handleImportClick}
                         >
                           <Upload className="h-4 w-4" />
                         </Button>
@@ -619,6 +637,15 @@ const AidToolsBar = ({
           </div>
         </TooltipProvider>
       </div>
+      {/* Hidden file input for import functionality */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept=".fbx,.obj,.gltf,.glb,application/octet-stream,model/gltf+json,model/gltf-binary"
+        onChange={handleFileChange}
+        multiple={false}
+      />
     </div>
   );
 };
