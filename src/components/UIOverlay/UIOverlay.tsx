@@ -1,7 +1,6 @@
 
 import React from 'react';
 import AidToolsBar from '../AidToolsBar/AidToolsBar';
-import LeftSidebar from '../LeftSidebar/LeftSidebar';
 import OrganizedControlPanel from '../OrganizedControlPanel/OrganizedControlPanel';
 import OrganizedMeasurePanel from '../OrganizedMeasurePanel/OrganizedMeasurePanel';
 import EnhancedStatusBar from '../EnhancedStatusBar/EnhancedStatusBar';
@@ -84,10 +83,12 @@ const UIOverlay = ({
 }: UIOverlayProps) => {
   return (
     <>
-      {/* Aid Tools Bar - centered at top with proper spacing */}
+      {/* Aid Tools Bar with integrated panel controls */}
       <AidToolsBar
         onToolSelect={onToolSelect}
         activeTool={activeTool}
+        onViewFront={onViewFront}
+        onViewBack={onViewBack}
         onViewLeft={onViewLeft}
         onViewRight={onViewRight}
         onViewIsometric={onViewIsometric}
@@ -100,16 +101,12 @@ const UIOverlay = ({
         onResetView={onResetView}
         selectedObject={null}
         zoomLevel={100}
-      />
-
-      {/* Left Sidebar - properly positioned to avoid overlaps */}
-      <LeftSidebar
-        activeTab={activeControlTab}
-        onTabChange={onTabChange}
+        activePanel={activeControlTab}
+        onPanelChange={onTabChange}
         isPanelOpen={showControlPanel}
       />
 
-      {/* Organized Control Panel - positioned with proper spacing */}
+      {/* Organized Control Panel - positioned with proper spacing to avoid ribbon clash */}
       <OrganizedControlPanel
         activeTab={activeControlTab}
         isOpen={showControlPanel}
