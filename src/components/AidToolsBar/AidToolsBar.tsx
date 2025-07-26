@@ -314,7 +314,9 @@ const AidToolsBar = ({
                   <div className="flex flex-col items-center">
                     <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
                     <div className="flex flex-col items-center">
-                      <NotificationBell />
+                      <div className="h-8 w-8 flex items-center justify-center">
+                        <NotificationBell />
+                      </div>
                       <span className="text-xs text-gray-600 mt-1">Alerts</span>
                     </div>
                   </div>
