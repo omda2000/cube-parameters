@@ -110,20 +110,20 @@ const AidToolsBar = ({
             {/* Tab Content */}
             <div className="bg-white rounded-b-xl">
               {activeTab === 'home' && (
-                <div className="flex gap-8 p-4 h-[60px] bg-white rounded-b-xl">
+                <div className="flex gap-8 p-4 h-[72px] bg-white rounded-b-xl items-center">
                   {/* Selection Group */}
-                  <div className="flex flex-col items-center">
-                    <div className="flex gap-3">
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <div className="flex gap-3 mb-1">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant={activeTool === 'select' ? 'default' : 'ghost'}
-                            className={`flex flex-col items-center justify-between p-2 h-12 min-w-[52px] transition-all duration-200 ${
+                            className={`flex flex-col items-center justify-between p-1 h-10 min-w-[52px] transition-all duration-200 ${
                               activeTool === 'select' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
                             }`}
                             onClick={() => onToolSelect('select')}
                           >
-                            <Target className="h-4 w-4" />
+                            <Target className="h-3 w-3" />
                             <span className="text-xs font-medium">Select</span>
                           </Button>
                         </TooltipTrigger>
@@ -136,12 +136,12 @@ const AidToolsBar = ({
                         <TooltipTrigger asChild>
                           <Button
                             variant={activeTool === 'point' ? 'default' : 'ghost'}
-                            className={`flex flex-col items-center justify-between p-2 h-12 min-w-[52px] transition-all duration-200 ${
+                            className={`flex flex-col items-center justify-between p-1 h-10 min-w-[52px] transition-all duration-200 ${
                               activeTool === 'point' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
                             }`}
                             onClick={() => onToolSelect('point')}
                           >
-                            <MapPin className="h-4 w-4" />
+                            <MapPin className="h-3 w-3" />
                             <span className="text-xs font-medium">Point</span>
                           </Button>
                         </TooltipTrigger>
@@ -150,24 +150,24 @@ const AidToolsBar = ({
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <div className="text-xs text-gray-600 mt-1 text-center font-medium">Selection</div>
+                    <div className="text-xs text-gray-600 text-center font-medium">Selection</div>
                   </div>
 
                   {/* Separator */}
                   <div className="w-px bg-gray-300 mx-2" />
 
                   {/* Measure Group */}
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center justify-center h-full">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant={activeTool === 'measure' ? 'default' : 'ghost'}
-                          className={`flex flex-col items-center justify-between p-2 h-12 min-w-[52px] transition-all duration-200 ${
+                          className={`flex flex-col items-center justify-between p-1 h-10 min-w-[52px] transition-all duration-200 mb-1 ${
                             activeTool === 'measure' ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
                           }`}
                           onClick={() => onToolSelect('measure')}
                         >
-                          <Ruler className="h-4 w-4" />
+                          <Ruler className="h-3 w-3" />
                           <span className="text-xs font-medium">Measure</span>
                         </Button>
                       </TooltipTrigger>
@@ -175,24 +175,24 @@ const AidToolsBar = ({
                         <p>Measure Tool</p>
                       </TooltipContent>
                     </Tooltip>
-                    <div className="text-xs text-gray-600 mt-1 text-center font-medium">Measure</div>
+                    <div className="text-xs text-gray-600 text-center font-medium">Measure</div>
                   </div>
 
                   {/* Camera Group */}
                   <div className="w-px bg-gray-300" />
 
                   {/* Camera Group */}
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center justify-center h-full">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant={isOrthographic ? 'default' : 'ghost'}
-                          className={`flex flex-col items-center justify-between p-2 h-12 min-w-[52px] transition-all duration-200 ${
+                          className={`flex flex-col items-center justify-between p-1 h-10 min-w-[52px] transition-all duration-200 mb-1 ${
                             isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
                           }`}
                           onClick={onCameraToggle}
                         >
-                          <Camera className="h-4 w-4" />
+                          <Camera className="h-3 w-3" />
                           <span className="text-xs font-medium">{isOrthographic ? 'Ortho' : 'Persp'}</span>
                         </Button>
                       </TooltipTrigger>
@@ -200,7 +200,7 @@ const AidToolsBar = ({
                         <p>Toggle {isOrthographic ? 'Perspective' : 'Orthographic'} Camera</p>
                       </TooltipContent>
                     </Tooltip>
-                    <div className="text-xs text-gray-600 mt-1 text-center font-medium">Camera</div>
+                    <div className="text-xs text-gray-600 text-center font-medium">Camera</div>
                   </div>
 
                   {/* Separator */}
