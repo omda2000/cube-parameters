@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog, Grid3X3, EyeOff, Layers, ChevronUp } from 'lucide-react';
+import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog, Grid3X3, EyeOff, Layers, ChevronUp, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell/NotificationBell';
@@ -56,7 +56,7 @@ const AidToolsBar = ({
   shadeType = 'shaded',
   onShadeTypeChange
 }: AidToolsBarProps) => {
-  const [activeTab, setActiveTab] = useState<'home' | 'view' | 'tools' | 'panels'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'view' | 'tools' | 'panels' | 'admin'>('home');
 
   const handlePanelClick = (panelId: string) => {
     if (onPanelChange) {
@@ -104,12 +104,20 @@ const AidToolsBar = ({
                 Tools
               </div>
               <div 
-                className={`px-6 py-1 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                className={`px-6 py-1 border-r border-gray-200 text-sm font-medium cursor-pointer transition-all duration-200 ${
                   activeTab === 'panels' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab('panels')}
               >
                 Panels
+              </div>
+              <div 
+                className={`px-6 py-1 text-sm font-medium cursor-pointer transition-all duration-200 ${
+                  activeTab === 'admin' ? 'bg-white text-black border-b-2 border-red-500 shadow-sm' : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab('admin')}
+              >
+                Admin
               </div>
             </div>
             
@@ -582,6 +590,27 @@ const AidToolsBar = ({
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'admin' && (
+                <div className="flex gap-4 p-3 h-[80px] items-start">
+                  {/* File Management */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">File Management</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant="ghost"
+                          className="p-2 h-8 w-8 transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                          onClick={() => handlePanelClick('scene')}
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">Import</span>
+                      </div>
                     </div>
                   </div>
                 </div>
