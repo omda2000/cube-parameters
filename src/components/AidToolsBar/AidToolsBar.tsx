@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog } from 'lucide-react';
+import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog, Grid3X3, EyeOff, Layers, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell/NotificationBell';
+import ExpandableShadeSelector, { type ShadeType } from '@/components/ExpandableShadeSelector/ExpandableShadeSelector';
 
 interface AidToolsBarProps {
   onToolSelect: (tool: 'select' | 'point' | 'measure') => void;
@@ -26,6 +27,9 @@ interface AidToolsBarProps {
   activePanel?: string;
   onPanelChange?: (panel: string) => void;
   isPanelOpen?: boolean;
+  // Shade type props
+  shadeType?: ShadeType;
+  onShadeTypeChange?: (type: ShadeType) => void;
 }
 
 const AidToolsBar = ({
@@ -48,7 +52,9 @@ const AidToolsBar = ({
   zoomLevel = 100,
   activePanel,
   onPanelChange,
-  isPanelOpen = false
+  isPanelOpen = false,
+  shadeType = 'shaded',
+  onShadeTypeChange
 }: AidToolsBarProps) => {
   const [activeTab, setActiveTab] = useState<'home' | 'view' | 'tools' | 'panels'>('home');
 
@@ -159,20 +165,34 @@ const AidToolsBar = ({
                   {/* Separator */}
                   <div className="w-px bg-gray-300 h-12 mt-6" />
 
-                  {/* Camera Group */}
+                  {/* Display Group */}
                   <div className="flex flex-col items-center">
-                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
-                    <div className="flex flex-col items-center">
-                      <Button
-                        variant={isOrthographic ? 'default' : 'ghost'}
-                        className={`p-2 h-8 w-8 transition-all duration-200 ${
-                          isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
-                        }`}
-                        onClick={onCameraToggle}
-                      >
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Display</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <div className="h-8 w-8 flex items-center justify-center">
+                          {onShadeTypeChange && (
+                            <ExpandableShadeSelector
+                              currentShadeType={shadeType}
+                              onShadeTypeChange={onShadeTypeChange}
+                            />
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-600 mt-1">Shade</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={isOrthographic ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={onCameraToggle}
+                        >
+                          <Camera className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -303,6 +323,40 @@ const AidToolsBar = ({
 
               {activeTab === 'view' && (
                 <div className="flex gap-4 p-3 h-[80px] items-start">
+                  {/* Display Controls */}
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Display</div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center">
+                        <div className="h-8 w-8 flex items-center justify-center">
+                          {onShadeTypeChange && (
+                            <ExpandableShadeSelector
+                              currentShadeType={shadeType}
+                              onShadeTypeChange={onShadeTypeChange}
+                            />
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-600 mt-1">Shade</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <Button
+                          variant={isOrthographic ? 'default' : 'ghost'}
+                          className={`p-2 h-8 w-8 transition-all duration-200 ${
+                            isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
+                          }`}
+                          onClick={onCameraToggle}
+                        >
+                          <Camera className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-px bg-gray-300 h-12 mt-6" />
+
                   {/* Standard Views */}
                   <div className="flex flex-col items-center">
                     <div className="text-xs text-gray-500 mb-2 font-medium">Standard Views</div>
@@ -361,26 +415,6 @@ const AidToolsBar = ({
                         </Button>
                         <span className="text-xs text-gray-600 mt-1">Back</span>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Separator */}
-                  <div className="w-px bg-gray-300 h-12 mt-6" />
-
-                  {/* Camera Group */}
-                  <div className="flex flex-col items-center">
-                    <div className="text-xs text-gray-500 mb-2 font-medium">Camera</div>
-                    <div className="flex flex-col items-center">
-                      <Button
-                        variant={isOrthographic ? 'default' : 'ghost'}
-                        className={`p-2 h-8 w-8 transition-all duration-200 ${
-                          isOrthographic ? 'bg-red-50 text-black border border-red-200 shadow-sm' : 'hover:bg-gray-100 text-gray-700'
-                        }`}
-                        onClick={onCameraToggle}
-                      >
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs text-gray-600 mt-1">{isOrthographic ? 'Ortho' : 'Persp'}</span>
                     </div>
                   </div>
                 </div>
