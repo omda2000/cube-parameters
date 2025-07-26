@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog, Grid3X3, EyeOff, Layers, ChevronUp, Upload } from 'lucide-react';
+import { MapPin, Ruler, Target, Camera, ArrowLeft, ArrowRight, Box, ZoomIn, ZoomOut, Maximize, Focus, RotateCcw, Settings, Eye, HelpCircle, Lightbulb, Cog, Grid3X3, EyeOff, Layers, ChevronUp, Upload, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell/NotificationBell';
@@ -86,6 +86,7 @@ const AidToolsBar = ({
     { id: 'scene', label: 'Scene Objects', icon: Box, description: 'Manage 3D objects and hierarchy' },
     { id: 'properties', label: 'Object Properties', icon: Settings, description: 'Edit object properties and materials' },
     { id: 'lighting', label: 'Lighting & Environment', icon: Lightbulb, description: 'Control lighting and environment settings' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, description: 'View system notifications and messages' },
     { id: 'settings', label: 'Settings', icon: Cog, description: 'App settings and units configuration' },
     { id: 'help', label: 'User Guide', icon: HelpCircle, description: 'Touch and desktop controls guide' },
   ];
@@ -341,7 +342,7 @@ const AidToolsBar = ({
                     <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
                     <div className="flex flex-col items-center">
                       <div className="h-8 w-8 flex items-center justify-center">
-                        <NotificationBell />
+                        <NotificationBell onPanelOpen={() => handlePanelClick('notifications')} />
                       </div>
                       <span className="text-xs text-gray-600 mt-1">Alerts</span>
                     </div>
@@ -571,10 +572,10 @@ const AidToolsBar = ({
                   {/* Utilities */}
                   <div className="flex flex-col items-center">
                     <div className="text-xs text-gray-500 mb-2 font-medium">Utilities</div>
-                    <div className="flex flex-col items-center">
-                      <NotificationBell />
-                      <span className="text-xs text-gray-600 mt-1">Alerts</span>
-                    </div>
+                     <div className="flex flex-col items-center">
+                       <NotificationBell onPanelOpen={() => handlePanelClick('notifications')} />
+                       <span className="text-xs text-gray-600 mt-1">Alerts</span>
+                     </div>
                   </div>
                 </div>
               )}
@@ -599,12 +600,13 @@ const AidToolsBar = ({
                             >
                               <IconComponent className="h-4 w-4" />
                             </Button>
-                            <span className="text-xs text-gray-600 mt-1">
-                              {panel.id === 'scene' ? 'Scene' : 
-                               panel.id === 'properties' ? 'Props' : 
-                               panel.id === 'lighting' ? 'Light' : 
-                               panel.id === 'settings' ? 'Config' : 'Help'}
-                            </span>
+                             <span className="text-xs text-gray-600 mt-1">
+                               {panel.id === 'scene' ? 'Scene' : 
+                                panel.id === 'properties' ? 'Props' : 
+                                panel.id === 'lighting' ? 'Light' : 
+                                panel.id === 'notifications' ? 'Alerts' :
+                                panel.id === 'settings' ? 'Config' : 'Help'}
+                             </span>
                           </div>
                         );
                       })}

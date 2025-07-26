@@ -6,6 +6,7 @@ import SceneTab from '../TabsControlPanel/tabs/SceneTab';
 import PropertiesTab from '../TabsControlPanel/tabs/PropertiesTab';
 import LightingTab from '../TabsControlPanel/tabs/LightingTab';
 import HelpPanel from '../HelpPanel/HelpPanel';
+import NotificationsPanel from '../NotificationsPanel/NotificationsPanel';
 
 interface OrganizedControlPanelProps {
   activeTab: string;
@@ -31,6 +32,7 @@ const OrganizedControlPanel = ({
       case 'lighting': return 'Lighting & Environment';
       case 'environment': return 'View Settings';
       case 'help': return 'User Guide';
+      case 'notifications': return 'Notifications';
       default: return 'Control Panel';
     }
   };
@@ -67,6 +69,8 @@ const OrganizedControlPanel = ({
         return <div className="p-4 text-center text-muted-foreground">Environment settings have been moved to other panels</div>;
       case 'help':
         return <HelpPanel />;
+      case 'notifications':
+        return <NotificationsPanel />;
       default:
         return null;
     }
