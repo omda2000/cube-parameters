@@ -6,7 +6,7 @@
 npm install @omda2000/3d-model-viewer
 ```
 
-That's it! All dependencies are bundled, so you don't need to install React, Three.js, or any other peer dependencies separately.
+That's it! **All dependencies are bundled** including React, React-DOM, Three.js, and all UI components. No need to install anything else separately.
 
 ## Package Managers
 
@@ -319,14 +319,20 @@ const ModelViewer = dynamic(
 );
 ```
 
-#### 5. Bundle Size Concerns
-The package is self-contained (~3-5MB) which includes React, Three.js, and all dependencies. If you need a smaller bundle:
+#### 5. Bundle Size Information
+The package is self-contained (~3-5MB) and includes all dependencies:
+- ✅ React & React-DOM
+- ✅ Three.js with all required plugins
+- ✅ All Radix UI components 
+- ✅ Complete TypeScript support
+- ✅ Optimized with code splitting
 
+For smaller bundles, use specific variants:
 ```tsx
-// Use the minimal variant
+// Minimal variant (smaller footprint)
 import { MinimalViewer } from '@omda2000/3d-model-viewer';
 
-// Or the headless variant for custom UI
+// Headless variant (API only, no UI)
 import { HeadlessViewer } from '@omda2000/3d-model-viewer';
 ```
 

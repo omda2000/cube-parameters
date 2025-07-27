@@ -22,22 +22,25 @@ A comprehensive, production-ready React component for viewing and interacting wi
 
 ## 📦 Installation
 
-### Using npm
+### Single Command Install
 
 ```bash
 npm install @omda2000/3d-model-viewer
 ```
 
-### Using yarn
+**That's it!** ✅ All dependencies are bundled including React, React-DOM, Three.js, and all UI components. No additional peer dependencies required.
+
+### Alternative Package Managers
 
 ```bash
+# Using yarn
 yarn add @omda2000/3d-model-viewer
-```
 
-### Using pnpm
-
-```bash
+# Using pnpm
 pnpm add @omda2000/3d-model-viewer
+
+# Using bun
+bun add @omda2000/3d-model-viewer
 ```
 
 ## 🚀 Quick Start
