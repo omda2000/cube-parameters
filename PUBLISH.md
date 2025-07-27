@@ -1,6 +1,6 @@
-# Publishing to GitHub Packages
+# Publishing to NPM
 
-This document explains how to publish the 3D Model Viewer package to GitHub Packages.
+This document explains how to publish the 3D Model Viewer package to NPM.
 
 ## Automatic Publishing (Recommended)
 
@@ -15,7 +15,7 @@ The repository is configured with GitHub Actions for automatic publishing:
    ```
 3. **GitHub Actions will automatically**:
    - Build the package using `npm run build:package`
-   - Publish to GitHub Packages registry
+   - Publish to NPM registry
    - Make it available as `@omda2000/3d-model-viewer`
 
 ## Manual Publishing
@@ -44,10 +44,6 @@ If you need to publish manually:
 Once published, developers can install your package:
 
 ```bash
-# Configure npm for GitHub Packages
-npm config set @omda2000:registry https://npm.pkg.github.com
-
-# Install the package
 npm install @omda2000/3d-model-viewer
 ```
 
