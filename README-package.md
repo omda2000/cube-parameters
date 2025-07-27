@@ -17,16 +17,28 @@ A comprehensive React component for viewing and interacting with 3D models. Buil
 
 ## Installation
 
-### From GitHub
+### From GitHub Packages
+
+First, configure npm to use GitHub Packages for the `@omda2000` scope:
 
 ```bash
-npm install git+https://github.com/omda2000/your-repo.git
+# Configure npm to use GitHub Packages
+npm config set @omda2000:registry https://npm.pkg.github.com
+
+# If you need authentication (for private packages), create a .npmrc file:
+echo "@omda2000:registry=https://npm.pkg.github.com" >> .npmrc
 ```
 
-### From NPM (if published)
+Then install the package:
 
 ```bash
 npm install @omda2000/3d-model-viewer
+```
+
+### From GitHub (Direct)
+
+```bash
+npm install git+https://github.com/omda2000/3d-model-viewer.git
 ```
 
 ## Basic Usage

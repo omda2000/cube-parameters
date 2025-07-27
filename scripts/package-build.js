@@ -27,7 +27,11 @@ try {
 
   // Copy README
   console.log('📖 Copying documentation...');
-  fs.copyFileSync('README-package.md', 'dist/README.md');
+  if (fs.existsSync('README-package.md')) {
+    fs.copyFileSync('README-package.md', 'dist/README.md');
+  } else {
+    fs.copyFileSync('README.md', 'dist/README.md');
+  }
 
   // Create npmignore
   console.log('📝 Creating .npmignore...');
